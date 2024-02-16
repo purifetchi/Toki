@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki", "Toki\Toki.csproj", "{840AB8B2-D4A3-496E-8A1D-95892411DCF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.ActivityPub", "Toki.ActivityPub\Toki.ActivityPub.csproj", "{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{840AB8B2-D4A3-496E-8A1D-95892411DCF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{840AB8B2-D4A3-496E-8A1D-95892411DCF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{840AB8B2-D4A3-496E-8A1D-95892411DCF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{840AB8B2-D4A3-496E-8A1D-95892411DCF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
