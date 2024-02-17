@@ -36,7 +36,7 @@ public class ASObject
     /// The type of this object.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public string? Type { get; init; }
 
     /// <summary>
     /// Is this ASObject resolved?

@@ -33,7 +33,11 @@ public class ASObjectConverter : JsonConverter<ASObject>
             return typeProp.GetString()! switch
             {
                 "Create" => obj.Deserialize<ASCreate>(),
+                "Follow" => obj.Deserialize<ASFollow>(),
+                "Accept" => obj.Deserialize<ASAccept>(),
+                
                 "Note" => obj.Deserialize<ASNote>(),
+                
                 "Person" or "Service" or "Organization" or "Group" or "Application" => obj.Deserialize<ASActor>(),
                 
                 // We don't understand this object yet.
