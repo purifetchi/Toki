@@ -10,6 +10,23 @@ namespace Toki.ActivityStreams.Objects;
 public class ASObject
 {
     /// <summary>
+    /// The default ASObject constructor.
+    /// </summary>
+    public ASObject()
+    {
+        
+    }
+
+    /// <summary>
+    /// Constructs a new ASObject with a given type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    public ASObject(string type)
+    {
+        Type = type;
+    }
+    
+    /// <summary>
     /// The ID of the object.
     /// </summary>
     [JsonPropertyName("id")]

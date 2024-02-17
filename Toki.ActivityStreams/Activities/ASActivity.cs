@@ -6,8 +6,18 @@ namespace Toki.ActivityStreams.Activities;
 /// <summary>
 /// An ActivityStreams activity.
 /// </summary>
-public class ASActivity : ASObject
+public abstract class ASActivity : ASObject
 {
+    /// <summary>
+    /// Constructs a new ASActivity of a given type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    protected ASActivity(string type)
+        : base(type)
+    {
+        
+    }
+    
     /// <summary>
     /// The actor that caused this activity.
     /// </summary>

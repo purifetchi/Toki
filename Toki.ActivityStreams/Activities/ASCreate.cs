@@ -8,5 +8,12 @@ namespace Toki.ActivityStreams.Activities;
 /// </summary>
 public class ASCreate : ASActivity
 {
-    
+    /// <summary>
+    /// Constructs a new ASCreate activity.
+    /// </summary>
+    public ASCreate()
+        : base("Create")
+    {
+        
+    }
 }

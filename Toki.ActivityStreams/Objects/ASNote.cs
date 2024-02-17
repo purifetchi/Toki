@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityStreams.Objects;
 
@@ -8,6 +7,15 @@ namespace Toki.ActivityStreams.Objects;
 /// </summary>
 public class ASNote : ASObject
 {
+    /// <summary>
+    /// Constructs a new ASNote.
+    /// </summary>
+    public ASNote()
+        : base("Note")
+    {
+        
+    }
+    
     /// <summary>
     /// The content of the note.
     /// </summary>

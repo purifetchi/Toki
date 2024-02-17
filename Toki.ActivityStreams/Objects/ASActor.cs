@@ -9,6 +9,15 @@ namespace Toki.ActivityStreams.Objects;
 public class ASActor : ASObject
 {
     /// <summary>
+    /// Constructs a new ASActor.
+    /// </summary>
+    public ASActor()
+        : base("Person") // FIXME: This is wrong
+    {
+        
+    }
+    
+    /// <summary>
     /// The name of the actor.
     /// </summary>
     [JsonPropertyName("name")]
