@@ -54,6 +54,13 @@ public class ASObjectConverter : JsonConverter<ASObject>
 
     public override void Write(Utf8JsonWriter writer, ASObject value, JsonSerializerOptions options)
     {
-        throw new NotImplementedException();
+        if (!value.IsResolved)
+        {
+            writer.WriteStringValue(value.Id);
+            return;
+        }
+
+        var obj = JsonSerializer.SerializeToElement(value, value.GetType());
+        obj.WriteTo(writer);
     }
 }
