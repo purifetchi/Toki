@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki", "Toki\Toki.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.ActivityPub", "Toki.ActivityPub\Toki.ActivityPub.csproj", "{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.ActivityStreams", "Toki.ActivityStreams\Toki.ActivityStreams.csproj", "{BA4DC6DF-A227-4A5E-A25F-7EE7437C3224}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F8406E9-1F3D-4DF7-BCD3-94063AEBA090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA4DC6DF-A227-4A5E-A25F-7EE7437C3224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA4DC6DF-A227-4A5E-A25F-7EE7437C3224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA4DC6DF-A227-4A5E-A25F-7EE7437C3224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA4DC6DF-A227-4A5E-A25F-7EE7437C3224}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
