@@ -19,16 +19,18 @@ public class WebFingerRenderer(
     public async Task<WebFingerResponse?> FindUser(string queryPath)
     {
         const string acctScheme = "acct";
+
+        var domain = opts.Value.Domain;
         
         var uri = new Uri(queryPath);
         if (uri.Scheme is not acctScheme)
             return null;
 
         var handle = uri.LocalPath;
-        if (!handle.EndsWith(opts.Value.Domain))
+        if (!handle.EndsWith(domain))
             return null;
 
-        handle = handle.Replace($"@{opts.Value.Domain}", "");
+        handle = handle.Replace($"@{domain}", "");
         var user = await repo.FindByHandle(handle);
 
         if (user is null)
@@ -36,10 +38,22 @@ public class WebFingerRenderer(
         
         return new WebFingerResponse
         {
-            Subject = uri.LocalPath,
+            Subject = queryPath,
             
             Links = [
-                // TODO
+                new WebFingerLink
+                {
+                    Hyperlink = $"https://{domain}/users/{user.Handle}",
+                    Type = "application/activity+json",
+                    Relative = "self"
+                },
+                
+                new WebFingerLink
+                {
+                    Hyperlink = $"https://{domain}/users/{user.Handle}",
+                    Type = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"",
+                    Relative = "self"
+                }
             ]
         };
     }
