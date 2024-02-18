@@ -35,6 +35,9 @@ public class UsersController(UserRepository repo)
     /// <param name="handle">The receiving user's handle.</param>
     /// <param name="activity">The activity.</param>
     /// <returns>The result.</returns>
+    [HttpPost]
+    [Consumes("application/activity+json")]
+    [Route("inbox")]
     public async Task<IActionResult> Inbox(
         [FromRoute] string handle,
         [FromBody] ASObject? activity)
