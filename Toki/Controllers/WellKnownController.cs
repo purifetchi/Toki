@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.WebFinger;
 
 namespace Toki.Controllers;
@@ -8,7 +9,8 @@ namespace Toki.Controllers;
 /// </summary>
 [ApiController]
 [Route(".well-known")]
-public class WellKnownController : ControllerBase
+public class WellKnownController(WebFingerRenderer renderer)
+    : ControllerBase
 {
     /// <summary>
     /// Runs a webfinger query.
@@ -19,6 +21,10 @@ public class WellKnownController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<WebFingerResponse?>> WebFinger([FromQuery] string resource)
     {
-        return NotFound();
+        var resp = await renderer.FindUser(resource);
+        if (resp is null)
+            return NotFound();
+
+        return resp;
     }
 }

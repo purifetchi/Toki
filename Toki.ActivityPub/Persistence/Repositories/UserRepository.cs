@@ -37,6 +37,19 @@ public class UserRepository(TokiDatabaseContext db)
     }
 
     /// <summary>
+    /// Finds a user by their handle.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <returns>The user, if they exist.</returns>
+    public async Task<User?> FindByHandle(string handle)
+    {
+        var result = await db.Users.Where(u => u.Handle == handle)
+            .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    /// <summary>
     /// Adds a new user.
     /// </summary>
     /// <param name="user">Said user.</param>

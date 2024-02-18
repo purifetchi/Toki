@@ -18,7 +18,8 @@ public static class ServiceCollectionExtensions
         collection.AddDbContext<TokiDatabaseContext>();
         
         collection.AddHttpClient()
-            .AddTransient<WebFingerResolver>();
+            .AddTransient<WebFingerResolver>()
+            .AddTransient<WebFingerRenderer>();
         
         return collection;
     }
