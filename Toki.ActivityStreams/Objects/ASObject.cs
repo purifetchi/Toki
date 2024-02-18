@@ -25,6 +25,12 @@ public class ASObject
     {
         Type = type;
     }
+
+    /// <summary>
+    /// The context.
+    /// </summary>
+    [JsonPropertyName("@context")]
+    public object? Context { get; set; } = "https://www.w3.org/ns/activitystreams";
     
     /// <summary>
     /// The ID of the object.

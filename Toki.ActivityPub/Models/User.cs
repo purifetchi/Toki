@@ -1,3 +1,5 @@
+using Toki.ActivityStreams.Objects;
+
 namespace Toki.ActivityPub.Models;
 
 /// <summary>
@@ -44,4 +46,22 @@ public class User : RemoteableModel
     /// The keypair of the user.
     /// </summary>
     public required Keypair Keypair { get; init; }
+
+    /// <summary>
+    /// Returns this user as an <see cref="ASActor"/>
+    /// </summary>
+    /// <returns>The resulting actor.</returns>
+    public ASActor ToASActor()
+    {
+        return new ASActor
+        {
+            // TODO: This is not the proper id of the actor.
+            Id = RemoteId ?? $"{Id}",
+            
+            Name = DisplayName,
+            Bio = Bio,
+            
+            Inbox = Inbox
+        };
+    }
 }

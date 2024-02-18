@@ -22,4 +22,64 @@ public class ASActor : ASObject
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }
+    
+    /// <summary>
+    /// The bio of this actor.
+    /// </summary>
+    [JsonPropertyName("summary")]
+    public string? Bio { get; set; }
+    
+    /// <summary>
+    /// The inbox.
+    /// </summary>
+    [JsonPropertyName("inbox")]
+    public string? Inbox { get; set; }
+    
+    /// <summary>
+    /// The outbox.
+    /// </summary>
+    [JsonPropertyName("outbox")]
+    public string? Outbox { get; set; }
+    
+    /// <summary>
+    /// The icon.
+    /// </summary>
+    [JsonPropertyName("icon")]
+    public ASImage? Icon { get; set; }
+    
+    /// <summary>
+    /// The banner.
+    /// </summary>
+    [JsonPropertyName("banner")]
+    public ASImage? Banner { get; set; }
+    
+    /// <summary>
+    /// The public key.
+    /// </summary>
+    [JsonPropertyName("publicKey")]
+    public ASPublicKey? PublicKey { get; set; }
+    
+    /// <summary>
+    /// The followers collection.
+    /// </summary>
+    [JsonPropertyName("followers")]
+    public ASObject? Followers { get; set; }
+    
+    /// <summary>
+    /// The following collection.
+    /// </summary>
+    [JsonPropertyName("following")]
+    public ASObject? Following { get; set; }
+    
+    /// <summary>
+    /// The url of the actor.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+    
+    /// <summary>
+    /// Does this actor manually approve followers?
+    /// </summary>
+    [JsonPropertyName("manuallyApprovesFollowers")]
+    public bool ManuallyApprovesFollowers { get; set; }
 }
