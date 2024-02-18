@@ -8,7 +8,7 @@ public class Keypair : RemoteableModel
     /// <summary>
     /// The owner of the keypair.
     /// </summary>
-    public required User Owner { get; init; }
+    public User? Owner { get; set; }
     
     /// <summary>
     /// The public key.
