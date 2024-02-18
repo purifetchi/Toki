@@ -3,7 +3,7 @@ namespace Toki.ActivityPub.Models;
 /// <summary>
 /// A follower relation.
 /// </summary>
-public class FollowerRelation
+public class FollowerRelation : AbstractModel
 {
     /// <summary>
     /// The follower user.
