@@ -15,6 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Toki.ActivityPub\Toki.ActivityPub.csproj" />
       <ProjectReference Include="..\Toki.ActivityStreams\Toki.ActivityStreams.csproj" />
+      <ProjectReference Include="..\Toki.HTTPSignatures\Toki.HTTPSignatures.csproj" />
     </ItemGroup>
 
 </Project>

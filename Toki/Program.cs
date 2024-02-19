@@ -1,4 +1,5 @@
 using Toki.ActivityPub;
+using Toki.HTTPSignatures;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
+builder.Services.AddHttpSignatures();
 builder.Services.AddControllers();
 
 var app = builder.Build();
