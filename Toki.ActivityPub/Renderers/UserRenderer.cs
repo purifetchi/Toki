@@ -33,10 +33,12 @@ public class UserRenderer(
         {
             Id = user.RemoteId ?? uri,
             
-            Name = user.DisplayName,
+            Name = user.DisplayName ?? user.Handle,
             Bio = user.Bio,
             
-            Inbox = user.Inbox ?? $"{uri}/inbox",
+            PreferredUsername = user.Handle,
+            
+            Inbox = ASObject.Link(user.Inbox ?? $"{uri}/inbox"),
             
             PublicKey = new ASPublicKey
             {

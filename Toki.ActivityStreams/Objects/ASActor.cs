@@ -24,6 +24,12 @@ public class ASActor : ASObject
     public string? Name { get; set; }
     
     /// <summary>
+    /// The display name.
+    /// </summary>
+    [JsonPropertyName("preferredUsername")]
+    public string? PreferredUsername { get; set; }
+    
+    /// <summary>
     /// The bio of this actor.
     /// </summary>
     [JsonPropertyName("summary")]
@@ -33,13 +39,13 @@ public class ASActor : ASObject
     /// The inbox.
     /// </summary>
     [JsonPropertyName("inbox")]
-    public string? Inbox { get; set; }
+    public ASObject? Inbox { get; set; }
     
     /// <summary>
     /// The outbox.
     /// </summary>
     [JsonPropertyName("outbox")]
-    public string? Outbox { get; set; }
+    public ASObject? Outbox { get; set; }
     
     /// <summary>
     /// The icon.
