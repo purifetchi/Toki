@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.ActivityStreams", "Tok
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.HTTPSignatures", "Toki.HTTPSignatures\Toki.HTTPSignatures.csproj", "{2D527DD1-6221-4671-930D-97B1482E1747}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.HTTPSignatures.Tests", "Toki.HTTPSignatures.Tests\Toki.HTTPSignatures.Tests.csproj", "{A5FF9909-4846-41B6-B7D8-406539A3DFD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{2D527DD1-6221-4671-930D-97B1482E1747}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D527DD1-6221-4671-930D-97B1482E1747}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D527DD1-6221-4671-930D-97B1482E1747}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5FF9909-4846-41B6-B7D8-406539A3DFD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5FF9909-4846-41B6-B7D8-406539A3DFD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5FF9909-4846-41B6-B7D8-406539A3DFD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5FF9909-4846-41B6-B7D8-406539A3DFD2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
