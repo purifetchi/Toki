@@ -82,4 +82,10 @@ public class ASActor : ASObject
     /// </summary>
     [JsonPropertyName("manuallyApprovesFollowers")]
     public bool ManuallyApprovesFollowers { get; set; }
+    
+    /// <summary>
+    /// The endpoints.
+    /// </summary>
+    [JsonPropertyName("endpoints")]
+    public ASEndpoints? Endpoints { get; set; }
 }

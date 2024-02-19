@@ -48,4 +48,17 @@ public class ASObject
     /// Is this ASObject resolved?
     /// </summary>
     [JsonIgnore] public bool IsResolved => Type != null && GetType() != typeof(ASObject);
+
+    /// <summary>
+    /// Creates a link to an ASObject.
+    /// </summary>
+    /// <param name="id">The id to link to.</param>
+    /// <returns>The link ASObject.</returns>
+    public static ASObject Link(string id)
+    {
+        return new ASObject
+        {
+            Id = id
+        };
+    }
 }

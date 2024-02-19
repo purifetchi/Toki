@@ -11,7 +11,7 @@ public class ASPublicKey : ASObject
     /// Constructs a new public key.
     /// </summary>
     public ASPublicKey()
-        : base(string.Empty)
+        : base("Key")
     {
         
     }

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Renderers;
+using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.Controllers;
@@ -9,7 +11,9 @@ namespace Toki.Controllers;
 /// </summary>
 [ApiController]
 [Route("users/{:handle}")]
-public class UsersController(UserRepository repo)
+public class UsersController(
+    UserRepository repo,
+    UserRenderer renderer)
     : ControllerBase
 {
     /// <summary>
@@ -26,22 +30,25 @@ public class UsersController(UserRepository repo)
         if (user is null)
             return NotFound();
 
-        return user.ToASActor();
+        return await renderer.RenderFullActorFrom(user);
     }
 
     /// <summary>
     /// The user inbox.
     /// </summary>
     /// <param name="handle">The receiving user's handle.</param>
-    /// <param name="activity">The activity.</param>
+    /// <param name="asObject">The activity.</param>
     /// <returns>The result.</returns>
     [HttpPost]
     [Consumes("application/activity+json")]
     [Route("inbox")]
     public async Task<IActionResult> Inbox(
         [FromRoute] string handle,
-        [FromBody] ASObject? activity)
+        [FromBody] ASObject? asObject)
     {
+        if (asObject is not ASActivity activity)
+            return BadRequest();
+        
         // TODO: This will just go to the inbox handler.
         return Ok();
     }
