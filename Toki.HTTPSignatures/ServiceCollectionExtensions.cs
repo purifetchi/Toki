@@ -12,7 +12,9 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddHttpSignatures(this IServiceCollection collection)
     {
-        collection.AddTransient<HttpSignatureValidator>();
+        collection.AddTransient<HttpSignatureValidator>()
+            .AddHttpClient()
+            .AddTransient<SignedHttpClient>();
 
         return collection;
     }
