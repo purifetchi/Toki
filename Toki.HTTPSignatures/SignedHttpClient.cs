@@ -64,6 +64,18 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     }
 
     /// <summary>
+    /// Adds a header, but doesn't sign it.
+    /// </summary>
+    /// <param name="headerName">The name of the header.</param>
+    /// <param name="headerValue">The value of the header.</param>
+    /// <returns>Ourselves.</returns>
+    public SignedHttpClient WithHeader(string headerName, string headerValue)
+    {
+        _requestMessage.Headers.Add(headerName, headerValue);
+        return this;
+    }
+
+    /// <summary>
     /// Sets a key for this signed request.
     /// </summary>
     /// <param name="id">The ID.</param>

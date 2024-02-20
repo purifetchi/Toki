@@ -35,6 +35,7 @@ public class MessageFederationJob(
                 keypair.RemoteId ?? $"https://{opts.Value.Domain}/users/{keypair.Owner!.Id}/key", 
                 keypair.PublicKey)
             .WithBody(message)
+            .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
             .AddHeaderToSign("Host")
             .AddHeaderToSign("Digest")
             .AddHeaderToSign("Date", 
