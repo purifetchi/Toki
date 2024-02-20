@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
+using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.WebFinger;
 
 namespace Toki.ActivityPub;
@@ -21,6 +22,8 @@ public static class ServiceCollectionExtensions
 
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>();
+
+        collection.AddTransient<ActivityPubResolver>();
         
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()
