@@ -33,6 +33,11 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     /// The key's id.
     /// </summary>
     private string? _id;
+
+    /// <summary>
+    /// The body of the message.
+    /// </summary>
+    private string? _body;
     
     /// <summary>
     /// Adds a header to sign.
@@ -73,6 +78,17 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     }
 
     /// <summary>
+    /// The body of the message.
+    /// </summary>
+    /// <param name="body">The body.</param>
+    /// <returns>Ourselves.</returns>
+    public SignedHttpClient WithBody(string body)
+    {
+        _body = body;
+        return this;
+    }
+
+    /// <summary>
     /// POSTs an url.
     /// </summary>
     /// <param name="url">The url.</param>
@@ -100,8 +116,23 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     /// <returns>The response.</returns>
     private async Task<HttpResponseMessage> Send(string url, HttpMethod method)
     {
+        if (_body is not null)
+        {
+            // If we also want to sign the digest, add it to the headers list.
+            if (_signedHeaders.Contains("digest"))
+            {
+                _requestMessage.Headers.Add("Digest",
+                    DigestMessage());
+            }
+            
+            _requestMessage.Content = new StringContent(_body);
+        }
+        
         _requestMessage.RequestUri = new(url);
         _requestMessage.Method = method;
+        
+        // Set up some already known headers.
+        _requestMessage.Headers.Host = _requestMessage.RequestUri.Host;
         _requestMessage.Headers.Add("Signature", 
             ConstructSignature(method.ToString(), _requestMessage.RequestUri.AbsolutePath));
         
@@ -133,5 +164,15 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
         return $"""
                 keyId="{_id}",algorithm="rsa-sha256",headers="{string.Join(' ', _signedHeaders)}",signature="{Convert.ToBase64String(signature)}"
                 """;
+    }
+
+    /// <summary>
+    /// Digests a message.
+    /// </summary>
+    /// <returns>The message.</returns>
+    public string DigestMessage()
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(_body!));
+        return $"SHA-256={Convert.ToBase64String(hash)}";
     }
 }
