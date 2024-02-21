@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 using Toki.Extensions;
@@ -12,7 +14,9 @@ namespace Toki.Controllers;
 /// </summary>
 [ApiController]
 [Route("/")]
-public class FederationController(HttpSignatureValidator signatureValidator)
+public class FederationController(
+    HttpSignatureValidator signatureValidator,
+    TokiDatabaseContext db)
     : ControllerBase
 {
     /// <summary>
@@ -33,9 +37,16 @@ public class FederationController(HttpSignatureValidator signatureValidator)
         
         if (signature is null)
             return Unauthorized();
+
+        var key = await db.Keypairs
+            .Where(k => k.RemoteId == signature.KeyId)
+            .FirstOrDefaultAsync();
+
+        // TODO: Fetch the actor in this case.
+        if (key is null)
+            return BadRequest();
         
-        // TODO
-        if (!signatureValidator.Validate(signature, ""))
+        if (!signatureValidator.Validate(signature, key.PublicKey))
             return Unauthorized();
         
         Console.WriteLine($"[INBOX] Received new activity of type {activity?.Type}");

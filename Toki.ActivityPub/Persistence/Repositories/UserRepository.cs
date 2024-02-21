@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityStreams.Objects;
@@ -53,10 +54,12 @@ public class UserRepository(TokiDatabaseContext db)
     /// Adds a new user.
     /// </summary>
     /// <param name="user">Said user.</param>
-    public async Task Add(User user)
+    public async Task<bool> Add(User user)
     {
         db.Users.Add(user);
-        await db.SaveChangesAsync();
+        var changes = await db.SaveChangesAsync();
+        
+        return changes > 0;
     }
     
     /// <summary>
@@ -75,6 +78,8 @@ public class UserRepository(TokiDatabaseContext db)
             DisplayName = actor.Name!,
             RemoteId = actor.Id!,
             
+            IsRemote = true,
+            
             Keypair = new Keypair
             {
                 Id = Guid.NewGuid(),
@@ -89,5 +94,39 @@ public class UserRepository(TokiDatabaseContext db)
         user.Keypair.Owner = user;
 
         await Add(user);
+    }
+
+    /// <summary>
+    /// Creates a new user with a given handle.
+    /// </summary>
+    /// <param name="handle">The handle.</param>
+    /// <param name="password">The password of the new user.</param>
+    /// <returns>The created user.</returns>
+    public async Task<User?> CreateNewUser(
+        string handle,
+        string password)
+    {
+        if (await FindByHandle(handle) != null)
+            return null;
+        
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            
+            DisplayName = handle,
+            IsRemote = false,
+            
+            Keypair = KeypairGenerationHelper.GenerateKeypair(),
+            Handle = handle
+        };
+
+        user.Keypair.Owner = user;
+
+        // TODO: Generate credentials too.
+
+        if (!await Add(user))
+            return null;
+        
+        return user;
     }
 }
