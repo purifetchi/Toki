@@ -10,7 +10,7 @@ namespace Toki.Controllers;
 /// The users controller for ActivityPub interoperability.
 /// </summary>
 [ApiController]
-[Route("users/{:handle}")]
+[Route("users/{handle}")]
 public class UsersController(
     UserRepository repo,
     UserRenderer renderer)
