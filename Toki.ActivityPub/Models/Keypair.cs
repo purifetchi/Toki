@@ -11,6 +11,11 @@ public class Keypair : RemoteableModel
     public User? Owner { get; set; }
     
     /// <summary>
+    /// The ID of the owner.
+    /// </summary>
+    public Guid OwnerId { get; set; }
+    
+    /// <summary>
     /// The public key.
     /// </summary>
     public required string PublicKey { get; init; }

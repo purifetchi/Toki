@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Toki.ActivityPub.Models;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -29,11 +28,47 @@ public class TokiDatabaseContext : DbContext
     /// </summary>
     public DbSet<Keypair> Keypairs { get; private set; } = null!;
 
+    /// <summary>
+    /// The credentials.
+    /// </summary>
+    public DbSet<Credentials> Credentials { get; private set; } = null!;
+    
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
-            .OwnsOne<Keypair>(u => u.Keypair);
+            .HasOne<Keypair>(u => u.Keypair)
+            .WithOne(k => k.Owner)
+            .IsRequired()
+            .HasForeignKey<Keypair>(k => k.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Post>()
+            .HasOne(p => p.Author)
+            .WithMany()
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FollowerRelation>()
+            .HasOne(fr => fr.Followee)
+            .WithOne()
+            .IsRequired()
+            .HasForeignKey<FollowerRelation>(fr => fr.FolloweeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FollowerRelation>()
+            .HasOne(fr => fr.Follower)
+            .WithOne()
+            .IsRequired()
+            .HasForeignKey<FollowerRelation>(fr => fr.FollowerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Credentials>()
+            .HasOne<User>(c => c.User)
+            .WithOne()
+            .HasForeignKey<Credentials>(c => c.UserId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     /// <inheritdoc/>

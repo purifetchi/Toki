@@ -11,6 +11,11 @@ public class Post : RemoteableModel
     public required User Author { get; init; }
     
     /// <summary>
+    /// The id of the author.
+    /// </summary>
+    public required Guid AuthorId { get; init; }
+    
+    /// <summary>
     /// The content of this post.
     /// </summary>
     public required string Content { get; init; }

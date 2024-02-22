@@ -45,5 +45,5 @@ public class User : RemoteableModel
     /// <summary>
     /// The keypair of the user.
     /// </summary>
-    public required Keypair Keypair { get; init; }
+    public Keypair? Keypair { get; init; }
 }

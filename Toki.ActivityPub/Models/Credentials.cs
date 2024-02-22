@@ -11,6 +11,11 @@ public class Credentials : AbstractModel
     public required User User { get; init; }
     
     /// <summary>
+    /// The id of said user.
+    /// </summary>
+    public required Guid UserId { get; init; }
+    
+    /// <summary>
     /// The hash of the password.
     /// </summary>
     public required string PasswordHash { get; init; }
