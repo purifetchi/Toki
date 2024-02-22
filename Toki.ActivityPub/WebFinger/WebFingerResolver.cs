@@ -14,12 +14,12 @@ public class WebFingerResolver(IHttpClientFactory httpClientFactory)
     /// <param name="handle">The handle of the user to look up.</param>
     /// <returns>The WebFinger response.</returns>
     public async Task<WebFingerResponse?> Finger(
-        string instance, 
+        string instance,
         string handle)
     {
         const string webFingerEndpoint = "/.well-known/webfinger?resource=";
 
-        var url = instance + webFingerEndpoint;
+        var url = "https://" + instance + webFingerEndpoint;
         var acct = $"acct:{handle.TrimStart('@')}";
 
         var client = httpClientFactory.CreateClient();
@@ -27,4 +27,20 @@ public class WebFingerResolver(IHttpClientFactory httpClientFactory)
 
         return resp;
     }
+
+    /// <summary>
+    /// Looks up a WebFinger response by a given @-handle: (@name@domain.tld)
+    /// </summary>
+    /// <param name="atHandle">The @-handle.</param>
+    /// <returns>The WebFinger response.</returns>
+    public Task<WebFingerResponse?> FingerAtHandle(
+        string atHandle)
+    {
+        var split = atHandle.Split('@');
+        Console.WriteLine(split.Last());
+        return Finger(
+            split.Last(),
+            atHandle);
+    }
+
 }
