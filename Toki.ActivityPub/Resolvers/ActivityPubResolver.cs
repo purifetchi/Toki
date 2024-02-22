@@ -27,7 +27,7 @@ public class ActivityPubResolver(
             Method = HttpMethod.Get,
             Headers =
             {
-                { "Accept", "" } 
+                { "Accept", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" } 
             }
         };
 
