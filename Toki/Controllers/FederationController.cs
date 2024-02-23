@@ -26,7 +26,7 @@ public class FederationController(
     /// </summary>
     /// <returns>The result.</returns>
     [Route("inbox")]
-    [Consumes("application/activity+json")]
+    [Consumes("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
     [HttpPost]
     public async Task<IActionResult> Inbox(
         [FromBody] ASObject? asObject)

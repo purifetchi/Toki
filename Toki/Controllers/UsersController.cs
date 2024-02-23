@@ -27,7 +27,7 @@ public class UsersController(
     /// <returns>The user if they exist, or nothing.</returns>
     [HttpGet]
     [Route("")]
-    [Produces("application/json", "application/activity+json")]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
     public async Task<ActionResult<ASActor?>> FetchActor([FromRoute] string handle)
     {
         var user = await repo.FindByHandle(handle);
@@ -44,7 +44,7 @@ public class UsersController(
     /// <param name="asObject">The activity.</param>
     /// <returns>The result.</returns>
     [HttpPost]
-    [Consumes("application/activity+json")]
+    [Consumes("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
     [Route("inbox")]
     public async Task<IActionResult> Inbox(
         [FromRoute] string handle,
