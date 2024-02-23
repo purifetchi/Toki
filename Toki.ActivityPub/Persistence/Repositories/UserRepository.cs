@@ -106,7 +106,7 @@ public class UserRepository(TokiDatabaseContext db)
     /// <returns>The created user.</returns>
     public async Task<User?> CreateNewUser(
         string handle,
-        string password)
+        string? password = null)
     {
         if (await FindByHandle(handle) != null)
             return null;
@@ -123,23 +123,27 @@ public class UserRepository(TokiDatabaseContext db)
         };
 
         user.Keypair.Owner = user;
-
-        const int workFactor = 8;
-        var salt = BCrypt.Net.BCrypt.GenerateSalt(workFactor);
-        var hash = BCrypt.Net.BCrypt.HashPassword(password, salt);
-        
-        var credentials = new Credentials()
-        {
-            Id = Guid.NewGuid(),
-            User = user,
-            UserId = user.Id,
-
-            PasswordHash = hash,
-            Salt = salt
-        };
-
         db.Users.Add(user);
-        db.Credentials.Add(credentials);
+
+        if (password is not null)
+        {
+            const int workFactor = 8;
+            var salt = BCrypt.Net.BCrypt.GenerateSalt(workFactor);
+            var hash = BCrypt.Net.BCrypt.HashPassword(password, salt);
+        
+            var credentials = new Credentials()
+            {
+                Id = Guid.NewGuid(),
+                User = user,
+                UserId = user.Id,
+
+                PasswordHash = hash,
+                Salt = salt
+            };
+        
+            db.Credentials.Add(credentials);
+        }
+        
         await db.SaveChangesAsync();
         
         return user;
