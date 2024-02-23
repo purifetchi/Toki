@@ -2,9 +2,14 @@ using Hangfire;
 using Hangfire.Redis.StackExchange;
 using StackExchange.Redis;
 using Toki.ActivityPub;
+using Toki.ActivityPub.Configuration;
 using Toki.HTTPSignatures;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Toki
+builder.Services.Configure<InstanceConfiguration>(
+    builder.Configuration.GetSection("Instance"));
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
