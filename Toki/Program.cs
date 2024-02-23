@@ -1,3 +1,6 @@
+using Hangfire;
+using Hangfire.Redis.StackExchange;
+using StackExchange.Redis;
 using Toki.ActivityPub;
 using Toki.HTTPSignatures;
 
@@ -10,6 +13,10 @@ builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
 builder.Services.AddControllers();
 
+builder.Services.AddHangfire(
+        opts => opts.UseRedisStorage(ConnectionMultiplexer.Connect("localhost")))
+    .AddHangfireServer();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -20,6 +27,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseHangfireDashboard();
 
 app.MapControllers();
 

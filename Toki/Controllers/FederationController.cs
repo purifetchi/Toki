@@ -1,5 +1,8 @@
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Toki.ActivityPub.Cryptography;
+using Toki.ActivityPub.Jobs.Federation;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
@@ -15,8 +18,7 @@ namespace Toki.Controllers;
 [ApiController]
 [Route("/")]
 public class FederationController(
-    HttpSignatureValidator signatureValidator,
-    TokiDatabaseContext db)
+    ActivityPubMessageValidationService validator)
     : ControllerBase
 {
     /// <summary>
@@ -29,27 +31,11 @@ public class FederationController(
     public async Task<IActionResult> Inbox(
         [FromBody] ASObject? asObject)
     {
-        if (asObject is not ASActivity activity)
-            return BadRequest();
-        
-        var signature = Signature.FromHttpRequest(
-            HttpContext.Request.ToTokiHttpRequest());
-        
-        if (signature is null)
-            return Unauthorized();
-
-        var key = await db.Keypairs
-            .Where(k => k.RemoteId == signature.KeyId)
-            .FirstOrDefaultAsync();
-
-        // TODO: Fetch the actor in this case.
-        if (key is null)
-            return BadRequest();
-        
-        if (!signatureValidator.Validate(signature, key.PublicKey))
+        if (!await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject))
             return Unauthorized();
         
-        Console.WriteLine($"[INBOX] Received new activity of type {activity?.Type}");
+        BackgroundJob.Enqueue<InboxHandlerJob>(job =>
+            job.HandleActivity(asObject!));
         return Ok();
     }
 }

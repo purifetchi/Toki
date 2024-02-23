@@ -66,10 +66,10 @@ public class UserRepository(TokiDatabaseContext db)
     /// Imports a user from the ActivityStreams actor definition.
     /// </summary>
     /// <param name="actor">The actor.</param>
-    public async Task ImportFromActivityStreams(ASActor actor)
+    public async Task<User?> ImportFromActivityStreams(ASActor actor)
     {
         if (actor.PublicKey is null || !actor.PublicKey.IsResolved)
-            return;
+            return null;
         
         var user = new User
         {
@@ -94,6 +94,8 @@ public class UserRepository(TokiDatabaseContext db)
         user.Keypair.Owner = user;
 
         await Add(user);
+
+        return user;
     }
 
     /// <summary>

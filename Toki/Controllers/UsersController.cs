@@ -1,8 +1,11 @@
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Cryptography;
+using Toki.ActivityPub.Jobs.Federation;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
-using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
+using Toki.Extensions;
 
 namespace Toki.Controllers;
 
@@ -13,7 +16,8 @@ namespace Toki.Controllers;
 [Route("users/{handle}")]
 public class UsersController(
     UserRepository repo,
-    UserRenderer renderer)
+    UserRenderer renderer,
+    ActivityPubMessageValidationService validator)
     : ControllerBase
 {
     /// <summary>
@@ -46,10 +50,11 @@ public class UsersController(
         [FromRoute] string handle,
         [FromBody] ASObject? asObject)
     {
-        if (asObject is not ASActivity activity)
-            return BadRequest();
+        if (!await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject))
+            return Unauthorized();
         
-        // TODO: This will just go to the inbox handler.
+        BackgroundJob.Enqueue<InboxHandlerJob>(job =>
+            job.HandleActivity(asObject!));
         return Ok();
     }
 }
