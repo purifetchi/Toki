@@ -20,8 +20,11 @@ public class UserRenderer(
     /// Renders a full <see cref="ASActor"/> from a user.
     /// </summary>
     /// <param name="user">The user.</param>
+    /// <param name="type">The type of the actor.</param>
     /// <returns>The actor.</returns>
-    public async Task<ASActor> RenderFullActorFrom(User user)
+    public async Task<ASActor> RenderFullActorFrom(
+        User user,
+        string type = "Person") // TODO: The type shouldn't be passed in as a string, probably.
     {
         var domain = opts.Value.Domain;
         var key = await db.Keypairs
@@ -29,7 +32,7 @@ public class UserRenderer(
 
         var uri = GetPublicUri(user);
         
-        return new ASActor
+        return new ASActor(type)
         {
             Id = user.RemoteId ?? uri,
             

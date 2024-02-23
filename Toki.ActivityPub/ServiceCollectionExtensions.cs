@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddActivityPubServices(this IServiceCollection collection)
     {
         collection.AddDbContext<TokiDatabaseContext>();
+        collection.AddScoped<InstanceActorResolver>();
 
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>();

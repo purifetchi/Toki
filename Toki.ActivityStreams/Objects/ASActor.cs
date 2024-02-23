@@ -11,8 +11,8 @@ public class ASActor : ASObject
     /// <summary>
     /// Constructs a new ASActor.
     /// </summary>
-    public ASActor()
-        : base("Person") // FIXME: This is wrong
+    public ASActor(string type = "Person")
+        : base(type)
     {
         
     }
@@ -88,6 +88,12 @@ public class ASActor : ASObject
     /// </summary>
     [JsonPropertyName("manuallyApprovesFollowers")]
     public bool ManuallyApprovesFollowers { get; set; }
+    
+    /// <summary>
+    /// Should this actor be hidden from discovery?
+    /// </summary>
+    [JsonPropertyName("invisible")]
+    public bool Invisible { get; set; }
     
     /// <summary>
     /// The endpoints.

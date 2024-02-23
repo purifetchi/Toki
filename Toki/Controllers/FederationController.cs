@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Jobs.Federation;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Resolvers;
 using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 using Toki.Extensions;
@@ -18,7 +19,8 @@ namespace Toki.Controllers;
 [ApiController]
 [Route("/")]
 public class FederationController(
-    ActivityPubMessageValidationService validator)
+    ActivityPubMessageValidationService validator,
+    InstanceActorResolver instanceActorResolver)
     : ControllerBase
 {
     /// <summary>
@@ -37,5 +39,16 @@ public class FederationController(
         BackgroundJob.Enqueue<InboxHandlerJob>(job =>
             job.HandleActivity(asObject!));
         return Ok();
+    }
+
+    /// <summary>
+    /// Returns the instance actor for this instance. Used for signed fetches.
+    /// </summary>
+    [Route("actor")]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
+    [HttpGet]
+    public async Task<ActionResult<ASActor>> InstanceActor()
+    {
+        return await instanceActorResolver.RenderInstanceActor();
     }
 }

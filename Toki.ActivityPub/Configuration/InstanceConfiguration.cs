@@ -19,4 +19,9 @@ public class InstanceConfiguration
     /// The contact e-mail.
     /// </summary>
     public string? ContactEmail { get; set; }
+
+    /// <summary>
+    /// Is signed fetching enabled?
+    /// </summary>
+    public bool SignedFetch { get; set; } = false;
 }
