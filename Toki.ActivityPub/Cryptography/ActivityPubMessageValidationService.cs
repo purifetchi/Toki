@@ -44,10 +44,10 @@ public class ActivityPubMessageValidationService(
         var keypair = await FetchKeypair(
             signature,
             activity.Actor);
-
+        
         if (keypair is null)
             return false;
-
+        
         return validator.Validate(
             signature,
             keypair.PublicKey);
@@ -77,9 +77,9 @@ public class ActivityPubMessageValidationService(
         var resolvedActor = await resolver.Fetch<ASActor>(actor);
         if (resolvedActor?.PublicKey is null)
             return null;
-
+        
         // Ensure the key id isn't fake.
-        if (resolvedActor.PublicKey?.PublicKeyPem != sig.KeyId)
+        if (resolvedActor.PublicKey?.Id != sig.KeyId)
             return null;
         
         var user = await repo.ImportFromActivityStreams(resolvedActor);
