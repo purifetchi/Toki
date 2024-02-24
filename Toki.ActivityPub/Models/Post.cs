@@ -29,4 +29,9 @@ public class Post : RemoteableModel
     /// Is this post sensitive?
     /// </summary>
     public bool Sensitive { get; set; }
+
+    /// <summary>
+    /// The content warning on this post.
+    /// </summary>
+    public string? ContentWarning { get; set; }
 }
