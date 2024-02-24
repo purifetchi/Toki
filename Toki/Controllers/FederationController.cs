@@ -1,15 +1,11 @@
+using System.Text.Json;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Jobs.Federation;
-using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Resolvers;
-using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 using Toki.Extensions;
-using Toki.HTTPSignatures;
-using Toki.HTTPSignatures.Models;
 
 namespace Toki.Controllers;
 
@@ -35,9 +31,11 @@ public class FederationController(
     {
         if (!await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject))
             return Unauthorized();
-        
+
+        // TODO: This is really ugly.
+        var data = JsonSerializer.Serialize(asObject);
         BackgroundJob.Enqueue<InboxHandlerJob>(job =>
-            job.HandleActivity(asObject!));
+            job.HandleActivity(data));
         return Ok();
     }
 

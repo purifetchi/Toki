@@ -20,8 +20,6 @@ public class HttpSignatureValidator
         using var rsa = RSA.Create();
         rsa.ImportFromPem(publicPem);
         
-        Console.WriteLine(rsa.ExportRSAPublicKeyPem());
-        
         return rsa.VerifyData(
             Encoding.ASCII.GetBytes(signature.MessageToSign), 
             Convert.FromBase64String(signature.SignedDigest), 

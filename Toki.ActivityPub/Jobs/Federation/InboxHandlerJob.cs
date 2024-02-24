@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityStreams.Activities;
@@ -15,16 +16,18 @@ public class InboxHandlerJob(
     /// <summary>
     /// Handles an activity.
     /// </summary>
-    /// <param name="asObject">The ASObject.</param>
-    public async Task HandleActivity(ASObject asObject)
+    /// <param name="objectJson">The activity json.</param>
+    public async Task HandleActivity(string objectJson)
     {
-        if (asObject is not ASActivity activity)
-            return;
+        var activity = JsonSerializer.Deserialize<ASObject>(objectJson) as ASActivity;
+        Console.WriteLine($"Handling activity {activity!.Type}");
 
         // Resolve the actor that's doing this.
-        var actor = await resolver.Fetch<ASActor>(activity.Actor);
+        var actor = await resolver.Fetch<ASActor>(activity!.Actor);
         if (actor is null)
             return;
+
+        Console.WriteLine($"Actor {actor.Name}");
 
         // Ensure we have the actual actor that is performing this task.
         if (await repo.FindByRemoteId(actor.Id) is null)

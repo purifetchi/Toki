@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Cryptography;
@@ -53,8 +54,10 @@ public class UsersController(
         if (!await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject))
             return Unauthorized();
         
+        // TODO: This is really ugly.
+        var data = JsonSerializer.Serialize(asObject);
         BackgroundJob.Enqueue<InboxHandlerJob>(job =>
-            job.HandleActivity(asObject!));
+            job.HandleActivity(data));
         return Ok();
     }
 }
