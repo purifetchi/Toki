@@ -98,6 +98,8 @@ public class UserRepository(
             AvatarUrl = actor.Icon?.Url,
             BannerUrl = actor.Banner?.Url,
             
+            RequiresFollowApproval = actor.ManuallyApprovesFollowers,
+            
             Keypair = new Keypair
             {
                 Id = Guid.NewGuid(),

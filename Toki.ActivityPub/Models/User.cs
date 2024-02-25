@@ -28,6 +28,11 @@ public class User : RemoteableModel
     public Guid? ParentInstanceId { get; set; }
     
     /// <summary>
+    /// Does this user require follow approval?
+    /// </summary>
+    public bool RequiresFollowApproval { get; set; }
+    
+    /// <summary>
     /// The bio of this user.
     /// </summary>
     public string? Bio { get; set; }
