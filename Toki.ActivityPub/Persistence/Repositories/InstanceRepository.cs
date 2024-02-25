@@ -71,6 +71,9 @@ public class InstanceRepository(
             Domain = domain,
             SharedInbox = actor.Endpoints?.SharedInbox?.Id,
             
+            Name = nodeInfo?.Metadata?.Name,
+            Description = nodeInfo?.Metadata?.Description,
+            
             Software = $"{nodeInfo?.Software?.Name} {nodeInfo?.Software?.Version}"
         };
 

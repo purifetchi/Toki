@@ -35,5 +35,9 @@ public class NodeInfoResponse
     
     // TODO: Usage
     
-    // TODO: Metadata
+    /// <summary>
+    /// The metadata of this instance.
+    /// </summary>
+    [JsonPropertyName("metadata")]
+    public NodeInfoMetadata? Metadata { get; init; }
 }
