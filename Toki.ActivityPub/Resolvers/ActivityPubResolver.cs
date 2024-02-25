@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityStreams.Objects;
@@ -13,7 +14,8 @@ public class ActivityPubResolver(
     IHttpClientFactory clientFactory,
     SignedHttpClient signedHttpClient,
     InstanceActorResolver instanceActorResolver,
-    IOptions<InstanceConfiguration> opts)
+    IOptions<InstanceConfiguration> opts,
+    ILogger<ActivityPubResolver> logger)
 {
     /// <summary>
     /// Fetches the proper ASObject from a given unresolved ASObject. 
@@ -27,12 +29,16 @@ public class ActivityPubResolver(
         if (obj.IsResolved && obj is TAsObject asObject)
             return asObject;
 
+        logger.LogInformation($"Fetching object {obj.Id}");
+        
         var resp = opts.Value.SignedFetch ? 
             await FetchWithSigning(obj.Id) : 
             await FetchWithoutSigning(obj.Id);
 
         if (!resp.IsSuccessStatusCode)
             return null;
+        
+        logger.LogInformation($"{obj.Id} OK");
 
         return await JsonSerializer.DeserializeAsync<TAsObject>(
             await resp.Content.ReadAsStreamAsync());

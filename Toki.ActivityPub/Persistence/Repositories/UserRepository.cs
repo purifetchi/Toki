@@ -92,6 +92,12 @@ public class UserRepository(
             
             IsRemote = true,
             
+            Inbox = actor.Inbox?.Id,
+            Bio = actor.Bio,
+            
+            AvatarUrl = actor.Icon?.Url,
+            BannerUrl = actor.Banner?.Url,
+            
             Keypair = new Keypair
             {
                 Id = Guid.NewGuid(),
@@ -100,7 +106,7 @@ public class UserRepository(
                 PublicKey = actor.PublicKey!.PublicKeyPem!
             },
             
-            Handle = $"{actor.Name!}@{instance.Domain}"
+            Handle = $"{actor.PreferredUsername!}@{instance.Domain}"
         };
 
         user.Keypair.Owner = user;

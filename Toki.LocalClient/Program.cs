@@ -1,14 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Toki.ActivityPub;
-using Toki.ActivityPub.Resolvers;
-using Toki.ActivityStreams.Objects;
-using System.CommandLine;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Resolvers;
+using Toki.ActivityPub.WebFinger;
+using Toki.ActivityStreams.Objects;
+using Toki.HTTPSignatures;
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices(svc =>
-        svc.AddActivityPubServices())
+        svc.AddActivityPubServices()
+            .AddLogging()
+            .AddHttpSignatures())
     .Build();
     
 var root = new RootCommand();
@@ -32,6 +36,35 @@ userCreate.SetHandler(async (usernameValue, passwordValue) =>
 }, username, password);
 
 user.Add(userCreate);
+
+var userImport = new Command("import", "Import a user.");
+var handle = new Option<string>(
+    name: "--handle",
+    description: "The handle of the user");
+
+userImport.Add(handle);
+userImport.SetHandler(async handleValue =>
+{
+    var svc = builder.Services.GetRequiredService<UserRepository>();
+    var wf = builder.Services.GetRequiredService<WebFingerResolver>();
+    var fetch = builder.Services.GetRequiredService<ActivityPubResolver>();
+
+    var resp = await wf.FingerAtHandle(handleValue);
+    var id = resp?.Links?
+        .FirstOrDefault(l => l.Type == "application/activity+json")?
+        .Hyperlink;
+
+    if (id is null)
+        return;
+
+    var actor = await fetch.Fetch<ASActor>(ASObject.Link(id));
+    if (actor is null)
+        return;
+
+    await svc.ImportFromActivityStreams(actor);
+}, handle);
+
+user.Add(userImport);
 root.Add(user);
 
 await root.InvokeAsync(args);
