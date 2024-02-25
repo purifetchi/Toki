@@ -18,6 +18,16 @@ public class User : RemoteableModel
     public required string Handle { get; set; }
     
     /// <summary>
+    /// The instance this user is a part of.
+    /// </summary>
+    public RemoteInstance? ParentInstance { get; set; }
+    
+    /// <summary>
+    /// The id of the parent instance.
+    /// </summary>
+    public Guid? ParentInstanceId { get; set; }
+    
+    /// <summary>
     /// The bio of this user.
     /// </summary>
     public string? Bio { get; set; }

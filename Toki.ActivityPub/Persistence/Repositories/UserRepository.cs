@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -9,7 +10,10 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 /// <summary>
 /// The user repository.
 /// </summary>
-public class UserRepository(TokiDatabaseContext db)
+public class UserRepository(
+    TokiDatabaseContext db,
+    InstanceRepository instanceRepo,
+    ILogger<UserRepository> logger)
 {
     /// <summary>
     /// Finds a user by their id.
@@ -71,9 +75,17 @@ public class UserRepository(TokiDatabaseContext db)
         if (actor.PublicKey is null || !actor.PublicKey.IsResolved)
             return null;
         
+        logger.LogInformation($"Creating remote user {actor.Name} ({actor.Id})");
+
+        var instance = await instanceRepo.GetForActor(actor)
+                       ?? await instanceRepo.FetchInstanceForActor(actor);
+        
         var user = new User
         {
             Id = Guid.NewGuid(),
+            
+            ParentInstance = instance,
+            ParentInstanceId = instance.Id,
             
             DisplayName = actor.Name!,
             RemoteId = actor.Id!,
@@ -88,7 +100,7 @@ public class UserRepository(TokiDatabaseContext db)
                 PublicKey = actor.PublicKey!.PublicKeyPem!
             },
             
-            Handle = actor.Name! // TODO: This should also have the instance baked in.
+            Handle = $"{actor.Name!}@{instance.Domain}"
         };
 
         user.Keypair.Owner = user;

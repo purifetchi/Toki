@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Persistence.Repositories;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
 
@@ -32,6 +33,11 @@ public class TokiDatabaseContext : DbContext
     /// The credentials.
     /// </summary>
     public DbSet<Credentials> Credentials { get; private set; } = null!;
+
+    /// <summary>
+    /// The instances set.
+    /// </summary>
+    public DbSet<RemoteInstance> Instances { get; private set; } = null!;
     
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,11 +75,17 @@ public class TokiDatabaseContext : DbContext
             .HasForeignKey<Credentials>(c => c.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .HasOne<RemoteInstance>(u => u.ParentInstance)
+            .WithMany()
+            .HasForeignKey(u => u.ParentInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql("Host=localhost;Database=Toki;Username=toki;Password=toki");
+        optionsBuilder.UseNpgsql("Host=localhost;Database=Toki;Username=toki;Password=toki;Include Error Detail=True");
     }
 }
