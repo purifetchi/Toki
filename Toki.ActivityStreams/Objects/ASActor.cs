@@ -56,7 +56,7 @@ public class ASActor : ASObject
     /// <summary>
     /// The banner.
     /// </summary>
-    [JsonPropertyName("banner")]
+    [JsonPropertyName("image")]
     public ASImage? Banner { get; set; }
     
     /// <summary>
