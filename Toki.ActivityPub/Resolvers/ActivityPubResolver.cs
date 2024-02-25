@@ -57,7 +57,8 @@ public class ActivityPubResolver(
             Method = HttpMethod.Get,
             Headers =
             {
-                { "Accept", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" } 
+                { "Accept", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" },
+                { "User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)" }
             }
         };
 
