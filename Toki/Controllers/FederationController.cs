@@ -36,7 +36,8 @@ public class FederationController(
         var data = JsonSerializer.Serialize(asObject);
         BackgroundJob.Enqueue<InboxHandlerJob>(job =>
             job.HandleActivity(data));
-        return Ok();
+        
+        return Accepted();
     }
 
     /// <summary>
