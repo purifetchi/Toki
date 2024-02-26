@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
@@ -13,6 +14,7 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 public class UserRepository(
     TokiDatabaseContext db,
     InstanceRepository instanceRepo,
+    InstancePathRenderer pathRenderer,
     ILogger<UserRepository> logger)
 {
     /// <summary>
@@ -137,6 +139,8 @@ public class UserRepository(
             
             DisplayName = handle,
             IsRemote = false,
+            
+            RemoteId = pathRenderer.GetPathToActor(handle),
             
             Keypair = KeypairGenerationHelper.GenerateKeypair(),
             Handle = handle

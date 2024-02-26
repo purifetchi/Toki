@@ -30,7 +30,8 @@ public static class ServiceCollectionExtensions
 
         collection.AddTransient<ActivityPubResolver>()
             .AddTransient<ActivityPubMessageValidationService>()
-            .AddTransient<NodeInfoResolver>();
+            .AddTransient<NodeInfoResolver>()
+            .AddTransient<InstancePathRenderer>();
         
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()
