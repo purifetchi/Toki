@@ -24,7 +24,7 @@ public class InboxHandlerJob(
     public async Task HandleActivity(string objectJson)
     {
         var activity = JsonSerializer.Deserialize<ASObject>(objectJson) as ASActivity;
-        logger.LogDebug($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
+        logger.LogInformation($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
 
         // Resolve the actor that's doing this.
         var actor = await resolver.Fetch<ASActor>(activity!.Actor);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.HTTPSignatures;
 
@@ -15,6 +16,7 @@ public class MessageFederationJob(
     SignedHttpClient httpClient,
     InstancePathRenderer pathRenderer,
     IOptions<InstanceConfiguration> opts,
+    UserRepository userRepo,
     ILogger<MessageFederationJob> logger)
 {
     /// <summary>
@@ -28,25 +30,29 @@ public class MessageFederationJob(
     /// <param name="message">The message.</param>
     /// <param name="targets">The targets to federate to.</param>
     /// <param name="retries">The amount of retries.</param>
-    /// <param name="keypair">The keypair.</param>
+    /// <param name="actorId">The actor id.</param>
     public async Task FederateMessage(
         string message,
         IEnumerable<string> targets,
-        Keypair keypair,
+        Guid actorId,
         int retries = 0)
     {
+        var actor = await userRepo.FindById(actorId);
+        var keypair = actor!.Keypair!;
+        
         const int secondsPerRetry = 5;
         
         var failed = new List<string>();
+        logger.LogInformation($"httpClient: {httpClient}, keypair: {keypair?.Id}, publickey: {keypair?.PublicKey}, message: {message}");
+        
         httpClient.WithKey(
-                keypair.RemoteId ?? $"{pathRenderer.GetPathToActor(keypair.Owner!)}#key", 
-                keypair.PublicKey)
+                keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
+                keypair.PrivateKey!)
             .WithBody(message)
             .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
             .AddHeaderToSign("Host")
             .AddHeaderToSign("Digest")
-            .AddHeaderToSign("Date", 
-                DateTimeOffset.UtcNow.AddSeconds(5).ToString("D, d M Y H:i:s T"));
+            .SetDate(DateTimeOffset.UtcNow.AddSeconds(5));
 
         foreach (var target in targets)
         {
@@ -56,17 +62,17 @@ public class MessageFederationJob(
             if (result.IsSuccessStatusCode)
                 continue;
 
-            logger.LogWarning($"Delivering to {target} failed!");
+            logger.LogWarning($"Delivering to {target} failed! Status code: {result.StatusCode}, response: {await result.Content.ReadAsStringAsync()}");
             failed.Add(target);
         }
         
         retries++;
 
-        if (retries > MAX_RETRIES_COUNT)
+        if (retries > MAX_RETRIES_COUNT || failed.Count < 1)
             return;
         
         BackgroundJob.Schedule<MessageFederationJob>(job =>
-            job.FederateMessage(message, failed, keypair, retries), 
+            job.FederateMessage(message, failed, actorId, retries), 
             TimeSpan.FromSeconds(retries * secondsPerRetry));
     }
 }

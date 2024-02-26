@@ -62,30 +62,30 @@ public class TokiDatabaseContext : DbContext
 
         modelBuilder.Entity<FollowerRelation>()
             .HasOne(fr => fr.Followee)
-            .WithOne()
+            .WithMany()
             .IsRequired()
-            .HasForeignKey<FollowerRelation>(fr => fr.FolloweeId)
+            .HasForeignKey(fr => fr.FolloweeId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<FollowerRelation>()
             .HasOne(fr => fr.Follower)
-            .WithOne()
+            .WithMany()
             .IsRequired()
-            .HasForeignKey<FollowerRelation>(fr => fr.FollowerId)
+            .HasForeignKey(fr => fr.FollowerId)
             .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<FollowRequest>()
             .HasOne(fr => fr.From)
-            .WithOne()
+            .WithMany()
             .IsRequired()
-            .HasForeignKey<FollowRequest>(fr => fr.FromId)
+            .HasForeignKey(fr => fr.FromId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<FollowRequest>()
             .HasOne(fr => fr.To)
-            .WithOne()
+            .WithMany()
             .IsRequired()
-            .HasForeignKey<FollowRequest>(fr => fr.ToId)
+            .HasForeignKey(fr => fr.ToId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Credentials>()

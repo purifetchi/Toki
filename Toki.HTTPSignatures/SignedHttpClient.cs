@@ -51,6 +51,19 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
         _signedHeaders.Add(headerName.ToLowerInvariant());
         return this;
     }
+
+    /// <summary>
+    /// Sets the date for this request.
+    /// </summary>
+    /// <param name="date">The date.</param>
+    /// <returns>Ourselves.</returns>
+    public SignedHttpClient SetDate(DateTimeOffset date)
+    {
+        const string headerName = "date";
+        _requestMessage.Headers.Date = date;
+        _signedHeaders.Add(headerName);
+        return this;
+    }
     
     /// <summary>
     /// Adds a header to sign.
@@ -137,7 +150,7 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
                     DigestMessage());
             }
             
-            _requestMessage.Content = new StringContent(_body);
+            _requestMessage.Content = new StringContent(_body, Encoding.UTF8, "application/json");
         }
         
         _requestMessage.RequestUri = new(url);

@@ -72,7 +72,7 @@ public class UserRelationService(
                 From = actor,
                 FromId = actor.Id,
                 To = subject,
-                ToId = actor.Id,
+                ToId = subject.Id,
                 RemoteId = follow.Id
             });
         }
@@ -112,7 +112,7 @@ public class UserRelationService(
     private async Task AcceptFollowRequest(
         FollowRequest fr)
     {
-        var actorPath = pathRenderer.GetPathToActor(fr.From);
+        var actorPath = pathRenderer.GetPathToActor(fr.To);
         
         var relation = await CreateFollow(fr.From, fr.To);
         var accept = new ASAccept

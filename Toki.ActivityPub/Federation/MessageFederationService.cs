@@ -29,7 +29,7 @@ public class MessageFederationService(
         // TODO: Deduplicate inboxes (send to shared if applicable).
         
         BackgroundJob.Enqueue<MessageFederationJob>(job =>
-            job.FederateMessage(data, followers.Select(f => f.Inbox)!, actor.Keypair!, 0));
+            job.FederateMessage(data, followers.Select(f => f.Inbox)!, actor.Id, 0));
     }
 
     /// <summary>
@@ -44,9 +44,9 @@ public class MessageFederationService(
         ASActivity message)
     {
         var data = JsonSerializer.Serialize(message);
-        var targets = new List<string> { target.RemoteId! };
+        var targets = new List<string> { target.Inbox! };
         
         BackgroundJob.Enqueue<MessageFederationJob>(job =>
-            job.FederateMessage(data, targets, actor.Keypair!, 0));
+            job.FederateMessage(data, targets, actor.Id, 0));
     }
 }

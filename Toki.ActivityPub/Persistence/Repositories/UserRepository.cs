@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -14,8 +16,8 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 public class UserRepository(
     TokiDatabaseContext db,
     InstanceRepository instanceRepo,
-    InstancePathRenderer pathRenderer,
-    ILogger<UserRepository> logger)
+    ILogger<UserRepository> logger,
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// Finds a user by their id.
@@ -25,6 +27,7 @@ public class UserRepository(
     public async Task<User?> FindById(Guid id)
     {
         var result = await db.Users.Where(u => u.Id == id)
+            .Include(u => u.Keypair)
             .FirstOrDefaultAsync();
 
         return result;
@@ -38,7 +41,18 @@ public class UserRepository(
     public async Task<User?> FindByRemoteId(string id)
     {
         var result = await db.Users.Where(u => u.RemoteId == id)
+            .Include(u => u.Keypair)
             .FirstOrDefaultAsync();
+        
+        // TODO: I honestly don't know whether this is the best idea but whatever.
+        if (result is null &&
+            id.StartsWith($"https://{opts.Value.Domain}"))
+        {
+            var handle = id.Split('/')
+                .Last();
+
+            return await FindByHandle(handle);
+        }
 
         return result;
     }
@@ -51,6 +65,7 @@ public class UserRepository(
     public async Task<User?> FindByHandle(string handle)
     {
         var result = await db.Users.Where(u => u.Handle == handle)
+            .Include(u => u.Keypair)
             .FirstOrDefaultAsync();
 
         return result;
@@ -139,8 +154,6 @@ public class UserRepository(
             
             DisplayName = handle,
             IsRemote = false,
-            
-            RemoteId = pathRenderer.GetPathToActor(handle),
             
             Keypair = KeypairGenerationHelper.GenerateKeypair(),
             Handle = handle

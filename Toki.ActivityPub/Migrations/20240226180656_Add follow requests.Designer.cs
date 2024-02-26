@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -11,9 +12,11 @@ using Toki.ActivityPub.Persistence.DatabaseContexts;
 namespace Toki.ActivityPub.Migrations
 {
     [DbContext(typeof(TokiDatabaseContext))]
-    partial class TokiDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240226180656_Add follow requests")]
+    partial class Addfollowrequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,9 +70,11 @@ namespace Toki.ActivityPub.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FromId");
+                    b.HasIndex("FromId")
+                        .IsUnique();
 
-                    b.HasIndex("ToId");
+                    b.HasIndex("ToId")
+                        .IsUnique();
 
                     b.ToTable("FollowRequests");
                 });
@@ -88,9 +93,11 @@ namespace Toki.ActivityPub.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FolloweeId");
+                    b.HasIndex("FolloweeId")
+                        .IsUnique();
 
-                    b.HasIndex("FollowerId");
+                    b.HasIndex("FollowerId")
+                        .IsUnique();
 
                     b.ToTable("FollowerRelations");
                 });
@@ -251,14 +258,14 @@ namespace Toki.ActivityPub.Migrations
             modelBuilder.Entity("Toki.ActivityPub.Models.FollowRequest", b =>
                 {
                     b.HasOne("Toki.ActivityPub.Models.User", "From")
-                        .WithMany()
-                        .HasForeignKey("FromId")
+                        .WithOne()
+                        .HasForeignKey("Toki.ActivityPub.Models.FollowRequest", "FromId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Toki.ActivityPub.Models.User", "To")
-                        .WithMany()
-                        .HasForeignKey("ToId")
+                        .WithOne()
+                        .HasForeignKey("Toki.ActivityPub.Models.FollowRequest", "ToId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -270,14 +277,14 @@ namespace Toki.ActivityPub.Migrations
             modelBuilder.Entity("Toki.ActivityPub.Models.FollowerRelation", b =>
                 {
                     b.HasOne("Toki.ActivityPub.Models.User", "Followee")
-                        .WithMany()
-                        .HasForeignKey("FolloweeId")
+                        .WithOne()
+                        .HasForeignKey("Toki.ActivityPub.Models.FollowerRelation", "FolloweeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Toki.ActivityPub.Models.User", "Follower")
-                        .WithMany()
-                        .HasForeignKey("FollowerId")
+                        .WithOne()
+                        .HasForeignKey("Toki.ActivityPub.Models.FollowerRelation", "FollowerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
