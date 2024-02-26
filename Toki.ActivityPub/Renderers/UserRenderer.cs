@@ -14,6 +14,7 @@ namespace Toki.ActivityPub.Renderers;
 /// <param name="opts">The options.</param>
 public class UserRenderer(
     TokiDatabaseContext db,
+    InstancePathRenderer pathRenderer,
     IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
@@ -30,13 +31,13 @@ public class UserRenderer(
         var key = await db.Keypairs
             .FirstOrDefaultAsync(kp => kp.Owner == user)!;
 
-        var uri = GetPublicUri(user);
+        var uri = pathRenderer.GetPathToActor(user);
         
         return new ASActor(type)
         {
             Id = user.RemoteId ?? uri,
             
-            Name = user.DisplayName ?? user.Handle,
+            Name = user.DisplayName,
             Bio = user.Bio,
             
             PreferredUsername = user.Handle,
@@ -45,7 +46,7 @@ public class UserRenderer(
             
             PublicKey = new ASPublicKey
             {
-                Id = key!.RemoteId ?? $"{uri}/key",
+                Id = key!.RemoteId ?? $"{uri}#key",
                 PublicKeyPem = key!.PublicKey
             },
             
@@ -63,16 +64,8 @@ public class UserRenderer(
     /// <returns>The actor.</returns>
     public ASObject RenderLinkedActorFrom(User user)
     {
-        return ASObject.Link(user.RemoteId ?? GetPublicUri(user));
-    }
-    
-    /// <summary>
-    /// Gets the public URI for a user.
-    /// </summary>
-    /// <param name="user">The user.</param>
-    /// <returns>The URI.</returns>
-    private string GetPublicUri(User user)
-    {
-        return $"https://{opts.Value.Domain}/users/{user.Handle}";
+        return ASObject.Link(
+            user.RemoteId ?? 
+            pathRenderer.GetPathToActor(user));
     }
 }

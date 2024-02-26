@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Resolvers;
+using Toki.ActivityPub.Users;
 using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 
@@ -11,7 +13,9 @@ namespace Toki.ActivityPub.Jobs.Federation;
 /// </summary>
 public class InboxHandlerJob(
     ActivityPubResolver resolver,
-    UserRepository repo)
+    UserRelationService userRelationService,
+    UserRepository repo,
+    ILogger<InboxHandlerJob> logger)
 {
     /// <summary>
     /// Handles an activity.
@@ -20,14 +24,12 @@ public class InboxHandlerJob(
     public async Task HandleActivity(string objectJson)
     {
         var activity = JsonSerializer.Deserialize<ASObject>(objectJson) as ASActivity;
-        Console.WriteLine($"Handling activity {activity!.Type}");
+        logger.LogDebug($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
 
         // Resolve the actor that's doing this.
         var actor = await resolver.Fetch<ASActor>(activity!.Actor);
         if (actor is null)
             return;
-
-        Console.WriteLine($"Actor {actor.Name}");
 
         // Ensure we have the actual actor that is performing this task.
         if (await repo.FindByRemoteId(actor.Id) is null)
@@ -37,7 +39,11 @@ public class InboxHandlerJob(
         await (activity switch
         {
             ASCreate create => HandleCreate(create),
-            _ => Task.CompletedTask
+            ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
+            _ => Task.Run(() =>
+            {
+                logger.LogWarning($"Dropped {activity.Id}, due to no handler present for {activity.Type}");
+            })
         });
     }
 

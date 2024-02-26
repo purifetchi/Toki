@@ -26,12 +26,4 @@ public class InstancePathRenderer(
     /// <returns>The path to the <see cref="Toki.ActivityStreams.Objects.ASActor"/> object on the server.</returns>
     public string GetPathToActor(string handle) =>
         $"https://{opts.Value.Domain}/users/{handle}";
-
-    /// <summary>
-    /// Gets the path to a follow on this server.
-    /// </summary>
-    /// <param name="followerRelation">The follow.</param>
-    /// <returns>The path to the follow.</returns>
-    public string GetPathToFollow(FollowerRelation followerRelation) =>
-        $"https://{opts.Value.Domain}/follows/{followerRelation.Id}";
 }

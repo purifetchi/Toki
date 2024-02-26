@@ -38,6 +38,11 @@ public class TokiDatabaseContext : DbContext
     /// The instances set.
     /// </summary>
     public DbSet<RemoteInstance> Instances { get; private set; } = null!;
+
+    /// <summary>
+    /// The follow requests set.
+    /// </summary>
+    public DbSet<FollowRequest> FollowRequests { get; private set; } = null!;
     
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -67,6 +72,20 @@ public class TokiDatabaseContext : DbContext
             .WithOne()
             .IsRequired()
             .HasForeignKey<FollowerRelation>(fr => fr.FollowerId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<FollowRequest>()
+            .HasOne(fr => fr.From)
+            .WithOne()
+            .IsRequired()
+            .HasForeignKey<FollowRequest>(fr => fr.FromId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<FollowRequest>()
+            .HasOne(fr => fr.To)
+            .WithOne()
+            .IsRequired()
+            .HasForeignKey<FollowRequest>(fr => fr.ToId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Credentials>()

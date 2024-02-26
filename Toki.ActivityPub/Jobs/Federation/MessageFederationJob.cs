@@ -1,6 +1,9 @@
+using Hangfire;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Renderers;
 using Toki.HTTPSignatures;
 
 namespace Toki.ActivityPub.Jobs.Federation;
@@ -10,7 +13,9 @@ namespace Toki.ActivityPub.Jobs.Federation;
 /// </summary>
 public class MessageFederationJob(
     SignedHttpClient httpClient,
-    IOptions<InstanceConfiguration> opts)
+    InstancePathRenderer pathRenderer,
+    IOptions<InstanceConfiguration> opts,
+    ILogger<MessageFederationJob> logger)
 {
     /// <summary>
     /// The maximum amount of retries.
@@ -26,13 +31,15 @@ public class MessageFederationJob(
     /// <param name="keypair">The keypair.</param>
     public async Task FederateMessage(
         string message,
-        List<string> targets,
-        int retries,
-        Keypair keypair)
+        IEnumerable<string> targets,
+        Keypair keypair,
+        int retries = 0)
     {
+        const int secondsPerRetry = 5;
+        
         var failed = new List<string>();
         httpClient.WithKey(
-                keypair.RemoteId ?? $"https://{opts.Value.Domain}/users/{keypair.Owner!.Id}/key", 
+                keypair.RemoteId ?? $"{pathRenderer.GetPathToActor(keypair.Owner!)}#key", 
                 keypair.PublicKey)
             .WithBody(message)
             .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
@@ -43,9 +50,14 @@ public class MessageFederationJob(
 
         foreach (var target in targets)
         {
+            logger.LogInformation($"Delivering message to {target}");
             var result = await httpClient.Post(target);
-            if (!result.IsSuccessStatusCode)
-                failed.Add(target);
+
+            if (result.IsSuccessStatusCode)
+                continue;
+
+            logger.LogWarning($"Delivering to {target} failed!");
+            failed.Add(target);
         }
         
         retries++;
@@ -53,6 +65,8 @@ public class MessageFederationJob(
         if (retries > MAX_RETRIES_COUNT)
             return;
         
-        // TODO: Reschedule.
+        BackgroundJob.Schedule<MessageFederationJob>(job =>
+            job.FederateMessage(message, failed, keypair, retries), 
+            TimeSpan.FromSeconds(retries * secondsPerRetry));
     }
 }

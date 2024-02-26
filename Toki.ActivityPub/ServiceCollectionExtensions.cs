@@ -1,10 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Cryptography;
+using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.NodeInfo;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityPub.Resolvers;
+using Toki.ActivityPub.Users;
 using Toki.ActivityPub.WebFinger;
 
 namespace Toki.ActivityPub;
@@ -26,12 +28,15 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<InstanceRepository>();
 
         collection.AddScoped<UserRepository>()
-            .AddScoped<UserRenderer>();
+            .AddScoped<UserRenderer>()
+            .AddScoped<FollowRepository>()
+            .AddScoped<UserRelationService>();
 
         collection.AddTransient<ActivityPubResolver>()
             .AddTransient<ActivityPubMessageValidationService>()
             .AddTransient<NodeInfoResolver>()
-            .AddTransient<InstancePathRenderer>();
+            .AddTransient<InstancePathRenderer>()
+            .AddTransient<MessageFederationService>();
         
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()
