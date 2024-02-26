@@ -38,6 +38,7 @@ public class InboxHandlerJob(
         // TODO: Handle every activity.
         await (activity switch
         {
+            ASAccept accept => HandleAccept(accept),
             ASCreate create => HandleCreate(create),
             ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
             _ => Task.Run(() =>
@@ -58,5 +59,19 @@ public class InboxHandlerJob(
         var obj = await resolver.Fetch<ASObject>(create.Object);
         
         // TODO: Handle the create activity.
+    }
+    
+    /// <summary>
+    /// Handles the Accept activity.
+    /// </summary>
+    private async Task HandleAccept(ASAccept accept)
+    {
+        if (accept.Object is null)
+            return;
+
+        if (await userRelationService.TryHandleRemoteFollowAccept(accept))
+            return;
+        
+        logger.LogWarning($"Accept for unknown object {accept.Object.Id}.");
     }
 }

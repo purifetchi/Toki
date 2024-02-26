@@ -45,6 +45,30 @@ public class UserRelationService(
     }
 
     /// <summary>
+    /// Tries to handle a remote <see cref="ASAccept"/> for a follow.
+    /// </summary>
+    /// <param name="accept">The accept.</param>
+    /// <returns>Whether it was handled or not.</returns>
+    public async Task<bool> TryHandleRemoteFollowAccept(
+        ASAccept accept)
+    {
+        var id = accept.Object!
+            .Id
+            .Split('/')
+            .Last();
+
+        if (!Guid.TryParse(id, out var guid))
+            return false;
+
+        var fr = await followRepo.FindFollowRequestById(guid);
+        if (fr is null)
+            return false;
+
+        await followRepo.TransformIntoFollow(fr);
+        return true;
+    }
+
+    /// <summary>
     /// Handles an ActivityStreams follow.
     /// </summary>
     /// <param name="follow">The follow.</param>

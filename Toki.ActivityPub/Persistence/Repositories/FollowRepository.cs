@@ -58,6 +58,18 @@ public class FollowRepository(
     }
 
     /// <summary>
+    /// Finds a follow request by an id.
+    /// </summary>
+    /// <param name="id">The id of the request.</param>
+    /// <returns>The follow request.</returns>
+    public async Task<FollowRequest?> FindFollowRequestById(Guid id)
+    {
+        return await db.FollowRequests
+            .Where(fr => fr.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
     /// Transforms a follow request into a follow.
     /// </summary>
     /// <param name="fr">The follow request.</param>
