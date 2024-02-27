@@ -174,7 +174,7 @@ public class UserRelationService(
         var fr = new FollowRequest
         {
             Id = id,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
             RemoteId = remoteId ?? 
                        $"{pathRenderer.GetPathToActor(from)}#follows/{id}",
 
