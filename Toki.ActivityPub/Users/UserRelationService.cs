@@ -137,8 +137,12 @@ public class UserRelationService(
         FollowRequest fr)
     {
         var actorPath = pathRenderer.GetPathToActor(fr.To);
+
+        if (await followRepo.FindFollowRequestById(fr.Id) is not null)
+            await followRepo.TransformIntoFollow(fr);
+        else
+            await CreateFollow(fr.From, fr.To);
         
-        var relation = await CreateFollow(fr.From, fr.To);
         var accept = new ASAccept
         {
             Id = $"{actorPath}#accepts/follows/{fr.Id}",
