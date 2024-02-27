@@ -39,8 +39,8 @@ public class UserRelationService(
         };
         
         await messageFederation.SendTo(
-            to,
             from,
+            to,
             activity);
     }
 
