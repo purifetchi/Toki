@@ -1,20 +1,29 @@
 ﻿using System.CommandLine;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Toki.ActivityPub;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.WebFinger;
 using Toki.ActivityStreams.Objects;
 using Toki.HTTPSignatures;
 
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices(svc =>
-        svc.AddActivityPubServices()
+        svc.Configure<InstanceConfiguration>(config.GetSection("Instance"))
+            .AddActivityPubServices()
             .AddLogging()
             .AddHttpSignatures())
     .Build();
-    
+
 var root = new RootCommand();
 
 var user = new Command("user", "User-specific commands");
