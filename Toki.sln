@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.HTTPSignatures", "Toki
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.HTTPSignatures.Tests", "Toki.HTTPSignatures.Tests\Toki.HTTPSignatures.Tests.csproj", "{A5FF9909-4846-41B6-B7D8-406539A3DFD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Toki.LocalClient", "Toki.LocalClient\Toki.LocalClient.csproj", "{E2D1BF1D-C6E0-44F1-8D79-533E3FFCC14A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
