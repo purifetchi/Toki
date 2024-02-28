@@ -26,14 +26,15 @@ public class InboxHandlerJob(
         var activity = JsonSerializer.Deserialize<ASObject>(objectJson) as ASActivity;
         logger.LogInformation($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
 
-        // Resolve the actor that's doing this.
-        var actor = await resolver.Fetch<ASActor>(activity!.Actor);
-        if (actor is null)
-            return;
-
         // Ensure we have the actual actor that is performing this task.
-        if (await repo.FindByRemoteId(actor.Id) is null)
+        if (await repo.FindByRemoteId(activity!.Actor.Id) is null)
+        {
+            var actor = await resolver.Fetch<ASActor>(activity!.Actor);
+            if (actor is null)
+                return;
+
             await repo.ImportFromActivityStreams(actor);
+        }
         
         // TODO: Handle every activity.
         await (activity switch
