@@ -31,6 +31,9 @@ public class UserRelationService(
             from,
             to);
 
+        if (!to.IsRemote)
+            return;
+        
         var activity = new ASFollow()
         {
             Id = request.RemoteId!,
@@ -142,6 +145,9 @@ public class UserRelationService(
             await followRepo.TransformIntoFollow(fr);
         else
             await CreateFollow(fr.From, fr.To);
+
+        if (!fr.From.IsRemote)
+            return;
         
         var accept = new ASAccept
         {
