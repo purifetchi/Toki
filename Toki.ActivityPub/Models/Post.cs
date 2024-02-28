@@ -1,3 +1,5 @@
+using Toki.ActivityPub.Models.Enums;
+
 namespace Toki.ActivityPub.Models;
 
 /// <summary>
@@ -34,4 +36,9 @@ public class Post : RemoteableModel
     /// The content warning on this post.
     /// </summary>
     public string? ContentWarning { get; set; }
+    
+    /// <summary>
+    /// The visibility of this post.
+    /// </summary>
+    public PostVisibility Visibility { get; set; }
 }
