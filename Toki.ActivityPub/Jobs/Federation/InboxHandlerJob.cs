@@ -15,6 +15,7 @@ public class InboxHandlerJob(
     ActivityPubResolver resolver,
     UserRelationService userRelationService,
     UserRepository repo,
+    PostRepository postRepo,
     ILogger<InboxHandlerJob> logger)
 {
     /// <summary>
@@ -59,7 +60,6 @@ public class InboxHandlerJob(
 
         var obj = await resolver.Fetch<ASObject>(create.Object);
         
-        // TODO: Handle the create activity.
     }
     
     /// <summary>

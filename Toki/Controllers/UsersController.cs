@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Hangfire;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Jobs.Federation;
@@ -17,7 +18,9 @@ namespace Toki.Controllers;
 [Route("users/{handle}")]
 public class UsersController(
     UserRepository repo,
+    FollowRepository followRepo,
     UserRenderer renderer,
+    InstancePathRenderer pathRenderer,
     ActivityPubMessageValidationService validator)
     : ControllerBase
 {
@@ -37,7 +40,67 @@ public class UsersController(
 
         return await renderer.RenderFullActorFrom(user);
     }
+    
+    /// <summary>
+    /// Gets the followers for a user.
+    /// </summary>
+    /// <param name="handle">The handle of the user.</param>
+    /// <returns>The collection.</returns>
+    [HttpGet]
+    [Route("followers")]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    public async Task<ActionResult<ASOrderedCollection<ASObject>>> Followers([FromRoute] string handle)
+    {
+        // TODO: Implement pagination.
+        
+        var user = await repo.FindByHandle(handle);
+        if (user is null)
+            return NotFound();
 
+        var followersEnumerable = await followRepo.GetFollowersFor(user);
+        var followers = followersEnumerable.Select(follower =>
+                ASObject.Link(follower.RemoteId ?? pathRenderer.GetPathToActor(follower)))
+            .ToList();
+        
+        return new ASOrderedCollection<ASObject>()
+        {
+            Id = $"{pathRenderer.GetPathToActor(user)}/followers",
+
+            OrderedItems = followers,
+            TotalItems = followers.Count
+        };
+    }
+    
+    /// <summary>
+    /// Gets the followed actors for a user.
+    /// </summary>
+    /// <param name="handle">The handle of the user.</param>
+    /// <returns>The collection.</returns>
+    [HttpGet]
+    [Route("following")]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    public async Task<ActionResult<ASOrderedCollection<ASObject>>> Following([FromRoute] string handle)
+    {
+        // TODO: Implement pagination.
+        
+        var user = await repo.FindByHandle(handle);
+        if (user is null)
+            return NotFound();
+
+        var followingEnumerable = await followRepo.GetFollowingFor(user);
+        var following = followingEnumerable.Select(follower =>
+                ASObject.Link(follower.RemoteId ?? pathRenderer.GetPathToActor(follower)))
+            .ToList();
+        
+        return new ASOrderedCollection<ASObject>()
+        {
+            Id = $"{pathRenderer.GetPathToActor(user)}/following",
+
+            OrderedItems = following,
+            TotalItems = following.Count
+        };
+    }
+    
     /// <summary>
     /// The user inbox.
     /// </summary>

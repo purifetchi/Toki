@@ -44,6 +44,9 @@ public class UserRenderer(
             
             Inbox = ASObject.Link(user.Inbox ?? $"{uri}/inbox"),
             
+            Followers = ASObject.Link($"{uri}/followers"),
+            Following = ASObject.Link($"{uri}/following"),
+            
             PublicKey = new ASPublicKey
             {
                 Id = key!.RemoteId ?? $"{uri}#key",
