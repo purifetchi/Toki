@@ -40,6 +40,12 @@ public class ASObjectConverter : JsonConverter<ASObject>
                 
                 "Person" or "Service" or "Organization" or "Group" or "Application" => obj.Deserialize<ASActor>(),
                 
+                "Collection" => obj.Deserialize<ASCollection<ASObject>>(),
+                "OrderedCollection" => obj.Deserialize<ASOrderedCollection<ASObject>>(),
+                
+                "CollectionPage" => obj.Deserialize<ASCollectionPage<ASObject>>(),
+                "OrderedCollectionPage" => obj.Deserialize<ASOrderedCollectionPage<ASObject>>(),
+
                 // We don't understand this object yet.
                 _ => new ASObject()
                 {
