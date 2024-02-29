@@ -1,3 +1,4 @@
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityStreams.Objects;
@@ -31,10 +32,16 @@ public class PostRepository(
         var post = new Post()
         {
             Id = Guid.NewGuid(),
+            RemoteId = note.Id,
+
             Author = author,
             AuthorId = author.Id,
 
-            Content = note.Content!
+            Content = note.Content!,
+            
+            Sensitive = note.Sensitive,
+            
+            Visibility = note.GetPostVisibility(author)
         };
 
         db.Posts.Add(post);
