@@ -62,5 +62,5 @@ public class ASNote : ASObject
     /// Is this post sensitive?
     /// </summary>
     [JsonPropertyName("sensitive")]
-    public bool Sensitive { get; set; }
+    public bool? Sensitive { get; set; }
 }

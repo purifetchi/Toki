@@ -39,7 +39,7 @@ public class PostRepository(
 
             Content = note.Content!,
             
-            Sensitive = note.Sensitive,
+            Sensitive = note.Sensitive ?? false,
             
             Visibility = note.GetPostVisibility(author)
         };
