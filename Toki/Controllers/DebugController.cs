@@ -19,6 +19,19 @@ public class DebugController(
     WebFingerResolver webFingerResolver,
     ActivityPubResolver apResolver) : ControllerBase
 {
+    [HttpGet]
+    [Route("test_create_user")]
+    public async Task<IActionResult> CreateUser(
+        [FromQuery] string username,
+        [FromQuery] string? password = null)
+    {
+        var u = await repo.CreateNewUser(username, password);
+        if (u is null)
+            return BadRequest();
+
+        return Ok(u.Id);
+    }
+    
     /// <summary>
     /// Tests following a user.
     /// </summary>
