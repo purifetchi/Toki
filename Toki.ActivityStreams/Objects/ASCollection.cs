@@ -10,6 +10,25 @@ public class ASCollection<TObject> : ASObject
     where TObject: ASObject
 {
     /// <summary>
+    /// Constructs a new collection.
+    /// </summary>
+    public ASCollection()
+        : base("Collection")
+    {
+        
+    }
+    
+    /// <summary>
+    /// Constructs a collection of a given type.
+    /// </summary>
+    /// <param name="type">The type.</param>
+    protected ASCollection(string type = "Collection")
+        : base(type)
+    {
+        
+    }
+    
+    /// <summary>
     /// The total amount of items.
     /// </summary>
     [JsonPropertyName("totalItems")]
@@ -19,6 +38,7 @@ public class ASCollection<TObject> : ASObject
     /// An unordered collection of items.
     /// </summary>
     [JsonPropertyName("items")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<TObject> Items { get; set; } = null!;
     
     /// <summary>

@@ -13,20 +13,32 @@ public class ASOrderedCollectionPage<TObject> : ASOrderedCollection<TObject>
     where TObject : ASObject
 {
     /// <summary>
+    /// Constructs an ordered collection page.
+    /// </summary>
+    public ASOrderedCollectionPage()
+        : base("OrderedCollectionPage")
+    {
+        
+    }
+    
+    /// <summary>
     /// The previous page.
     /// </summary>
     [JsonPropertyName("prev")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Previous { get; set; }
     
     /// <summary>
     /// The next page.
     /// </summary>
     [JsonPropertyName("next")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Next { get; set; }
     
     /// <summary>
     /// The collection this page is a part of.
     /// </summary>
     [JsonPropertyName("partOf")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PartOf { get; set; }
 }
