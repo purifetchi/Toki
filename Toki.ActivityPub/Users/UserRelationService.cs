@@ -32,7 +32,14 @@ public class UserRelationService(
             to);
 
         if (!to.IsRemote)
+        {
+            // TODO: We should avoid the extra db write caused by CreateFollowRequest
+            //       but for now this is alright.
+            if (!to.RequiresFollowApproval)
+                await AcceptFollowRequest(request);
+            
             return;
+        }
         
         var activity = new ASFollow()
         {
