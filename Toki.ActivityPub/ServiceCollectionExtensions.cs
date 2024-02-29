@@ -27,6 +27,8 @@ public static class ServiceCollectionExtensions
 
         collection.AddScoped<InstanceRepository>();
 
+        collection.AddScoped<PostRepository>();
+        
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>()
             .AddScoped<FollowRepository>()

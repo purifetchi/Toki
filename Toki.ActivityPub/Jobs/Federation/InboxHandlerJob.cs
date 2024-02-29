@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
@@ -28,20 +29,26 @@ public class InboxHandlerJob(
         logger.LogInformation($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
 
         // Ensure we have the actual actor that is performing this task.
-        if (await repo.FindByRemoteId(activity!.Actor.Id) is null)
+        var actor = await repo.FindByRemoteId(activity!.Actor.Id);
+        if (actor is null)
         {
-            var actor = await resolver.Fetch<ASActor>(activity!.Actor);
-            if (actor is null)
+            var actorData = await resolver.Fetch<ASActor>(activity!.Actor);
+            if (actorData is null)
                 return;
 
-            await repo.ImportFromActivityStreams(actor);
+            actor = await repo.ImportFromActivityStreams(actorData);
+            if (actor is null)
+            {
+                logger.LogError($"Failed to retrieve actor {actorData.Id} for activity. Aborting.");
+                return;
+            }
         }
         
         // TODO: Handle every activity.
         await (activity switch
         {
             ASAccept accept => HandleAccept(accept),
-            ASCreate create => HandleCreate(create),
+            ASCreate create => HandleCreate(create, actor),
             ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
             _ => Task.Run(() =>
             {
@@ -53,13 +60,14 @@ public class InboxHandlerJob(
     /// <summary>
     /// Handles the Create activity.
     /// </summary>
-    private async Task HandleCreate(ASCreate create)
+    private async Task HandleCreate(ASCreate create, User actor)
     {
         if (create.Object is null)
             return;
 
         var obj = await resolver.Fetch<ASObject>(create.Object);
-        
+        if (obj is ASNote note)
+            await postRepo.ImportFromActivityStreams(note, actor);
     }
     
     /// <summary>
