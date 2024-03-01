@@ -12,6 +12,7 @@ namespace Toki.ActivityPub.Jobs.Federation;
 /// <summary>
 /// The message federation job.
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class MessageFederationJob(
     SignedHttpClient httpClient,
     InstancePathRenderer pathRenderer,

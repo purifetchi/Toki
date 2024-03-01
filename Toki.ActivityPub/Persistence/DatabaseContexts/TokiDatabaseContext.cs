@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
-using Toki.ActivityPub.Persistence.Repositories;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
 
@@ -43,6 +42,11 @@ public class TokiDatabaseContext : DbContext
     /// The follow requests set.
     /// </summary>
     public DbSet<FollowRequest> FollowRequests { get; private set; } = null!;
+
+    /// <summary>
+    /// The post likes set.
+    /// </summary>
+    public DbSet<PostLike> PostLikes { get; private set; } = null!;
     
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +103,18 @@ public class TokiDatabaseContext : DbContext
             .HasOne<RemoteInstance>(u => u.ParentInstance)
             .WithMany()
             .HasForeignKey(u => u.ParentInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PostLike>()
+            .HasOne<Post>(pl => pl.Post)
+            .WithMany()
+            .HasForeignKey(pl => pl.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<PostLike>()
+            .HasOne<User>(pl => pl.LikingUser)
+            .WithMany()
+            .HasForeignKey(pl => pl.LikingUserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 

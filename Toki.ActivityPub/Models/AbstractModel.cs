@@ -8,5 +8,5 @@ public abstract class AbstractModel
     /// <summary>
     /// The id of this object.
     /// </summary>
-    public required Guid Id { get; set; }
+    public required Guid Id { get; init; }
 }

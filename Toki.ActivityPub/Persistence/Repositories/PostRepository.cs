@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -12,7 +14,7 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 /// <param name="db">The database.</param>
 public class PostRepository(
     TokiDatabaseContext db,
-    UserRepository userRepo)
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// Finds a post by its remote id.
@@ -21,9 +23,22 @@ public class PostRepository(
     /// <returns>The post if it exists.</returns>
     public async Task<Post?> FindByRemoteId(string remoteId)
     {
-        return await db.Posts
+        var post = await db.Posts
             .Include(post => post.Author)
             .FirstOrDefaultAsync(post => post.RemoteId == remoteId);
+        
+        // TODO: I honestly don't know whether this is the best idea but whatever.
+        if (post is null &&
+            remoteId.StartsWith($"https://{opts.Value.Domain}/posts"))
+        {
+            var handle = remoteId.Split('/')
+                .Last();
+            
+            if (Guid.TryParse(handle, out var id))
+                return await FindById(id);
+        }
+
+        return post;
     }
     
     /// <summary>
@@ -45,6 +60,23 @@ public class PostRepository(
     public async Task Add(Post post)
     {
         db.Posts.Add(post);
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Adds a like to the post likes collection.
+    /// </summary>
+    /// <param name="like">The like.</param>
+    /// <param name="post">The post.</param>
+    public async Task AddLike(
+        PostLike like,
+        Post post)
+    {
+        // Increment the amount of likes for this post.
+        post.LikeCount++;
+        db.Posts.Update(post);
+        
+        db.PostLikes.Add(like);
         await db.SaveChangesAsync();
     }
     

@@ -35,6 +35,7 @@ public class ASObjectConverter : JsonConverter<ASObject>
                 "Create" => obj.Deserialize<ASCreate>(),
                 "Follow" => obj.Deserialize<ASFollow>(),
                 "Accept" => obj.Deserialize<ASAccept>(),
+                "Like" => obj.Deserialize<ASLike>(),
                 
                 "Note" => obj.Deserialize<ASNote>(),
                 

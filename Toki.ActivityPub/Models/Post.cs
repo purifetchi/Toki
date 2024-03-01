@@ -41,4 +41,9 @@ public class Post : RemoteableModel
     /// The visibility of this post.
     /// </summary>
     public PostVisibility Visibility { get; set; }
+    
+    /// <summary>
+    /// The like count of this post (DENORMALIZED).
+    /// </summary>
+    public int LikeCount { get; set; }
 }

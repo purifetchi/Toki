@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
 using Toki.ActivityStreams.Activities;
@@ -12,11 +13,13 @@ namespace Toki.ActivityPub.Jobs.Federation;
 /// <summary>
 /// An inbox handler job.
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class InboxHandlerJob(
     ActivityPubResolver resolver,
     UserRelationService userRelationService,
     UserRepository repo,
     PostRepository postRepo,
+    PostManagementService postManagementService,
     ILogger<InboxHandlerJob> logger)
 {
     /// <summary>
@@ -50,6 +53,8 @@ public class InboxHandlerJob(
             ASAccept accept => HandleAccept(accept),
             ASCreate create => HandleCreate(create, actor),
             ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
+            ASLike like => HandleLike(like, actor),
+            
             _ => Task.Run(() =>
             {
                 logger.LogWarning($"Dropped {activity.Id}, due to no handler present for {activity.Type}");
@@ -82,5 +87,26 @@ public class InboxHandlerJob(
             return;
         
         logger.LogWarning($"Accept for unknown object {accept.Object.Id}.");
+    }
+
+    /// <summary>
+    /// Handles the Like activity.
+    /// </summary>
+    private async Task HandleLike(ASLike like, User actor)
+    {
+        if (like.Object is null)
+            return;
+
+        var post = await postRepo.FindByRemoteId(like.Object.Id);
+        if (post is null)
+        {
+            // TODO: Fetch the post here.
+            logger.LogWarning($"Received a like for a non-existent post. {like.Object.Id}");
+            return;
+        }
+
+        await postManagementService.Like(
+            actor,
+            post);
     }
 }

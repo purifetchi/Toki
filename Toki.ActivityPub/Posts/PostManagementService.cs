@@ -70,4 +70,40 @@ public class PostManagementService(
             user,
             announce);
     }
+
+    /// <summary>
+    /// Handles a like.
+    /// </summary>
+    /// <param name="actor"></param>
+    /// <param name="post"></param>
+    public async Task Like(
+        User actor,
+        Post post)
+    {
+        var like = new PostLike()
+        {
+            Id = Guid.NewGuid(),
+            
+            Post = post,
+            PostId = post.Id,
+            LikingUser = actor,
+            LikingUserId = actor.Id
+        };
+
+        await repo.AddLike(
+            like,
+            post);
+
+        if (!post.Author.IsRemote || actor.IsRemote)
+            return;
+
+        var likeActivity = postRenderer.RenderLikeForNote(
+            actor,
+            post);
+        
+        // TODO: This is plainly wrong... but for testing I guess it's fine
+        await federationService.SendToFollowers(
+            actor,
+            likeActivity);
+    }
 }

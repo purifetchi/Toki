@@ -134,4 +134,32 @@ public class PostRenderer(
 
         return announce;
     }
+    
+    /// <summary>
+    /// Renders an <see cref="ASLike"/> for liking a post.
+    /// </summary>
+    /// <param name="likingUser">The liking user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>The like activity.</returns>
+    public ASLike RenderLikeForNote(
+        User likingUser,
+        Post post)
+    {
+        var (to, cc) = GetToAndCcFor(post);
+        
+        var like = new ASLike()
+        {
+            Id = $"{pathRenderer.GetPathToActor(likingUser)}#likes/{post.Id}",
+            Actor = userRenderer.RenderLinkedActorFrom(likingUser),
+
+            Object = RenderLinkedNoteFrom(post),
+            
+            PublishedAt = DateTimeOffset.UtcNow,
+            
+            To = to.Concat(cc)
+                .ToList()
+        };
+
+        return like;
+    }
 }

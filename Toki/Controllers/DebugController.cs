@@ -73,6 +73,25 @@ public class DebugController(
         return Ok(post.Id);
     }
     
+    [HttpGet]
+    [Route("test_like")]
+    public async Task<IActionResult> Like(
+        [FromQuery] string actor,
+        [FromQuery] string id)
+    {
+        var u = await repo.FindByHandle(actor);
+        if (u is null || u.IsRemote)
+            return NotFound();
+
+        var post = await postRepo.FindByRemoteId(id);
+        if (post is null)
+            return NotFound();
+        
+        await postManagementService.Like(u, post);
+        
+        return Ok();
+    }
+    
     /// <summary>
     /// Tests following a user.
     /// </summary>
