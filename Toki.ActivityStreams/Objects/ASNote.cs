@@ -32,18 +32,21 @@ public class ASNote : ASObject
     /// The ASObject this is a quote of. (Misskey extension.)
     /// </summary>
     [JsonPropertyName("_misskey_quote")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ASObject? Quoting { get; set; }
     
     /// <summary>
     /// What this note is replying to.
     /// </summary>
     [JsonPropertyName("inReplyTo")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ASObject? InReplyTo { get; set; }
     
     /// <summary>
     /// The raw content of the note. (Misskey extension.)
     /// </summary>
     [JsonPropertyName("_misskey_content")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? RawContent { get; set; }
     
     /// <summary>

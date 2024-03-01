@@ -26,4 +26,12 @@ public class InstancePathRenderer(
     /// <returns>The path to the <see cref="Toki.ActivityStreams.Objects.ASActor"/> object on the server.</returns>
     public string GetPathToActor(string handle) =>
         $"https://{opts.Value.Domain}/users/{handle}";
+
+    /// <summary>
+    /// Gets the path to a note from a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The path to the <see cref="Toki.ActivityStreams.Objects.ASNote"/></returns>
+    public string GetPathToPost(Post post) =>
+        $"https://{opts.Value.Domain}/posts/{post.Id}";
 }

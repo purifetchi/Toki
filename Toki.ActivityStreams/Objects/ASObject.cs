@@ -30,6 +30,7 @@ public class ASObject
     /// The context.
     /// </summary>
     [JsonPropertyName("@context")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Context { get; set; } = "https://www.w3.org/ns/activitystreams";
     
     /// <summary>
@@ -43,6 +44,13 @@ public class ASObject
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; init; }
+    
+    /// <summary>
+    /// When was this object published at?
+    /// </summary>
+    [JsonPropertyName("published")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PublishedAt { get; set; }
 
     /// <summary>
     /// Is this ASObject resolved?

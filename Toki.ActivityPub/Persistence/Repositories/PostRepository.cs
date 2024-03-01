@@ -26,6 +26,28 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Finds a post by its id.
+    /// </summary>
+    /// <param name="id">The id of the post.</param>
+    /// <returns>The post if it exists.</returns>
+    public async Task<Post?> FindById(Guid id)
+    {
+        return await db.Posts
+            .Include(post => post.Author)
+            .FirstOrDefaultAsync(post => post.Id == id);
+    }
+
+    /// <summary>
+    /// Adds a post to the database.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Add(Post post)
+    {
+        db.Posts.Add(post);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Imports an ActivityStreams note as a post.
     /// </summary>
     /// <param name="note">The note.</param>
@@ -63,9 +85,7 @@ public class PostRepository(
             var quoting = await FindByRemoteId(note.Quoting.Id);
         }
 
-        db.Posts.Add(post);
-        await db.SaveChangesAsync();
-
+        await Add(post);
         return post;
     }
 }

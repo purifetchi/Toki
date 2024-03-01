@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
 using Toki.ActivityPub.WebFinger;
@@ -16,6 +18,7 @@ namespace Toki.Controllers;
 public class DebugController(
     UserRelationService relationService,
     UserRepository repo,
+    PostManagementService postManagementService,
     WebFingerResolver webFingerResolver,
     ActivityPubResolver apResolver) : ControllerBase
 {
@@ -30,6 +33,24 @@ public class DebugController(
             return BadRequest();
 
         return Ok(u.Id);
+    }
+
+    [HttpGet]
+    [Route("test_post")]
+    public async Task<IActionResult> Post(
+        [FromQuery] string actor,
+        [FromQuery] string body,
+        [FromQuery] PostVisibility visibility)
+    {
+        var u = await repo.FindByHandle(actor);
+        if (u is null || u.IsRemote)
+            return NotFound();
+
+        var post = await postManagementService.Create(u, body, visibility);
+        if (post is null)
+            return BadRequest();
+        
+        return Ok(post.Id);
     }
     
     /// <summary>

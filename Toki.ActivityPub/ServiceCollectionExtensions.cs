@@ -4,6 +4,7 @@ using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.NodeInfo;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
@@ -27,7 +28,9 @@ public static class ServiceCollectionExtensions
 
         collection.AddScoped<InstanceRepository>();
 
-        collection.AddScoped<PostRepository>();
+        collection.AddScoped<PostRepository>()
+            .AddScoped<PostRenderer>()
+            .AddScoped<PostManagementService>();
         
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>()
