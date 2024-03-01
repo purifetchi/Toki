@@ -63,6 +63,18 @@ public class TokiDatabaseContext : DbContext
             .WithMany()
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Post>()
+            .HasOne(p => p.Parent)
+            .WithMany()
+            .HasForeignKey(p => p.ParentId)
+            .OnDelete(DeleteBehavior.SetNull); // If the parent gets deleted, the children just get detached.
+        
+        modelBuilder.Entity<Post>()
+            .HasOne(p => p.Boosting)
+            .WithMany()
+            .HasForeignKey(p => p.BoostingId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<FollowerRelation>()
             .HasOne(fr => fr.Followee)

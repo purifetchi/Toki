@@ -81,6 +81,23 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Adds a boost to the post.
+    /// </summary>
+    /// <param name="boost">The boost.</param>
+    /// <param name="post">The post.</param>
+    public async Task AddBoost(
+        Post boost,
+        Post post)
+    {
+        // Increment the amount of likes for this post.
+        post.BoostCount++;
+        db.Posts.Update(post);
+        
+        db.Posts.Add(boost);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Imports an ActivityStreams note as a post.
     /// </summary>
     /// <param name="note">The note.</param>

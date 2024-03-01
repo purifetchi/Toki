@@ -20,12 +20,27 @@ public class Post : RemoteableModel
     /// <summary>
     /// The content of this post.
     /// </summary>
-    public required string Content { get; init; }
+    public string? Content { get; set; }
     
     /// <summary>
     /// The parent of this post.
     /// </summary>
     public Post? Parent { get; set; }
+    
+    /// <summary>
+    /// The id of the parent post.
+    /// </summary>
+    public Guid? ParentId { get; set; }
+    
+    /// <summary>
+    /// The post this one is boosting.
+    /// </summary>
+    public Post? Boosting { get; set; }
+    
+    /// <summary>
+    /// The id of the post we're boosting.
+    /// </summary>
+    public Guid? BoostingId { get; set; }
     
     /// <summary>
     /// Is this post sensitive?
@@ -46,4 +61,9 @@ public class Post : RemoteableModel
     /// The like count of this post (DENORMALIZED).
     /// </summary>
     public int LikeCount { get; set; }
+    
+    /// <summary>
+    /// The boost count of this post (DENORMALIZED).
+    /// </summary>
+    public int BoostCount { get; set; }
 }

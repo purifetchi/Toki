@@ -1,3 +1,4 @@
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
@@ -62,7 +63,28 @@ public class PostManagementService(
         User user,
         Post post)
     {
-        // TODO: Persist this somehow in the DB.
+        if (!post.CanBeBoosted())
+            return;
+        
+        var boost = new Post()
+        {
+            Id = Guid.NewGuid(),
+            Author = user,
+            AuthorId = user.Id,
+
+            Boosting = post,
+            BoostingId = post.Id,
+            
+            Visibility = post.Visibility
+        };
+
+        await repo.AddBoost(
+            boost,
+            post);
+        
+        if (!post.Author.IsRemote || user.IsRemote)
+            return;
+        
         var announce = postRenderer.RenderBoostForNote(user, post);
         
         // TODO: This is plainly wrong... but for testing I guess it's fine

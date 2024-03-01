@@ -53,6 +53,7 @@ public class InboxHandlerJob(
             ASAccept accept => HandleAccept(accept),
             ASCreate create => HandleCreate(create, actor),
             ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
+            ASAnnounce announce => HandleAnnounce(announce, actor),
             ASLike like => HandleLike(like, actor),
             
             _ => Task.Run(() =>
@@ -87,6 +88,28 @@ public class InboxHandlerJob(
             return;
         
         logger.LogWarning($"Accept for unknown object {accept.Object.Id}.");
+    }
+
+    /// <summary>
+    /// Handles the Announce activity.
+    /// </summary>
+    private async Task HandleAnnounce(ASAnnounce announce, User actor)
+    {
+        if (announce.Object is null)
+            return;
+        
+        // TODO: Lemmy does announces for any activity related to posts in a group...
+        //       We're currently only expecting it to mean boosts.
+        var post = await postRepo.FindByRemoteId(announce.Object.Id);
+        if (post is null)
+        {
+            logger.LogWarning($"Received an announce for an either non-existent post, or a completely different object: {announce.Object.Id}");
+            return;
+        }
+
+        await postManagementService.Boost(
+            actor,
+            post);
     }
 
     /// <summary>
