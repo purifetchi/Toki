@@ -48,7 +48,7 @@ public class UserRelationService(
             Object = ASObject.Link(to.RemoteId!)
         };
         
-        await messageFederation.SendTo(
+        messageFederation.SendTo(
             from,
             to,
             activity);
@@ -163,7 +163,7 @@ public class UserRelationService(
             Object = ASObject.Link(fr.RemoteId!)
         };
             
-        await messageFederation.SendTo(
+        messageFederation.SendTo(
             fr.To,
             fr.From,
             accept);

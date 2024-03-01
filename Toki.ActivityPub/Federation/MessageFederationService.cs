@@ -19,9 +19,10 @@ public class MessageFederationService(
     /// </summary>
     /// <param name="actor">The actor.</param>
     /// <param name="message">The message.</param>
-    public async Task SendToFollowers(
+    public async Task SendToFollowers<TActivity>(
         User actor,
-        ASActivity message)
+        TActivity message)
+    where TActivity: ASActivity
     {
         var data = JsonSerializer.Serialize(message);
         var followers = (await followRepo.GetFollowersFor(actor))
@@ -40,10 +41,11 @@ public class MessageFederationService(
     /// <param name="actor">The actor.</param>
     /// <param name="target">The target.</param>
     /// <param name="message">The message to send.</param>
-    public async Task SendTo(
+    public void SendTo<TActivity>(
         User actor,
         User target,
-        ASActivity message)
+        TActivity message)
+    where TActivity: ASActivity
     {
         var data = JsonSerializer.Serialize(message);
         var targets = new List<string> { target.Inbox! };
