@@ -31,4 +31,18 @@ public abstract class ASActivity : ASObject
     /// </summary>
     [JsonPropertyName("object")]
     public ASObject? Object { get; init; }
+    
+    /// <summary>
+    /// The primary recipients of this note.
+    /// </summary>
+    [JsonPropertyName("to")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? To { get; set; }
+    
+    /// <summary>
+    /// The secondary recipients of this note.
+    /// </summary>
+    [JsonPropertyName("cc")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? Cc { get; set; }
 }

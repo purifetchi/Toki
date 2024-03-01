@@ -16,16 +16,4 @@ public class ASCreate : ASActivity
     {
         
     }
-    
-    /// <summary>
-    /// The primary recipients of this note.
-    /// </summary>
-    [JsonPropertyName("to")]
-    public IReadOnlyList<string>? To { get; set; }
-    
-    /// <summary>
-    /// The secondary recipients of this note.
-    /// </summary>
-    [JsonPropertyName("cc")]
-    public IReadOnlyList<string>? Cc { get; set; }
 }
