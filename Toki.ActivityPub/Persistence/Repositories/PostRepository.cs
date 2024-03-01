@@ -52,7 +52,7 @@ public class PostRepository(
     /// Imports an ActivityStreams note as a post.
     /// </summary>
     /// <param name="note">The note.</param>
-    /// <param name="actor">The actor who was the author.</param>
+    /// <param name="author">The actor who was the author.</param>
     /// <returns>The post, if the import was successful.</returns>
     public async Task<Post?> ImportFromActivityStreams(
         ASNote note,
@@ -69,6 +69,9 @@ public class PostRepository(
             Content = note.Content!,
             
             Sensitive = note.Sensitive ?? false,
+            
+            CreatedAt = note.PublishedAt?
+                .ToUniversalTime() ?? DateTimeOffset.UtcNow,
             
             Visibility = note.GetPostVisibility(author)
         };

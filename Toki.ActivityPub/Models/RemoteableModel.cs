@@ -6,9 +6,24 @@ namespace Toki.ActivityPub.Models;
 public abstract class RemoteableModel : AbstractModel
 {
     /// <summary>
+    /// Constructs a new remoteable model.
+    /// </summary>
+    public RemoteableModel()
+    {
+        CreatedAt = DateTimeOffset.UtcNow;
+        ReceivedAt = DateTimeOffset.UtcNow;
+    }
+    
+    /// <summary>
     /// When was this object created?
     /// </summary>
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
+    
+    /// <summary>
+    /// When did we receive this message from the remote server? (identical to <see cref="RemoteableModel.CreatedAt"/> for local posts.)
+    /// </summary>
+    // This is required, since according to @arnelson@fosstodon.org, mastoapi orders by date received not date of creation.
+    public DateTimeOffset ReceivedAt { get; init; }
     
     /// <summary>
     /// The remote ID of this object.

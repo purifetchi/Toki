@@ -68,7 +68,7 @@ public class PostRenderer(
             To = to,
             Cc = cc,
             
-            PublishedAt = ((DateTimeOffset)post.CreatedAt).ToString("s", System.Globalization.CultureInfo.InvariantCulture) + "Z"
+            PublishedAt = post.CreatedAt
         };
     }
 
@@ -101,7 +101,7 @@ public class PostRenderer(
             To = note.To,
             Cc = note.Cc,
             
-            PublishedAt = DateTimeOffset.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture) + "Z"
+            PublishedAt = DateTimeOffset.UtcNow
         };
 
         return create;
@@ -126,7 +126,7 @@ public class PostRenderer(
 
             Object = RenderLinkedNoteFrom(post),
             
-            PublishedAt = DateTimeOffset.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture) + "Z",
+            PublishedAt = DateTimeOffset.UtcNow,
             
             To = to.Concat(cc)
                 .ToList()

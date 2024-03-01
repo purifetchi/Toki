@@ -107,6 +107,9 @@ public class UserRepository(
             DisplayName = actor.Name!,
             RemoteId = actor.Id!,
             
+            CreatedAt = actor.PublishedAt?
+                .ToUniversalTime() ?? DateTimeOffset.UtcNow,
+            
             IsRemote = true,
             
             Inbox = actor.Inbox?.Id,

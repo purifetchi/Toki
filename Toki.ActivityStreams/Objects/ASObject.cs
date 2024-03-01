@@ -50,7 +50,7 @@ public class ASObject
     /// </summary>
     [JsonPropertyName("published")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? PublishedAt { get; set; }
+    public DateTimeOffset? PublishedAt { get; set; }
 
     /// <summary>
     /// Is this ASObject resolved?
