@@ -24,13 +24,13 @@ public class PostRenderer(
         var to = post.Visibility switch
         {
             PostVisibility.Public => ["https://www.w3.org/ns/activitystreams#Public"],
-            PostVisibility.Unlisted => [$"{pathRenderer.GetPathToActor(post.Author)}/followers"],
+            PostVisibility.Unlisted or PostVisibility.Followers => [$"{pathRenderer.GetPathToActor(post.Author)}/followers"],
             _ => new List<string>()
         };
         
         var cc = post.Visibility switch
         {
-            PostVisibility.Public or PostVisibility.Followers => [$"{pathRenderer.GetPathToActor(post.Author)}/followers"],
+            PostVisibility.Public => [$"{pathRenderer.GetPathToActor(post.Author)}/followers"],
             PostVisibility.Unlisted => ["https://www.w3.org/ns/activitystreams#Public"],
             _ => new List<string>()
         };
