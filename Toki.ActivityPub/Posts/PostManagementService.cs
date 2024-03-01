@@ -52,4 +52,22 @@ public class PostManagementService(
         
         return post;
     }
+
+    /// <summary>
+    /// Boosts a post.
+    /// </summary>
+    /// <param name="user">The user who's boosting.</param>
+    /// <param name="post">The post.</param>
+    public async Task Boost(
+        User user,
+        Post post)
+    {
+        // TODO: Persist this somehow in the DB.
+        var announce = postRenderer.RenderBoostForNote(user, post);
+        
+        // TODO: This is plainly wrong... but for testing I guess it's fine
+        await federationService.SendToFollowers(
+            user,
+            announce);
+    }
 }

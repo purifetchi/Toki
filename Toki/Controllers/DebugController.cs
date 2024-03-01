@@ -19,6 +19,7 @@ public class DebugController(
     UserRelationService relationService,
     UserRepository repo,
     PostManagementService postManagementService,
+    PostRepository postRepo,
     WebFingerResolver webFingerResolver,
     ActivityPubResolver apResolver) : ControllerBase
 {
@@ -49,6 +50,25 @@ public class DebugController(
         var post = await postManagementService.Create(u, body, visibility);
         if (post is null)
             return BadRequest();
+        
+        return Ok(post.Id);
+    }
+    
+    [HttpGet]
+    [Route("test_boost")]
+    public async Task<IActionResult> Boost(
+        [FromQuery] string actor,
+        [FromQuery] string id)
+    {
+        var u = await repo.FindByHandle(actor);
+        if (u is null || u.IsRemote)
+            return NotFound();
+
+        var post = await postRepo.FindByRemoteId(id);
+        if (post is null)
+            return NotFound();
+        
+        await postManagementService.Boost(u, post);
         
         return Ok(post.Id);
     }
