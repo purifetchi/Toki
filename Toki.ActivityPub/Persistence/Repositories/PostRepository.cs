@@ -14,6 +14,7 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 /// <param name="db">The database.</param>
 public class PostRepository(
     TokiDatabaseContext db,
+    UserRepository userRepo,
     IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
@@ -107,6 +108,23 @@ public class PostRepository(
         ASNote note,
         User author)
     {
+        var asMentions = note.Tags
+            .OfType<ASMention>()
+            .ToList();
+
+        var mentions = new List<Guid>();
+        foreach (var mention in asMentions)
+        {
+            var user = await userRepo.FindByRemoteId(mention.Href);
+            if (user is null)
+            {
+                // TODO: Fetch this user.
+                continue;
+            }
+            
+            mentions.Add(user.Id);
+        }
+        
         var post = new Post()
         {
             Id = Guid.NewGuid(),
@@ -122,7 +140,9 @@ public class PostRepository(
             CreatedAt = note.PublishedAt?
                 .ToUniversalTime() ?? DateTimeOffset.UtcNow,
             
-            Visibility = note.GetPostVisibility(author)
+            Visibility = note.GetPostVisibility(author),
+            
+            Mentions = mentions
         };
         
         // TODO: Resolve parent post chain.

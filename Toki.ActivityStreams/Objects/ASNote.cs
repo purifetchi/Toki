@@ -66,4 +66,10 @@ public class ASNote : ASObject
     /// </summary>
     [JsonPropertyName("sensitive")]
     public bool? Sensitive { get; set; }
+    
+    /// <summary>
+    /// The list of tags this note has.
+    /// </summary>
+    [JsonPropertyName("tag")]
+    public IReadOnlyList<ASLink> Tags { get; set; }
 }

@@ -1,10 +1,12 @@
 using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityStreams.Objects;
 
 /// <summary>
 /// An ActivityStreams link.
 /// </summary>
+[JsonConverter(typeof(ASLinkConverter))]
 public class ASLink
 {
     /// <summary>

@@ -66,4 +66,9 @@ public class Post : RemoteableModel
     /// The boost count of this post (DENORMALIZED).
     /// </summary>
     public int BoostCount { get; set; }
+    
+    /// <summary>
+    /// The list of mentioned users (DENORMALIZED).
+    /// </summary>
+    public List<Guid>? Mentions { get; set; }
 }
