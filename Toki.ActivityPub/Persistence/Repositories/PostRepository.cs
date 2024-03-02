@@ -97,17 +97,49 @@ public class PostRepository(
         db.Posts.Add(boost);
         await db.SaveChangesAsync();
     }
-    
+
     /// <summary>
-    /// Imports an ActivityStreams note as a post.
+    /// Imports attachments for a given post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <param name="attachments">The attachments.</param>
+    public async Task ImportAttachmentsForNote(
+        Post post,
+        IEnumerable<ASDocument> attachments)
+    {
+        foreach (var document in attachments)
+        {
+            if (document.Url is null)
+                continue;
+            
+            var attachment = new PostAttachment()
+            {
+                Id = Guid.NewGuid(),
+
+                Parent = post,
+                ParentId = post.Id,
+
+                Description = document.Name,
+                Url = document.Url
+            };
+            
+            db.PostAttachments.Add(attachment);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Collects the mentions for a note.
     /// </summary>
     /// <param name="note">The note.</param>
-    /// <param name="author">The actor who was the author.</param>
-    /// <returns>The post, if the import was successful.</returns>
-    public async Task<Post?> ImportFromActivityStreams(
-        ASNote note,
-        User author)
+    /// <returns>The mentions, if any exist.</returns>
+    private async Task<List<Guid>?> CollectMentions(
+        ASNote note)
     {
+        if (note.Tags is null)
+            return null;
+        
         var asMentions = note.Tags
             .OfType<ASMention>()
             .ToList();
@@ -124,7 +156,20 @@ public class PostRepository(
             
             mentions.Add(user.Id);
         }
-        
+
+        return mentions;
+    }
+    
+    /// <summary>
+    /// Imports an ActivityStreams note as a post.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <param name="author">The actor who was the author.</param>
+    /// <returns>The post, if the import was successful.</returns>
+    public async Task<Post?> ImportFromActivityStreams(
+        ASNote note,
+        User author)
+    {
         var post = new Post()
         {
             Id = Guid.NewGuid(),
@@ -142,7 +187,7 @@ public class PostRepository(
             
             Visibility = note.GetPostVisibility(author),
             
-            Mentions = mentions
+            Mentions = await CollectMentions(note)
         };
         
         // TODO: Resolve parent post chain.
@@ -159,6 +204,15 @@ public class PostRepository(
         }
 
         await Add(post);
+
+        if (note.Attachments is not null &&
+            note.Attachments.Count > 0)
+        {
+            await ImportAttachmentsForNote(
+                post,
+                note.Attachments);
+        }
+        
         return post;
     }
 }

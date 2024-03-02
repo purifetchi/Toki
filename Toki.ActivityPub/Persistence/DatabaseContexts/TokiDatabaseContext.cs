@@ -19,6 +19,11 @@ public class TokiDatabaseContext : DbContext
     public DbSet<Post> Posts { get; private set; } = null!;
     
     /// <summary>
+    /// The posts.
+    /// </summary>
+    public DbSet<PostAttachment> PostAttachments { get; private set; } = null!;
+    
+    /// <summary>
     /// The follower relations.
     /// </summary>
     public DbSet<FollowerRelation> FollowerRelations { get; private set; } = null!;
@@ -119,7 +124,7 @@ public class TokiDatabaseContext : DbContext
 
         modelBuilder.Entity<PostLike>()
             .HasOne<Post>(pl => pl.Post)
-            .WithMany()
+            .WithMany(p => p.Likes)
             .HasForeignKey(pl => pl.PostId)
             .OnDelete(DeleteBehavior.Cascade);
         
@@ -127,6 +132,13 @@ public class TokiDatabaseContext : DbContext
             .HasOne<User>(pl => pl.LikingUser)
             .WithMany()
             .HasForeignKey(pl => pl.LikingUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PostAttachment>()
+            .HasOne<Post>(pa => pa.Parent)
+            .WithMany(p => p.Attachments)
+            .HasForeignKey(pa => pa.ParentId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
 

@@ -71,5 +71,11 @@ public class ASNote : ASObject
     /// The list of tags this note has.
     /// </summary>
     [JsonPropertyName("tag")]
-    public IReadOnlyList<ASLink> Tags { get; set; }
+    public IReadOnlyList<ASLink>? Tags { get; set; }
+    
+    /// <summary>
+    /// The list of attachments this note has.
+    /// </summary>
+    [JsonPropertyName("attachment")]
+    public IReadOnlyList<ASDocument>? Attachments { get; set; }
 }

@@ -71,4 +71,14 @@ public class Post : RemoteableModel
     /// The list of mentioned users (DENORMALIZED).
     /// </summary>
     public List<Guid>? Mentions { get; set; }
+    
+    /// <summary>
+    /// The attachments this post has.
+    /// </summary>
+    public ICollection<PostAttachment>? Attachments { get; private set; }
+    
+    /// <summary>
+    /// The likes this post has.
+    /// </summary>
+    public ICollection<PostLike>? Likes { get; private set; }
 }
