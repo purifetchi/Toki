@@ -25,6 +25,24 @@ public class FollowRepository(
     }
 
     /// <summary>
+    /// Gets the follower's inboxes (either direct or shared) for a given user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The inboxes.</returns>
+    public async Task<IEnumerable<string>> GetFollowerInboxesFor(User user)
+    {
+        return await db.FollowerRelations
+            .Include(fr => fr.Follower)
+            .Include(fr => fr.Follower.ParentInstance)
+            .Where(fr => fr.FolloweeId == user.Id)
+            .Select(fr => fr.Follower)
+            .Where(f => f.IsRemote)
+            .Select(f => f.ParentInstance != null ? f.ParentInstance.SharedInbox! : f.Inbox! )
+            .Distinct()
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Gets the followed users for a given user.
     /// </summary>
     /// <param name="user">The user.</param>

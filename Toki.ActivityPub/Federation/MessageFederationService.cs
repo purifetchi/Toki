@@ -25,11 +25,7 @@ public class MessageFederationService(
     where TActivity: ASActivity
     {
         var data = JsonSerializer.Serialize(message);
-        var followers = (await followRepo.GetFollowersFor(actor))
-            .Where(a => a.IsRemote)
-            .Select(f => f.Inbox!);
-        
-        // TODO: Deduplicate inboxes (send to shared if applicable).
+        var followers = await followRepo.GetFollowerInboxesFor(actor);
         
         BackgroundJob.Enqueue<MessageFederationJob>(job =>
             job.FederateMessage(data, followers, actor.Id, 0));
