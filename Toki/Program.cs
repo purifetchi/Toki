@@ -18,6 +18,16 @@ builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
 builder.Services.AddControllers();
 
+builder.Services.AddCors(opts =>
+{
+    opts.AddPolicy(
+        name: "MastodonAPI",
+        policy =>
+        {
+            policy.AllowAnyOrigin();
+        });
+});
+
 builder.Services.AddHangfire(
         opts => opts.UseRedisStorage(ConnectionMultiplexer.Connect("localhost")))
     .AddHangfireServer();
@@ -32,6 +42,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseHangfireDashboard();
 
 app.MapControllers();

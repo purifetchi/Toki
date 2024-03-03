@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.OAuth2;
 using Toki.MastodonApi.Helpers;
@@ -12,6 +13,7 @@ namespace Toki.Controllers.MastodonApi.Apps;
 /// </summary>
 [ApiController]
 [Route("/api/v1/apps")]
+[EnableCors("MastodonAPI")]
 public class AppsController(
     OAuthManagementService managementService) : ControllerBase
 {
