@@ -1,11 +1,11 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
-using Microsoft.AspNetCore.HttpLogging;
 using StackExchange.Redis;
 using Toki.ActivityPub;
 using Toki.ActivityPub.Configuration;
 using Toki.Binding.Extensions;
 using Toki.HTTPSignatures;
+using Toki.Middleware.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
 builder.Services.AddControllers( o => o.ModelBinderProviders.AddHybridBindingProvider());
+builder.Services.AddTransient<OAuthMiddleware>();
 
 builder.Services.AddCors(opts =>
 {
@@ -48,6 +49,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseMiddleware<OAuthMiddleware>();
 app.UseHangfireDashboard();
 
 app.MapControllers();

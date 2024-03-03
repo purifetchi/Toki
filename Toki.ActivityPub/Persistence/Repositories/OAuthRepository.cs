@@ -61,4 +61,17 @@ public class OAuthRepository(
         return await db.OAuthTokens
             .FirstOrDefaultAsync(token => token.AuthorizationCode == authCode);
     }
+    
+    /// <summary>
+    /// Finds a token by its code.
+    /// </summary>
+    /// <param name="code">The code.</param>
+    /// <returns>The token.</returns>
+    public async Task<OAuthToken?> FindTokenByCode(string code)
+    {
+        return await db.OAuthTokens
+            .Include(t => t.User)
+            .Include(t => t.ParentApp)
+            .FirstOrDefaultAsync(token => token.Token == code);
+    }
 }
