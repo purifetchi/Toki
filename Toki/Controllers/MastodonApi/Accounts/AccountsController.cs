@@ -27,6 +27,10 @@ public class AccountsController(
     {
         var token = HttpContext.GetOAuthToken()!;
         
-        return Ok(renderer.RenderAccountFrom(token.User));
+        return Ok(
+            renderer.RenderAccountFrom(
+                token.User, 
+                renderCredentialAccount: true)
+            );
     }
 }

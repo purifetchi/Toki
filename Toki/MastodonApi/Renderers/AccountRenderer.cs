@@ -14,8 +14,11 @@ public class AccountRenderer(
     /// Renders an account from a user.
     /// </summary>
     /// <param name="user">The user.</param>
+    /// <param name="renderCredentialAccount">Should we render a CredentialAccount?</param>
     /// <returns>The account.</returns>
-    public Account RenderAccountFrom(User user)
+    public Account RenderAccountFrom(
+        User user,
+        bool renderCredentialAccount = false)
     {
         return new Account
         {
@@ -38,6 +41,11 @@ public class AccountRenderer(
             Header = user.BannerUrl,
             
             ManuallyApprovesRequests = user.RequiresFollowApproval,
+            
+            Source = renderCredentialAccount ? new CredentialAccountSource()
+            {
+                Note = user.Bio
+            } : null,
             
             CreatedAt = user.CreatedAt
         };

@@ -96,4 +96,11 @@ public record Account
     /// </summary>
     [JsonPropertyName("following_count")]
     public int FollowingCount { get; init; }
+    
+    /// <summary>
+    /// The extra information only visible to the local user.
+    /// </summary>
+    [JsonPropertyName("source")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public CredentialAccountSource? Source { get; init; }
 }
