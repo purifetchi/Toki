@@ -1,0 +1,23 @@
+@page "/oauth/authorize"
+@model Toki.Pages.OAuth.AuthorizePage
+
+@{
+    Layout = null;
+}
+
+<b>You're about to authorize the app @Model.Application?.ClientName with the given scopes:</b>
+<ul>
+    @foreach (var scope in @Model.Application!.Scopes)
+    {
+        <li>@scope</li>
+    }
+</ul>
+
+<br/>
+
+<p>To authorize it, please log in:</p>
+<form method="post" action="/oauth/authorize">
+    <input type="text" name="username" placeholder="Username"/><br/>
+    <input type="password" name="password" placeholder="Password"/><br/>
+    <input type="submit" value="Login"/>
+</form>

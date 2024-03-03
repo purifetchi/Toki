@@ -12,6 +12,7 @@ builder.Services.Configure<InstanceConfiguration>(
     builder.Configuration.GetSection("Instance"));
 
 // Add services to the container.
+builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
@@ -46,5 +47,6 @@ app.UseCors();
 app.UseHangfireDashboard();
 
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

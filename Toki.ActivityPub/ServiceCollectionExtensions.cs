@@ -39,7 +39,8 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>()
             .AddScoped<FollowRepository>()
-            .AddScoped<UserRelationService>();
+            .AddScoped<UserRelationService>()
+            .AddScoped<UserSessionService>();
 
         collection.AddTransient<ActivityPubResolver>()
             .AddTransient<ActivityPubMessageValidationService>()
