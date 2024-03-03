@@ -12,6 +12,26 @@ public class StatusRenderer(
     InstancePathRenderer pathRenderer)
 {
     /// <summary>
+    /// Renders the attachments for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The attachments.</returns>
+    private IReadOnlyList<MediaAttachment>? RenderAttachmentsFor(Post post)
+    {
+        return post.Attachments?
+            .Select(postAttachment => new MediaAttachment 
+            {
+                Id = $"{postAttachment.Id}",
+                Type = "image", // TODO: Deduce this based on the MIME
+
+                Url = postAttachment.Url,
+                PreviewUrl = postAttachment.Url,
+                Description = postAttachment.Description,
+            })
+            .ToList();
+    }
+    
+    /// <summary>
     /// Renders a status for a post.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -35,7 +55,9 @@ public class StatusRenderer(
             FavouritesCount = post.LikeCount,
 
             Sensitive = post.Sensitive,
-            SpoilerText = post.ContentWarning
+            SpoilerText = post.ContentWarning,
+            
+            Attachments = RenderAttachmentsFor(post)
         };
     }
 }

@@ -32,6 +32,7 @@ public class TimelinesController(
         var list = await repo.CreateCustomQuery()
             .Include(post => post.Author)
             .Include(post => post.Parent)
+            .Include(post => post.Attachments)
             .OrderByDescending(post => post.ReceivedAt)
             .Where(post => post.Visibility == PostVisibility.Public)
             .ToListAsync();

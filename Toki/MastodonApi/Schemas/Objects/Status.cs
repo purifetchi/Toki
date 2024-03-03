@@ -85,5 +85,11 @@ public record Status
     [JsonPropertyName("in_reply_to_account_id")]
     public string? InReplyToAccountId { get; init; }
     
+    /// <summary>
+    /// Media that is attached to this status.
+    /// </summary>
+    [JsonPropertyName("media_attachments")]
+    public IReadOnlyList<MediaAttachment>? Attachments { get; init; }
+    
     // TODO: The rest of the status.
 }
