@@ -13,5 +13,11 @@ public class InstanceInformationV1Configuration
     [JsonPropertyName("statuses")]
     public InstanceInformationStatuses? Statuses { get; set; }
     
-    // TODO: media_attachments, polls
+    /// <summary>
+    /// Hints for which attachments will be accepted.
+    /// </summary>
+    [JsonPropertyName("media_attachments")]
+    public InstanceInformationMediaAttachments? MediaAttachments { get; init; }
+    
+    // TODO: polls
 }

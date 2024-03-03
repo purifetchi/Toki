@@ -35,7 +35,8 @@ public class InstanceController(
             
             Configuration = new InstanceInformationV1Configuration()
             {
-                Statuses = new InstanceInformationStatuses()
+                Statuses = new InstanceInformationStatuses(),
+                MediaAttachments = new InstanceInformationMediaAttachments()
             }
         };
         
