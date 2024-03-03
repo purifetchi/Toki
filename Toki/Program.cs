@@ -5,6 +5,7 @@ using Toki.ActivityPub;
 using Toki.ActivityPub.Configuration;
 using Toki.Binding.Extensions;
 using Toki.HTTPSignatures;
+using Toki.MastodonApi;
 using Toki.Middleware.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,8 @@ builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
 builder.Services.AddControllers( o => o.ModelBinderProviders.AddHybridBindingProvider());
 builder.Services.AddTransient<OAuthMiddleware>();
+
+builder.Services.AddMastodonApiHelpers();
 
 builder.Services.AddCors(opts =>
 {

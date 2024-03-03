@@ -6,6 +6,8 @@ using Toki.MastodonApi.Helpers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Requests.Apps;
 using Toki.MastodonApi.Schemas.Responses.Apps;
+using Toki.Middleware.OAuth2;
+using Toki.Middleware.OAuth2.Extensions;
 
 namespace Toki.Controllers.MastodonApi.Apps;
 
