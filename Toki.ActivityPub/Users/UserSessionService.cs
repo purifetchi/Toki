@@ -28,8 +28,8 @@ public class UserSessionService(
             return null;
 
         var success = BCrypt.Net.BCrypt.Verify(
-            credentials.PasswordHash,
-            password);
+            password,
+            credentials.PasswordHash);
 
         return success ? credentials.User : null;
     }

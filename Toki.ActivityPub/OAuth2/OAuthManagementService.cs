@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.OAuth;
 using Toki.ActivityPub.Persistence.Repositories;
 
@@ -43,5 +44,42 @@ public class OAuthManagementService(
 
         await repo.AddApp(app);
         return app;
+    }
+
+    /// <summary>
+    /// Creates a new inactive token for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="app">The app.</param>
+    /// <param name="scopes">The scopes of the token.</param>
+    /// <returns>The token, if it was successfully created.</returns>
+    public async Task<OAuthToken?> CreateInactiveToken(
+        User user,
+        OAuthApp app,
+        List<string> scopes)
+    {
+        if (!app.ValidateScopes(scopes) || user.IsRemote)
+            return null;
+        
+        var token = new OAuthToken()
+        {
+            Id = Guid.NewGuid(),
+
+            ParentApp = app,
+            ParentAppId = app.Id,
+
+            User = user,
+            UserId = user.Id,
+
+            AuthorizationCode = SecureRandomStringGenerator.Generate(),
+            Token = SecureRandomStringGenerator.Generate(),
+            
+            Scopes = scopes
+        };
+        
+        logger.LogInformation($"Creating an OAuth2 token for user {user.Handle}, with the app {app.ClientName}.");
+
+        await repo.AddToken(token);
+        return token;
     }
 }

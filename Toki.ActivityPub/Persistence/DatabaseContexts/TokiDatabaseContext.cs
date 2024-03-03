@@ -59,6 +59,11 @@ public class TokiDatabaseContext : DbContext
     /// </summary>
     public DbSet<OAuthApp> OAuthApps { get; private set; } = null!;
     
+    /// <summary>
+    /// The OAuth2 tokens set.
+    /// </summary>
+    public DbSet<OAuthToken> OAuthTokens { get; private set; } = null!;
+    
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -144,6 +149,20 @@ public class TokiDatabaseContext : DbContext
             .HasOne<Post>(pa => pa.Parent)
             .WithMany(p => p.Attachments)
             .HasForeignKey(pa => pa.ParentId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<OAuthToken>()
+            .HasOne<OAuthApp>(oa => oa.ParentApp)
+            .WithMany()
+            .HasForeignKey(oa => oa.ParentAppId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<OAuthToken>()
+            .HasOne<User>(oa => oa.User)
+            .WithMany()
+            .HasForeignKey(oa => oa.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }

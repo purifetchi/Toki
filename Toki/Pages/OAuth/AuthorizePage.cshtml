@@ -16,8 +16,9 @@
 <br/>
 
 <p>To authorize it, please log in:</p>
-<form method="post" action="/oauth/authorize">
+<form method="post">
     <input type="text" name="username" placeholder="Username"/><br/>
     <input type="password" name="password" placeholder="Password"/><br/>
+    @Html.AntiForgeryToken()
     <input type="submit" value="Login"/>
 </form>

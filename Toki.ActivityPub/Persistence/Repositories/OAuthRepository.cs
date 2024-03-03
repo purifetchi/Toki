@@ -19,6 +19,16 @@ public class OAuthRepository(
         db.OAuthApps.Add(app);
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Adds a new OAuth2 token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    public async Task AddToken(OAuthToken token)
+    {
+        db.OAuthTokens.Add(token);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Finds an app by its client id.

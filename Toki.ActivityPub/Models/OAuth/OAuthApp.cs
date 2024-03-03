@@ -34,4 +34,12 @@ public class OAuthApp : AbstractModel
     /// The redirect URIs.
     /// </summary>
     public List<string>? RedirectUris { get; set; }
+
+    /// <summary>
+    /// Validates whether the parameter is a subset of <see cref="Scopes"/>.
+    /// </summary>
+    /// <param name="scopes">The scopes we want to check.</param>
+    /// <returns>True if the scopes fit as a subset.</returns>
+    public bool ValidateScopes(IEnumerable<string> scopes) =>
+        !scopes.Except(Scopes).Any();
 }
