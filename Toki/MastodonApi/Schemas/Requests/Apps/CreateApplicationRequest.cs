@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Toki.MastodonApi.Schemas.Requests.Apps;
@@ -10,25 +11,29 @@ public record CreateApplicationRequest
     /// <summary>
     /// The name of the client.
     /// </summary>
-    [BindProperty(Name = "client_name")] 
+    [BindProperty(Name = "client_name")]
+    [JsonPropertyName("client_name")]
     public required string ClientName { get; init; }
     
     /// <summary>
     /// The name of the client.
     /// </summary>
     [BindProperty(Name = "redirect_uris")] 
+    [JsonPropertyName("redirect_uris")]
     public required string RedirectUrls { get; init; }
 
     /// <summary>
     /// The space separated list of scopes.
     /// </summary>
     [BindProperty(Name = "scopes")]
+    [JsonPropertyName("scopes")]
     public string? Scopes { get; init; }
     
     /// <summary>
     /// The website of the app.
     /// </summary>
     [BindProperty(Name = "website")]
+    [JsonPropertyName("website")]
     public string? Website { get; init; }
 
     /// <summary>

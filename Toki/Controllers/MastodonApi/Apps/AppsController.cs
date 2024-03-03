@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.OAuth2;
+using Toki.Binding;
 using Toki.MastodonApi.Helpers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Requests.Apps;
@@ -23,9 +24,10 @@ public class AppsController(
     /// <param name="request">The request.</param>
     /// <returns>Either an application, or an error.</returns>
     [HttpPost]
+    [Consumes("application/json", "application/x-www-form-urlencoded")]
     [Produces("application/json")]
     public async Task<IActionResult> CreateApp(
-        [FromForm] CreateApplicationRequest request)
+        [FromHybrid] CreateApplicationRequest request)
     {
         var uris = request.GetRedirectUrls();
         var uriValidation = MastodonOAuthHelper.ValidateRedirectUris(uris);

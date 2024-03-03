@@ -1,8 +1,10 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using Microsoft.AspNetCore.HttpLogging;
 using StackExchange.Redis;
 using Toki.ActivityPub;
 using Toki.ActivityPub.Configuration;
+using Toki.Binding.Extensions;
 using Toki.HTTPSignatures;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
-builder.Services.AddControllers();
+builder.Services.AddControllers( o => o.ModelBinderProviders.AddHybridBindingProvider());
 
 builder.Services.AddCors(opts =>
 {
@@ -25,7 +27,9 @@ builder.Services.AddCors(opts =>
         name: "MastodonAPI",
         policy =>
         {
-            policy.AllowAnyOrigin();
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
 });
 
