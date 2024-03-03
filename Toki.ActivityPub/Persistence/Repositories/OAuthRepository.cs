@@ -29,6 +29,16 @@ public class OAuthRepository(
         db.OAuthTokens.Add(token);
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Updates an OAuth2 token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    public async Task UpdateToken(OAuthToken token)
+    {
+        db.OAuthTokens.Update(token);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Finds an app by its client id.
@@ -39,5 +49,16 @@ public class OAuthRepository(
     {
         return await db.OAuthApps
             .FirstOrDefaultAsync(app => app.ClientId == clientId);
+    }
+    
+    /// <summary>
+    /// Finds a token by its authorization code.
+    /// </summary>
+    /// <param name="authCode">The auth code.</param>
+    /// <returns>The token.</returns>
+    public async Task<OAuthToken?> FindTokenByAuthCode(string authCode)
+    {
+        return await db.OAuthTokens
+            .FirstOrDefaultAsync(token => token.AuthorizationCode == authCode);
     }
 }

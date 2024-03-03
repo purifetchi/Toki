@@ -82,4 +82,14 @@ public class OAuthManagementService(
         await repo.AddToken(token);
         return token;
     }
+
+    /// <summary>
+    /// Activates a token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    public async Task ActivateToken(OAuthToken token)
+    {
+        token.Active = true;
+        await repo.UpdateToken(token);
+    }
 }
