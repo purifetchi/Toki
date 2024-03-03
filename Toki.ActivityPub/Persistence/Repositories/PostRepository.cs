@@ -99,6 +99,13 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Creates a custom query.
+    /// </summary>
+    /// <returns>The query.</returns>
+    public IQueryable<Post> CreateCustomQuery() =>
+        db.Posts;
+
+    /// <summary>
     /// Imports attachments for a given post.
     /// </summary>
     /// <param name="post">The post.</param>

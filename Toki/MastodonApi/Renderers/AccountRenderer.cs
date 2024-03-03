@@ -38,7 +38,9 @@ public class AccountRenderer(
             Bio = user.Bio,
 
             Avatar = user.AvatarUrl,
+            AvatarStatic = user.AvatarUrl,
             Header = user.BannerUrl,
+            HeaderStatic = user.BannerUrl,
             
             ManuallyApprovesRequests = user.RequiresFollowApproval,
             
