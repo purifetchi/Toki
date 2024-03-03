@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.OAuth;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
 
@@ -52,6 +53,11 @@ public class TokiDatabaseContext : DbContext
     /// The post likes set.
     /// </summary>
     public DbSet<PostLike> PostLikes { get; private set; } = null!;
+
+    /// <summary>
+    /// The OAuth2 apps set.
+    /// </summary>
+    public DbSet<OAuthApp> OAuthApps { get; private set; } = null!;
     
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)

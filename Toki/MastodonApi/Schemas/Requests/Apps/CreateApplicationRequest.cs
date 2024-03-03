@@ -23,11 +23,25 @@ public record CreateApplicationRequest
     /// The space separated list of scopes.
     /// </summary>
     [BindProperty(Name = "scopes")]
-    public string? Scopes { get; init; } = "read";
+    public string? Scopes { get; init; }
     
     /// <summary>
     /// The website of the app.
     /// </summary>
     [BindProperty(Name = "website")]
     public string? Website { get; init; }
+
+    /// <summary>
+    /// Gets the scopes for this request.
+    /// </summary>
+    /// <returns>The scopes.</returns>
+    public List<string> GetScopes() =>
+        Scopes?.Split(' ').ToList() ?? ["read"];
+
+    /// <summary>
+    /// Gets the list of redirect urls for this request.
+    /// </summary>
+    /// <returns></returns>
+    public List<string> GetRedirectUrls() =>
+        RedirectUrls.Split(' ').ToList();
 }
