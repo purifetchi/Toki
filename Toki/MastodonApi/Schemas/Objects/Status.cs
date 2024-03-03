@@ -91,5 +91,11 @@ public record Status
     [JsonPropertyName("media_attachments")]
     public IReadOnlyList<MediaAttachment>? Attachments { get; init; }
     
+    /// <summary>
+    /// The boosted post.
+    /// </summary>
+    [JsonPropertyName("reblog")]
+    public Status? Boost { get; init; }
+    
     // TODO: The rest of the status.
 }

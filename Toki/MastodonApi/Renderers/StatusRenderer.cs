@@ -56,7 +56,15 @@ public class StatusRenderer(
 
             Sensitive = post.Sensitive,
             SpoilerText = post.ContentWarning,
+
+            Visibility = post.Visibility
+                .ToString()
+                .ToLowerInvariant(),
             
+            Boost = post.Boosting is not null ?
+                RenderForPost(post.Boosting) :
+                null,
+
             Attachments = RenderAttachmentsFor(post)
         };
     }

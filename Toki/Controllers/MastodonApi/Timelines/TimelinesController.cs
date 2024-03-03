@@ -33,6 +33,8 @@ public class TimelinesController(
             .Include(post => post.Author)
             .Include(post => post.Parent)
             .Include(post => post.Attachments)
+            .Include(post => post.Boosting)
+            .ThenInclude(boost => boost!.Author)
             .OrderByDescending(post => post.ReceivedAt)
             .Where(post => post.Visibility == PostVisibility.Public)
             .ToListAsync();
