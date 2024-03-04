@@ -26,6 +26,12 @@ public class OAuthMiddleware(
         }
 
         var token = await GetOAuthToken(context);
+        if (oauthAttrib.ManualScopeValidation)
+        {
+            await next(context);
+            return;
+        }
+        
         if (token is null)
         {
             await ThrowError(
