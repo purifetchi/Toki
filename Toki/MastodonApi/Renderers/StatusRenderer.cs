@@ -64,6 +64,9 @@ public class StatusRenderer(
             Boost = post.Boosting is not null ?
                 RenderForPost(post.Boosting) :
                 null,
+            
+            InReplyToId = post.ParentId?.ToString(),
+            InReplyToAccountId = post.Parent?.AuthorId.ToString(),
 
             Attachments = RenderAttachmentsFor(post)
         };
