@@ -71,11 +71,13 @@ public class ASNote : ASObject
     /// The list of tags this note has.
     /// </summary>
     [JsonPropertyName("tag")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ASLink>? Tags { get; set; }
     
     /// <summary>
     /// The list of attachments this note has.
     /// </summary>
     [JsonPropertyName("attachment")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ASDocument>? Attachments { get; set; }
 }
