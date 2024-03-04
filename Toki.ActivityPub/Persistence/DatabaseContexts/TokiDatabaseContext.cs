@@ -94,7 +94,7 @@ public class TokiDatabaseContext : DbContext
 
         modelBuilder.Entity<FollowerRelation>()
             .HasOne(fr => fr.Followee)
-            .WithMany()
+            .WithMany(user => user.FollowerRelations)
             .IsRequired()
             .HasForeignKey(fr => fr.FolloweeId)
             .OnDelete(DeleteBehavior.Cascade);

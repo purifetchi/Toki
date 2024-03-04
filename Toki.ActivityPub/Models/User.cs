@@ -61,4 +61,9 @@ public class User : RemoteableModel
     /// The keypair of the user.
     /// </summary>
     public Keypair? Keypair { get; init; }
+    
+    /// <summary>
+    /// The follower relations of this user.
+    /// </summary>
+    public ICollection<FollowerRelation>? FollowerRelations { get; set; }
 }
