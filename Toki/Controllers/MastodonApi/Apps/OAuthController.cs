@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.OAuth2;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.Binding;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Requests.Apps;
 using Toki.MastodonApi.Schemas.Responses.Apps;
@@ -27,7 +28,7 @@ public class OAuthController(
     [Route("token")]
     [Produces("application/json")]
     public async Task<IActionResult> FetchToken(
-        [FromForm] FetchTokenRequest request)
+        [FromHybrid] FetchTokenRequest request)
     {
         var app = await repo.FindByClientId(request.ClientId);
         if (app is null || app.ClientSecret != request.ClientSecret)
