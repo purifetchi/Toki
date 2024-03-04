@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Posts;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
@@ -16,7 +17,9 @@ namespace Toki.Controllers.MastodonApi.Accounts;
 [EnableCors("MastodonAPI")]
 public class AccountsController(
     AccountRenderer renderer,
-    UserRepository repo) : ControllerBase
+    StatusRenderer statusRenderer,
+    UserRepository repo,
+    PostManagementService managementService) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -43,7 +46,7 @@ public class AccountsController(
     /// <param name="id">Its id.</param>
     /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
     [HttpGet]
-    [Route("{id}")]
+    [Route("{id:guid}")]
     [Produces("application/json")]
     public async Task<IActionResult> FetchAccount(
         [FromRoute] Guid id)
@@ -53,5 +56,32 @@ public class AccountsController(
             return NotFound();
 
         return Ok(renderer.RenderAccountFrom(user));
+    }
+    
+    /// <summary>
+    /// Fetches the data for an account.
+    /// </summary>
+    /// <param name="id">Its id.</param>
+    /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
+    [HttpGet]
+    [Route("{id:guid}/statuses")]
+    [Produces("application/json")]
+    [OAuth(manualScopeValidation: true)]
+    public async Task<IActionResult> FetchAccountStatuses(
+        [FromRoute] Guid id)
+    {
+        var us = HttpContext.GetOAuthToken()?
+            .User;
+        
+        var user = await repo.FindById(id);
+        if (user is null)
+            return NotFound();
+
+        var posts = await managementService.GetPostsForUser(
+            user,
+            us);
+
+        return Ok(
+            posts.Select(statusRenderer.RenderForPost));
     }
 }
