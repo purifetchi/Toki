@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.Binding;
 using Toki.MastodonApi.Renderers;
@@ -20,6 +21,7 @@ namespace Toki.Controllers.MastodonApi.Statuses;
 [EnableCors("MastodonAPI")]
 public class StatusesController(
     PostManagementService postManagementService,
+    PostRepository repo,
     StatusRenderer statusRenderer) : ControllerBase
 {
     /// <summary>
@@ -48,6 +50,33 @@ public class StatusesController(
         if (post is null)
             return BadRequest(new MastodonApiError("Posting error: Cannot post status."));
 
+        return Ok(
+            statusRenderer.RenderForPost(post));
+    }
+
+    /// <summary>
+    /// Favourites a post.
+    /// </summary>
+    /// <param name="id">The id of the post.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id:guid}/favourite")]
+    public async Task<IActionResult> Favourite(
+        [FromRoute] Guid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null)
+            return NotFound(new MastodonApiError("Record not found."));
+
+        await postManagementService.Like(
+            user,
+            post);
+        
         return Ok(
             statusRenderer.RenderForPost(post));
     }
