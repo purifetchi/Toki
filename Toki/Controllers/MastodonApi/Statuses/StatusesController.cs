@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Toki.ActivityPub.Models;
-using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.Binding;
@@ -55,6 +54,29 @@ public class StatusesController(
     }
 
     /// <summary>
+    /// Fetches a status.
+    /// </summary>
+    /// <param name="id">The id of the status.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpGet]
+    [Route("{id:guid}")]
+    [OAuth(manualScopeValidation: true)]
+    [Produces("application/json")]
+    public async Task<IActionResult> FetchStatus(
+        [FromRoute] Guid id)
+    {
+        var user = HttpContext.GetOAuthToken()?
+            .User;
+        
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        return Ok(
+            statusRenderer.RenderForPost(post));
+    }
+
+    /// <summary>
     /// Favourites a post.
     /// </summary>
     /// <param name="id">The id of the post.</param>
@@ -70,7 +92,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null)
+        if (post is null || !post.VisibleByUser(user))
             return NotFound(new MastodonApiError("Record not found."));
 
         await postManagementService.Like(
