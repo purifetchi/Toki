@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Toki.ActivityPub.Persistence.Repositories;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.NodeInfo;
 using Toki.ActivityPub.WebFinger;
 
 namespace Toki.Controllers;
@@ -9,7 +12,9 @@ namespace Toki.Controllers;
 /// </summary>
 [ApiController]
 [Route(".well-known")]
-public class WellKnownController(WebFingerRenderer renderer)
+public class WellKnownController(
+    WebFingerRenderer renderer,
+    IOptions<InstanceConfiguration> opts)
     : ControllerBase
 {
     /// <summary>
@@ -17,8 +22,9 @@ public class WellKnownController(WebFingerRenderer renderer)
     /// </summary>
     /// <param name="resource">The resource.</param>
     /// <returns>Either a webfinger response, or nothing.</returns>
-    [Route("webfinger")]
     [HttpGet]
+    [Route("webfinger")]
+    [EnableCors("MastodonAPI")]
     public async Task<ActionResult<WebFingerResponse?>> WebFinger([FromQuery] string resource)
     {
         var resp = await renderer.FindUser(resource);
@@ -26,5 +32,27 @@ public class WellKnownController(WebFingerRenderer renderer)
             return NotFound();
 
         return resp;
+    }
+
+    /// <summary>
+    /// Fetches the node info versions for this server.
+    /// </summary>
+    /// <returns>The node info version selector.</returns>
+    [HttpGet]
+    [Route("nodeinfo")]
+    [EnableCors("MastodonAPI")]
+    public NodeInfoVersionSelectorResponse NodeInfoVersions()
+    {
+        return new NodeInfoVersionSelectorResponse()
+        {
+            Links =
+            [
+                new()
+                {
+                    Relative = "http://nodeinfo.diaspora.software/ns/schema/2.1",
+                    Hyperlink = $"https://{opts.Value.Domain}/nodeinfo/2.1"
+                }
+            ]
+        };
     }
 }
