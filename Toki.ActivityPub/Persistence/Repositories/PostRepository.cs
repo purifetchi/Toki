@@ -66,6 +66,8 @@ public class PostRepository(
     {
         return await db.Posts
             .Include(post => post.Author)
+            .Include(post => post.Parent)
+            .ThenInclude(parent => parent!.Author)
             .FirstOrDefaultAsync(post => post.Id == id);
     }
 
