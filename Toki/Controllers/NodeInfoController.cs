@@ -28,7 +28,8 @@ public class NodeInfoController(
         var software = new NodeInfoSoftware
         {
             Name = config.Software.SoftwareName,
-            Version = config.Software.SoftwareVersion ?? "unknown",
+            Version = config.Software.SoftwareVersion ?? 
+                $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}",
             
             Repository = config.Software.SoftwareRepository,
             Homepage = config.Software.SoftwareWebsite
