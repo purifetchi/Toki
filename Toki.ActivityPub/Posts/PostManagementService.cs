@@ -103,6 +103,9 @@ public class PostManagementService(
         User actor,
         Post post)
     {
+        if (await HasLiked(actor, post))
+            return;
+        
         var like = new PostLike()
         {
             Id = Guid.NewGuid(),
@@ -128,5 +131,22 @@ public class PostManagementService(
         await federationService.SendToFollowers(
             actor,
             likeActivity);
+    }
+
+    /// <summary>
+    /// Checks whether a user has already liked a post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>Whether they have liked it.</returns>
+    public async Task<bool> HasLiked(
+        User user,
+        Post post)
+    {
+        var like = await repo.FindLikeByIds(
+            post.Id,
+            user.Id);
+
+        return like is not null;
     }
 }

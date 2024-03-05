@@ -41,6 +41,21 @@ public class PostRepository(
 
         return post;
     }
+
+    /// <summary>
+    /// Finds a like by the id pair.
+    /// </summary>
+    /// <param name="postId">The post id.</param>
+    /// <param name="userId">The user id.</param>
+    /// <returns>The post, if it exists.</returns>
+    public async Task<PostLike?> FindLikeByIds(
+        Guid postId,
+        Guid userId)
+    {
+        return await db.PostLikes
+            .FirstOrDefaultAsync(like => like.LikingUserId == userId &&
+                                         like.PostId == postId);
+    }
     
     /// <summary>
     /// Finds a post by its id.
