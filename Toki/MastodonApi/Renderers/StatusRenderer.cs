@@ -68,7 +68,7 @@ public class StatusRenderer(
             InReplyToId = post.ParentId?.ToString(),
             InReplyToAccountId = post.Parent?.AuthorId.ToString(),
 
-            Attachments = RenderAttachmentsFor(post)
+            Attachments = RenderAttachmentsFor(post) ?? []
         };
     }
 }
