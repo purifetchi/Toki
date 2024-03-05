@@ -33,6 +33,11 @@ public class Post : RemoteableModel
     public Guid? ParentId { get; set; }
     
     /// <summary>
+    /// The id of the current thread context.
+    /// </summary>
+    public Guid? Context { get; set; }
+    
+    /// <summary>
     /// The post this one is boosting.
     /// </summary>
     public Post? Boosting { get; set; }

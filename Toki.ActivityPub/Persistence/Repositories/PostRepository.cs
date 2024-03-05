@@ -197,6 +197,8 @@ public class PostRepository(
             Id = Guid.NewGuid(),
             RemoteId = note.Id,
             
+            Context = Guid.NewGuid(),
+            
             Author = author,
             AuthorId = author.Id,
 
@@ -216,7 +218,11 @@ public class PostRepository(
         if (note.InReplyTo is not null)
         {
             var parent = await FindByRemoteId(note.InReplyTo.Id);
-            post.Parent = parent;
+            if (parent is not null)
+            {
+                post.Parent = parent;
+                post.Context = parent.Context;    
+            }
         }
         
         // TODO: Resolve quote posts.

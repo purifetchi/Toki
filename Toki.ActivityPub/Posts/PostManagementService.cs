@@ -37,6 +37,8 @@ public class PostManagementService(
         var post = new Post()
         {
             Id = Guid.NewGuid(),
+            Context = Guid.NewGuid(),
+            
             CreatedAt = DateTime.UtcNow,
             
             Author = author,
@@ -70,6 +72,7 @@ public class PostManagementService(
         var boost = new Post()
         {
             Id = Guid.NewGuid(),
+            
             Author = user,
             AuthorId = user.Id,
 
