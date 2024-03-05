@@ -20,29 +20,6 @@ public class PostManagementService(
     MessageFederationService federationService)
 {
     /// <summary>
-    /// Gets posts for a target user.
-    /// </summary>
-    /// <param name="target">The target user.</param>
-    /// <param name="viewingAs">Who are we viewing this target's posts as? Blank if public.</param>
-    /// <returns>An enumerable of posts.</returns>
-    public async Task<IEnumerable<Post>> GetPostsForUser(
-        User target,
-        User? viewingAs = null)
-    {
-        var query = repo.CreateCustomQuery()
-            .Where(post => post.AuthorId == target.Id)
-            .Include(post => post.Parent)
-            .Include(post => post.Author)
-            .ThenInclude(author => author.FollowerRelations)
-            .Include(post => post.Boosting)
-            .ThenInclude(boost => boost!.Author)
-            .Where(post => post.Visibility == PostVisibility.Public ||
-                           post.Visibility == PostVisibility.Unlisted);
-        
-        return await query.ToListAsync();
-    }
-    
-    /// <summary>
     /// Creates a new post.
     /// </summary>
     /// <param name="author">The author of the post.</param>

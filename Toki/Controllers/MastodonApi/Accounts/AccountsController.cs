@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
-using Toki.ActivityPub.Posts;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
+using Toki.Services.Timelines;
 
 namespace Toki.Controllers.MastodonApi.Accounts;
 
@@ -19,7 +19,7 @@ public class AccountsController(
     AccountRenderer renderer,
     StatusRenderer statusRenderer,
     UserRepository repo,
-    PostManagementService managementService) : ControllerBase
+    TimelineBuilder timelineBuilder) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -62,14 +62,20 @@ public class AccountsController(
     /// Fetches the data for an account.
     /// </summary>
     /// <param name="id">Its id.</param>
+    /// <param name="pinned">Should we fetch only pinned posts?</param>
     /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
     [HttpGet]
     [Route("{id:guid}/statuses")]
     [Produces("application/json")]
     [OAuth(manualScopeValidation: true)]
     public async Task<IActionResult> FetchAccountStatuses(
-        [FromRoute] Guid id)
+        [FromRoute] Guid id,
+        [FromQuery] bool pinned = false)
     {
+        // TODO: Support pinned posts.
+        if (pinned)
+            return Ok(Array.Empty<Status>());
+        
         var us = HttpContext.GetOAuthToken()?
             .User;
         
@@ -77,9 +83,10 @@ public class AccountsController(
         if (user is null)
             return NotFound();
 
-        var posts = await managementService.GetPostsForUser(
-            user,
-            us);
+        var posts = await timelineBuilder
+            .ViewAs(us)
+            .Filter(post => post.AuthorId == id)
+            .GetTimeline();
 
         return Ok(
             posts.Select(statusRenderer.RenderForPost));

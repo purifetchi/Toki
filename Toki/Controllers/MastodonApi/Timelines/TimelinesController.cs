@@ -7,6 +7,7 @@ using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
+using Toki.Services.Timelines;
 
 namespace Toki.Controllers.MastodonApi.Timelines;
 
@@ -18,7 +19,8 @@ namespace Toki.Controllers.MastodonApi.Timelines;
 [EnableCors("MastodonAPI")]
 public class TimelinesController(
     StatusRenderer statusRenderer,
-    PostRepository repo) : ControllerBase 
+    PostRepository repo,
+    TimelineBuilder timelineBuilder) : ControllerBase 
 {
     /// <summary>
     /// Renders the public timeline.
@@ -31,15 +33,9 @@ public class TimelinesController(
     {
         // TODO: Give a heck about the query parameters.
         
-        var list = await repo.CreateCustomQuery()
-            .Include(post => post.Author)
-            .Include(post => post.Parent)
-            .Include(post => post.Attachments)
-            .Include(post => post.Boosting)
-            .ThenInclude(boost => boost!.Author)
-            .OrderByDescending(post => post.ReceivedAt)
-            .Where(post => post.Visibility == PostVisibility.Public)
-            .ToListAsync();
+        var list = await timelineBuilder
+            .Filter(post => post.Visibility == PostVisibility.Public)
+            .GetTimeline();
 
         return list.Select(statusRenderer.RenderForPost);
     }
@@ -58,20 +54,9 @@ public class TimelinesController(
         var user = HttpContext.GetOAuthToken()!
             .User;
 
-        // TODO: PLEASE make this look nicer.
-        var list = await repo.CreateCustomQuery()
-            .Include(post => post.Author)
-            .ThenInclude(author => author!.FollowerRelations)
-            .Include(post => post.Parent)
-            .Include(post => post.Attachments)
-            .Include(post => post.Boosting)
-            .ThenInclude(boost => boost!.Author)
-            .OrderByDescending(post => post.ReceivedAt)
-            .Where(post => post.AuthorId == user.Id ||
-                           (post.Author.FollowerRelations != null &&
-                            post.Author.FollowerRelations.Any(fr => fr.FollowerId == user.Id)))
-            .Where(post => post.Visibility != PostVisibility.Direct)
-            .ToListAsync();// TODO: Check whether the user is a target of a direct message.
+        var list = await timelineBuilder
+            .ViewAs(user)
+            .GetTimeline();
 
         return list.Select(statusRenderer.RenderForPost);
     }
