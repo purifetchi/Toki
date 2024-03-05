@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.Extensions;
 
 namespace Toki.Services.Timelines;
 
@@ -16,13 +17,7 @@ public class TimelineBuilder(
     /// The query we're operating on.
     /// </summary>
     private IQueryable<Post> _query = postRepo.CreateCustomQuery()
-        .Include(post => post.Author)
-        .Include(post => post.Parent)
-        .Include(post => post.Attachments)
-        .Include(post => post.Boosting)
-            .ThenInclude(boost => boost!.Author)
-        .Include(post => post.Boosting)
-            .ThenInclude(boost => boost!.Attachments)
+        .AddMastodonRenderNecessities()
         .OrderByDescending(post => post.ReceivedAt);
 
     /// <summary>
