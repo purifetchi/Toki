@@ -7,6 +7,7 @@ using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
 using Toki.ActivityPub.WebFinger;
 using Toki.ActivityStreams.Objects;
+using Toki.Services.Drive;
 
 namespace Toki.Controllers;
 
@@ -21,8 +22,21 @@ public class DebugController(
     PostManagementService postManagementService,
     PostRepository postRepo,
     WebFingerResolver webFingerResolver,
-    ActivityPubResolver apResolver) : ControllerBase
+    ActivityPubResolver apResolver,
+    DriveService drive) : ControllerBase
 {
+    [HttpPost]
+    [Route("test_upload_file")]
+    public async Task<IActionResult> UploadFile(
+        [FromForm] IFormFile file)
+    {
+        var link = await drive.Store(file);
+        if (link is null)
+            return BadRequest();
+
+        return Ok(link);
+    }
+
     [HttpGet]
     [Route("test_create_user")]
     public async Task<IActionResult> CreateUser(

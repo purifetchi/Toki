@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.Configuration;
 using Toki.MastodonApi.Schemas.Responses.Instance;
+using Toki.Services.Drive;
 
 namespace Toki.Controllers.MastodonApi.Instance;
 
@@ -13,7 +15,8 @@ namespace Toki.Controllers.MastodonApi.Instance;
 [Route("/api")]
 [EnableCors("MastodonAPI")]
 public class InstanceController(
-    IOptions<InstanceConfiguration> opts) : ControllerBase
+    IOptions<InstanceConfiguration> opts,
+    IOptions<UploadConfiguration> uploadOpts) : ControllerBase
 {
     /// <summary>
     /// Fetches the v1 version of the information.
@@ -24,19 +27,26 @@ public class InstanceController(
     public async Task<IActionResult> InstanceV1()
     {
         var config = opts.Value;
+        var uploadConfig = uploadOpts.Value;
 
         var info = new InstanceInformationV1Response()
         {
             Uri = config.Domain,
             Email = config.ContactEmail,
-            Title = "Toki server", // TODO: Make this configurable
-            Version = "dev",
+            Title = config.Name,
+            Version = config.Software.SoftwareVersion ?? 
+                      $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}",
             ShortDescription = config.Info,
             
             Configuration = new InstanceInformationV1Configuration()
             {
                 Statuses = new InstanceInformationStatuses(),
-                MediaAttachments = new InstanceInformationMediaAttachments()
+                MediaAttachments = new InstanceInformationMediaAttachments
+                {
+                    SupportedMimeTypes = DriveService.AcceptedMIMEs,
+                    ImageSizeLimit = uploadConfig.MaxFileSize,
+                    VideoSizeLimit = uploadConfig.MaxFileSize
+                }
             }
         };
         

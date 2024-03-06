@@ -17,7 +17,7 @@ public record InstanceInformationMediaAttachments
     /// The maximum size of any uploaded image, in bytes.
     /// </summary>
     [JsonPropertyName("image_size_limit")]
-    public int ImageSizeLimit { get; init; }
+    public long ImageSizeLimit { get; init; }
     
     /// <summary>
     /// The maximum number of pixels (width times height) for image uploads.
@@ -29,7 +29,7 @@ public record InstanceInformationMediaAttachments
     /// The maximum size of any uploaded video, in bytes.
     /// </summary>
     [JsonPropertyName("video_size_limit")]
-    public int VideoSizeLimit { get; init; }
+    public long VideoSizeLimit { get; init; }
     
     /// <summary>
     /// The maximum number of pixels (width times height) for video uploads.
