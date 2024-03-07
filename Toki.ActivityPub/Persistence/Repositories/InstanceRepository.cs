@@ -50,6 +50,16 @@ public class InstanceRepository(
         return await GetByDomain(
             new Uri(actor.Id).Host);
     }
+
+    /// <summary>
+    /// Gets all of the connected instances.
+    /// </summary>
+    /// <returns>The list of connected instances.</returns>
+    public async Task<IEnumerable<RemoteInstance>> GetAllConnectedInstances()
+    {
+        return await db.Instances
+            .ToListAsync();
+    }
     
     /// <summary>
     /// Fetches an instance for a given actor.

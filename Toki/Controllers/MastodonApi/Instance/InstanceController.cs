@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.Configuration;
 using Toki.MastodonApi.Schemas.Responses.Instance;
 using Toki.Services.Drive;
@@ -15,6 +16,7 @@ namespace Toki.Controllers.MastodonApi.Instance;
 [Route("/api")]
 [EnableCors("MastodonAPI")]
 public class InstanceController(
+    InstanceRepository repo,
     IOptions<InstanceConfiguration> opts,
     IOptions<UploadConfiguration> uploadOpts) : ControllerBase
 {
@@ -52,5 +54,19 @@ public class InstanceController(
         };
         
         return Ok(info);
+    }
+
+    /// <summary>
+    /// Gets a list of all the connected instances.
+    /// </summary>
+    /// <returns>The list of connected instances.</returns>
+    [HttpGet]
+    [Route("v1/instance/peers")]
+    [Produces("application/json")]
+    public async Task<IEnumerable<string>> GetPeers()
+    {
+        var instances = await repo.GetAllConnectedInstances();
+        return instances
+            .Select(inst => inst.Domain);
     }
 }
