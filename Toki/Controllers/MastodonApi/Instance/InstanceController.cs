@@ -29,13 +29,14 @@ public class InstanceController(
         var config = opts.Value;
         var uploadConfig = uploadOpts.Value;
 
+        var version = $"{opts.Value.Software.SoftwareName} {config.Software.SoftwareVersion ?? $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}"}";
+        
         var info = new InstanceInformationV1Response()
         {
             Uri = config.Domain,
             Email = config.ContactEmail,
             Title = config.Name,
-            Version = config.Software.SoftwareVersion ?? 
-                      $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}",
+            Version = $"4.0.0 (compatible; {version})",
             ShortDescription = config.Info,
             
             Configuration = new InstanceInformationV1Configuration()
