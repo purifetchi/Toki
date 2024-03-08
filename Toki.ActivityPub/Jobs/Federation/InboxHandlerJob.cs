@@ -55,12 +55,39 @@ public class InboxHandlerJob(
             ASFollow follow => userRelationService.HandleFromActivityStreams(follow),
             ASAnnounce announce => HandleAnnounce(announce, actor),
             ASLike like => HandleLike(like, actor),
+            ASUndo undo => HandleUndo(undo, actor),
             
             _ => Task.Run(() =>
             {
                 logger.LogWarning($"Dropped {activity.Id}, due to no handler present for {activity.Type}");
             })
         });
+    }
+
+    /// <summary>
+    /// Handles the Undo activity.
+    /// </summary>
+    /// <param name="undo">The undo.</param>
+    /// <param name="actor">The actor doing it.</param>
+    private async Task HandleUndo(ASUndo undo, User actor)
+    {
+        if (undo.Object is null)
+            return;
+        
+        var asObject = await resolver.Fetch<ASObject>(undo.Object);
+        if (asObject is not ASActivity activity)
+        {
+            logger.LogWarning($"Someone just attempted to undo an object that's not an activity? Id={asObject?.Id}");
+            return;
+        }
+
+        if (activity.Actor.Id != actor.RemoteId)
+        {
+            logger.LogWarning($"{actor.RemoteId} attempted to undo an activity performed by {activity.Actor.Id}.");
+            return;
+        }
+        
+        // TODO: Undo the activity  here.
     }
 
     /// <summary>
