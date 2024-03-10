@@ -181,4 +181,34 @@ public class StatusesController(
         return Ok(
             statusRenderer.RenderForPost(post));
     }
+    
+    /// <summary>
+    /// Reblogs a post.
+    /// </summary>
+    /// <param name="id">The id of the post.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id:guid}/reblog")]
+    public async Task<IActionResult> Reblog(
+        [FromRoute] Guid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        var boost = await postManagementService.Boost(
+            user,
+            post);
+
+        if (boost is null)
+            return BadRequest(new MastodonApiError("Error while boosting post."));
+        
+        return Ok(
+            statusRenderer.RenderForPost(boost));
+    }
 }

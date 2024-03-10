@@ -62,12 +62,13 @@ public class PostManagementService(
     /// </summary>
     /// <param name="user">The user who's boosting.</param>
     /// <param name="post">The post.</param>
-    public async Task Boost(
+    /// <returns>The boost.</returns>
+    public async Task<Post?> Boost(
         User user,
         Post post)
     {
         if (!post.CanBeBoosted())
-            return;
+            return null;
         
         var boost = new Post()
         {
@@ -86,8 +87,8 @@ public class PostManagementService(
             boost,
             post);
         
-        if (!post.Author.IsRemote || user.IsRemote)
-            return;
+        if (user.IsRemote)
+            return boost;
         
         var announce = postRenderer.RenderBoostForNote(user, post);
         
@@ -95,6 +96,8 @@ public class PostManagementService(
         await federationService.SendToFollowers(
             user,
             announce);
+
+        return boost;
     }
 
     /// <summary>
