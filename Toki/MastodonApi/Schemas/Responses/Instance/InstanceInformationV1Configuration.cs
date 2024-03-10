@@ -19,5 +19,9 @@ public class InstanceInformationV1Configuration
     [JsonPropertyName("media_attachments")]
     public InstanceInformationMediaAttachments? MediaAttachments { get; init; }
     
-    // TODO: polls
+    /// <summary>
+    /// Hints for polls.
+    /// </summary>
+    [JsonPropertyName("polls")]
+    public InstanceInformationPolls? Polls { get; init; }
 }

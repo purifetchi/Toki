@@ -49,7 +49,8 @@ public class InstanceController(
                     SupportedMimeTypes = DriveService.AcceptedMIMEs,
                     ImageSizeLimit = uploadConfig.MaxFileSize,
                     VideoSizeLimit = uploadConfig.MaxFileSize
-                }
+                },
+                Polls = new InstanceInformationPolls()
             }
         };
         
