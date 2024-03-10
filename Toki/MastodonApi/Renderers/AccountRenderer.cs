@@ -38,8 +38,11 @@ public class AccountRenderer(
             
             Bio = user.Bio ?? "",
 
-            Avatar = user.AvatarUrl ?? "",
-            AvatarStatic = user.AvatarUrl ?? "",
+            Avatar = user.AvatarUrl ?? 
+                     pathRenderer.GetPathToDefaultAvatar(),
+            AvatarStatic = user.AvatarUrl ?? 
+                           pathRenderer.GetPathToDefaultAvatar(),
+            
             Header = user.BannerUrl ?? "",
             HeaderStatic = user.BannerUrl ?? "",
             

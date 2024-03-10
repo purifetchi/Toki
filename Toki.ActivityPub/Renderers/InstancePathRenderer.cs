@@ -34,4 +34,11 @@ public class InstancePathRenderer(
     /// <returns>The path to the <see cref="Toki.ActivityStreams.Objects.ASNote"/></returns>
     public string GetPathToPost(Post post) =>
         $"https://{opts.Value.Domain}/posts/{post.Id}";
+
+    /// <summary>
+    /// Returns a link to the default avatar.
+    /// </summary>
+    /// <returns>The default avatar.</returns>
+    public string GetPathToDefaultAvatar() =>
+        $"https://{opts.Value.Domain}/images/avatar.png";
 }
