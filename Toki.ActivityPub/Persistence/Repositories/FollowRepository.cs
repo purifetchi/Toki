@@ -56,6 +56,38 @@ public class FollowRepository(
     }
 
     /// <summary>
+    /// Gets follow relations for both of these users.
+    /// </summary>
+    /// <param name="user1">The first user.</param>
+    /// <param name="user2">The second user.</param>
+    /// <returns>The follower relations.</returns>
+    public async Task<IList<FollowerRelation>> GetFollowRelationsFor(
+        User user1,
+        User user2)
+    {
+        return await db.FollowerRelations
+            .Where(fr => (fr.Follower == user1 && fr.Followee == user2) ||
+                         (fr.Follower == user2 && fr.Followee == user1))
+            .ToListAsync();
+    }
+    
+    /// <summary>
+    /// Gets follow requests for both of these users.
+    /// </summary>
+    /// <param name="user1">The first user.</param>
+    /// <param name="user2">The second user.</param>
+    /// <returns>The follow requests.</returns>
+    public async Task<IList<FollowRequest>> GetFollowRequestsFor(
+        User user1,
+        User user2)
+    {
+        return await db.FollowRequests
+            .Where(fr => (fr.From == user1 && fr.To == user2) ||
+                         (fr.From == user2 && fr.To == user1))
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Adds a follow relation.
     /// </summary>
     /// <param name="fr">The follower relation.</param>

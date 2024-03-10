@@ -1,4 +1,5 @@
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 
@@ -52,4 +53,22 @@ public class AccountRenderer(
             CreatedAt = user.CreatedAt
         };
     }
+
+    /// <summary>
+    /// Renders a Mastodon <see cref="Relationship"/> from a Toki <see cref="RelationshipInformation"/>.
+    /// </summary>
+    /// <param name="target">The target user.</param>
+    /// <param name="info">The relationship info.</param>
+    /// <returns>The relationship.</returns>
+    public Relationship RenderRelationshipFrom(
+        User target, 
+        RelationshipInformation info) => new Relationship
+    {
+        Id = target.Id.ToString(),
+        Following = info.Followed,
+        FollowedBy = info.Following,
+        
+        RequestedFollow = info.RequestedFollow,
+        RequestedFollowBy = info.RequestedBy
+    };
 }

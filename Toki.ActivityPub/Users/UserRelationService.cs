@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Activities;
@@ -200,5 +201,26 @@ public class UserRelationService(
 
         await followRepo.AddFollowRequest(fr);
         return fr;
+    }
+
+    /// <summary>
+    /// Gets the relationship info between two users.
+    /// </summary>
+    /// <param name="source">The first user.</param>
+    /// <param name="target">The second user.</param>
+    /// <returns>The relationship information.</returns>
+    public async Task<RelationshipInformation> GetRelationshipInfoBetween(
+        User source,
+        User target)
+    {
+        var relations = await followRepo.GetFollowRelationsFor(source, target);
+        var requests = await followRepo.GetFollowRequestsFor(source, target);
+
+        return new RelationshipInformation(
+            relations.Any(f => f.Follower == target),
+            relations.Any(f => f.Follower == source),
+            requests.Any(f => f.From == target),
+            requests.Any(f => f.From == source)
+        );
     }
 }

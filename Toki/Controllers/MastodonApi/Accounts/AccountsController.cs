@@ -22,6 +22,7 @@ public class AccountsController(
     StatusRenderer statusRenderer,
     UserRepository repo,
     FollowRepository followRepo,
+    UserRelationService relationService,
     TimelineBuilder timelineBuilder) : ControllerBase
 {
     /// <summary>
@@ -135,5 +136,38 @@ public class AccountsController(
         var followers = await followRepo.GetFollowingFor(user);
         return Ok(followers
             .Select(u => renderer.RenderAccountFrom(u)));
+    }
+
+    /// <summary>
+    /// Gets all of the relationships between this user and users specified by "id".
+    /// </summary>
+    /// <param name="id">The ids.</param>
+    /// <returns>An array of Relationship.</returns>
+    [HttpGet]
+    [Route("relationships")]
+    [Produces("application/json")]
+    [OAuth("read:follows")]
+    public async Task<IActionResult> GetRelationships(
+        [FromQuery] Guid[] id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var results = new List<Relationship>();
+        foreach (var uid in id)
+        {
+            var target = await repo.FindById(uid);
+            if (target is null)
+                continue;
+
+            var relationshipInfo = await relationService.GetRelationshipInfoBetween(
+                user,
+                target);
+            
+            results.Add(
+                renderer.RenderRelationshipFrom(target, relationshipInfo));
+        }
+        
+        return Ok(results);
     }
 }
