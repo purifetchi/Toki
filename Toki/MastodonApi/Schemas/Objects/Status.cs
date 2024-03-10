@@ -96,6 +96,24 @@ public record Status
     /// </summary>
     [JsonPropertyName("reblog")]
     public Status? Boost { get; init; }
+
+    /// <summary>
+    /// The emojis in this post.
+    /// </summary>
+    [JsonPropertyName("emojis")]
+    public IReadOnlyList<CustomEmoji> Emojis { get; init; } = [];
     
+    /// <summary>
+    /// The emojis in this post.
+    /// </summary>
+    [JsonPropertyName("mentions")]
+    public IReadOnlyList<Mention> Mentions { get; init; } = [];
+    
+    /// <summary>
+    /// The url to the HTML representation of the post.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; init; }
+
     // TODO: The rest of the status.
 }

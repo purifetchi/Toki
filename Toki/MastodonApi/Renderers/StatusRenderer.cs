@@ -1,5 +1,7 @@
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Renderers;
+using Toki.Extensions;
 using Toki.MastodonApi.Schemas.Objects;
 
 namespace Toki.MastodonApi.Renderers;
@@ -38,12 +40,15 @@ public class StatusRenderer(
     /// <returns>The resulting status.</returns>
     public Status RenderForPost(Post post)
     {
+        var url = post.RemoteId ??
+                  pathRenderer.GetPathToPost(post);
+        
         return new Status
         {
             Id = $"{post.Id}",
             
-            Uri = post.RemoteId ?? 
-                  pathRenderer.GetPathToPost(post),
+            Uri = url,
+            Url = url,
 
             CreatedAt = post.CreatedAt,
             Content = post.Content,
@@ -55,11 +60,10 @@ public class StatusRenderer(
             FavouritesCount = post.LikeCount,
 
             Sensitive = post.Sensitive,
-            SpoilerText = post.ContentWarning,
+            SpoilerText = post.ContentWarning ?? "",
 
             Visibility = post.Visibility
-                .ToString()
-                .ToLowerInvariant(),
+                .ToMastodonString(),
             
             Boost = post.Boosting is not null ?
                 RenderForPost(post.Boosting) :

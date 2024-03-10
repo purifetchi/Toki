@@ -36,7 +36,7 @@ public class AccountRenderer(
                 user.RemoteId :
                 pathRenderer.GetPathToActor(user),
             
-            Bio = user.Bio,
+            Bio = user.Bio ?? "",
 
             Avatar = user.AvatarUrl ?? "",
             AvatarStatic = user.AvatarUrl ?? "",

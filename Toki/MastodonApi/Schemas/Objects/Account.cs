@@ -103,4 +103,16 @@ public record Account
     [JsonPropertyName("source")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public CredentialAccountSource? Source { get; init; }
+    
+    /// <summary>
+    /// The emojis in this account.
+    /// </summary>
+    [JsonPropertyName("emojis")]
+    public IReadOnlyList<CustomEmoji> Emojis { get; init; } = [];
+    
+    /// <summary>
+    /// The fields for this account.
+    /// </summary>
+    [JsonPropertyName("fields")]
+    public IReadOnlyList<Field> Fields { get; init; } = [];
 }
