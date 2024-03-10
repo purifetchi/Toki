@@ -42,14 +42,15 @@ public class UserRenderer(
             
             PreferredUsername = user.Handle,
             
-            Inbox = ASObject.Link(user.Inbox ?? $"{uri}/inbox"),
+            Inbox = ASObject.Link(user.Inbox ?? $"{user.RemoteId ?? uri}/inbox"),
             
-            Followers = ASObject.Link($"{uri}/followers"),
-            Following = ASObject.Link($"{uri}/following"),
+            Followers = ASObject.Link($"{user.RemoteId ?? uri}/followers"),
+            Following = ASObject.Link($"{user.RemoteId ?? uri}/following"),
             
             PublicKey = new ASPublicKey
             {
-                Id = key!.RemoteId ?? $"{uri}#key",
+                Id = key!.RemoteId ?? $"{user.RemoteId ?? uri}#key",
+                Owner = ASObject.Link(user.RemoteId ?? uri),
                 PublicKeyPem = key!.PublicKey
             },
             

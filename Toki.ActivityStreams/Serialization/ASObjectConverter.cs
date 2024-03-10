@@ -37,6 +37,8 @@ public class ASObjectConverter : JsonConverter<ASObject>
                 "Accept" => obj.Deserialize<ASAccept>(),
                 "Like" => obj.Deserialize<ASLike>(),
                 "Announce" => obj.Deserialize<ASAnnounce>(),
+                "Undo" => obj.Deserialize<ASUndo>(),
+                "Update" => obj.Deserialize<ASUpdate>(),
                 
                 "Note" => obj.Deserialize<ASNote>(),
                 

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Resolvers;
 
 namespace Toki.ActivityPub.WebFinger;
 
@@ -31,6 +32,33 @@ public class WebFingerRenderer(
             return null;
 
         handle = handle.Replace($"@{domain}", "");
+        
+        // Check if we're being queried for the instance actor.
+        if (handle == domain || 
+            handle == InstanceActorResolver.INSTANCE_ACTOR_NAME)
+        {
+            return new WebFingerResponse
+            {
+                Subject = $"acct:{InstanceActorResolver.INSTANCE_ACTOR_NAME}@{domain}",
+                Aliases = [$"https://{domain}/actor"],
+                Links = [
+                    new WebFingerLink
+                    {
+                        Hyperlink = $"https://{domain}/actor",
+                        Type = "application/activity+json",
+                        Relative = "self"
+                    },
+                
+                    new WebFingerLink
+                    {
+                        Hyperlink = $"https://{domain}/actor",
+                        Type = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"",
+                        Relative = "self"
+                    }
+                ]
+            };
+        }
+        
         var user = await repo.FindByHandle(handle);
 
         if (user is null)

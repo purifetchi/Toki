@@ -79,8 +79,7 @@ public class ActivityPubResolver(
             .WithHeader("User-Agent", 
                 $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
             .AddHeaderToSign("Host")
-            .AddHeaderToSign("Date", 
-                DateTimeOffset.UtcNow.AddSeconds(5).ToString("D, d M Y H:i:s T"))
+            .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
             .WithHeader("Accept",
                 "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
             .Get(url);

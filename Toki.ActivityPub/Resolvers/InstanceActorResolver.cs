@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -9,18 +11,18 @@ namespace Toki.ActivityPub.Resolvers;
 /// <summary>
 /// The resolver for the instance actor.
 /// </summary>
-/// <param name="db">The database context.</param>
 /// <param name="repo">The user repository.</param>
 /// <param name="renderer">The user renderer.</param>
+/// <param name="opts">The instance configuration.</param>
 public class InstanceActorResolver(
-    TokiDatabaseContext db,
     UserRepository repo,
-    UserRenderer renderer)
+    UserRenderer renderer,
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// The name of the instance actor.
     /// </summary>
-    private const string INSTANCE_ACTOR_NAME = "toki.instance.actor";
+    public const string INSTANCE_ACTOR_NAME = "toki.instance.actor";
     
     /// <summary>
     /// The keypair of the instance actor.
@@ -49,6 +51,8 @@ public class InstanceActorResolver(
     public async Task<ASActor> RenderInstanceActor()
     {
         var actor = await GetInstanceActor();
+        actor.RemoteId = $"https://{opts.Value.Domain}/actor"; // Cheap hack to point to the right address.
+        
         var rendered = await renderer.RenderFullActorFrom(
             actor,
             "Application");
