@@ -56,12 +56,37 @@ public class InboxHandlerJob(
             ASAnnounce announce => HandleAnnounce(announce, actor),
             ASLike like => HandleLike(like, actor),
             ASUndo undo => HandleUndo(undo, actor),
+            ASUpdate update => HandleUpdate(update, actor),
             
             _ => Task.Run(() =>
             {
                 logger.LogWarning($"Dropped {activity.Id}, due to no handler present for {activity.Type}");
             })
         });
+    }
+
+    /// <summary>
+    /// Handles the Update activity.
+    /// </summary>
+    /// <param name="update">The undo.</param>
+    /// <param name="actor">The actor doing it.</param>
+    private async Task HandleUpdate(ASUpdate update, User actor)
+    {
+        if (update.Object is null)
+            return;
+        
+        var obj = await resolver.Fetch<ASObject>(update.Object);
+        
+        if (obj is ASActor actorData)
+        {
+            if (actorData.Id != actor.RemoteId)
+                return;
+
+            await repo.UpdateFromActivityStreams(actor, actorData);
+            return;
+        }
+        
+        logger.LogWarning($"Dropped Update {update.Id}, due to no handler present for {obj.Type}");
     }
 
     /// <summary>

@@ -84,6 +84,18 @@ public class UserRepository(
     }
     
     /// <summary>
+    /// Updates a user.
+    /// </summary>
+    /// <param name="user">Said user.</param>
+    public async Task<bool> Update(User user)
+    {
+        db.Users.Update(user);
+        var changes = await db.SaveChangesAsync();
+        
+        return changes > 0;
+    }
+    
+    /// <summary>
     /// Imports a user from the ActivityStreams actor definition.
     /// </summary>
     /// <param name="actor">The actor.</param>
@@ -136,6 +148,23 @@ public class UserRepository(
         await Add(user);
 
         return user;
+    }
+    
+    /// <summary>
+    /// Imports a user from the ActivityStreams actor definition.
+    /// </summary>
+    /// <param name="actor">The actor.</param>
+    public async Task UpdateFromActivityStreams(User actor, ASActor data)
+    {
+        logger.LogInformation($"Updating remote user {actor.RemoteId} ({actor.DisplayName})");
+
+        actor.DisplayName = data.Name!;
+        actor.AvatarUrl = data.Icon?.Url;
+        actor.BannerUrl = data.Banner?.Url;
+        actor.RequiresFollowApproval = data.ManuallyApprovesFollowers;
+        actor.Bio = data.Bio;
+
+        await Update(actor);
     }
 
     /// <summary>
