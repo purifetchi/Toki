@@ -63,6 +63,11 @@ public class TokiDatabaseContext : DbContext
     /// The OAuth2 tokens set.
     /// </summary>
     public DbSet<OAuthToken> OAuthTokens { get; private set; } = null!;
+
+    /// <summary>
+    /// The notifications set.
+    /// </summary>
+    public DbSet<Notification> Notifications { get; private set; } = null!;
     
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -164,6 +169,26 @@ public class TokiDatabaseContext : DbContext
             .WithMany()
             .HasForeignKey(oa => oa.UserId)
             .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne<User>(n => n.Target)
+            .WithMany()
+            .HasForeignKey(n => n.TargetId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Notification>()
+            .HasOne<User>(n => n.Actor)
+            .WithMany()
+            .HasForeignKey(n => n.ActorId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne<Post>(n => n.RelevantPost)
+            .WithMany()
+            .HasForeignKey(n => n.RelevantPostId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 
