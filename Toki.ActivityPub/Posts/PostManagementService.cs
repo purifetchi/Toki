@@ -3,6 +3,7 @@ using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 
@@ -17,7 +18,8 @@ namespace Toki.ActivityPub.Posts;
 public class PostManagementService(
     PostRepository repo,
     PostRenderer postRenderer,
-    MessageFederationService federationService)
+    MessageFederationService federationService,
+    NotificationService notificationService)
 {
     /// <summary>
     /// Creates a new post.
@@ -86,6 +88,14 @@ public class PostManagementService(
         await repo.AddBoost(
             boost,
             post);
+
+        if (!post.Author.IsRemote)
+        {
+            await notificationService.DispatchBoost(
+                post.Author,
+                user,
+                post);
+        }
         
         if (user.IsRemote)
             return boost;
@@ -125,6 +135,14 @@ public class PostManagementService(
         await repo.AddLike(
             like,
             post);
+        
+        if (!post.Author.IsRemote)
+        {
+            await notificationService.DispatchLike(
+                post.Author,
+                actor,
+                post);
+        }
 
         if (!post.Author.IsRemote || actor.IsRemote)
             return;

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.NodeInfo;
+using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.OAuth2;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -35,6 +36,9 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<PostRepository>()
             .AddScoped<PostRenderer>()
             .AddScoped<PostManagementService>();
+        
+        collection.AddScoped<NotificationRepository>()
+            .AddScoped<NotificationService>();
         
         collection.AddScoped<UserRepository>()
             .AddScoped<UserRenderer>()

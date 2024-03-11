@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Persistence.Repositories;
+using Toki.Extensions;
+using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
+using Toki.Middleware.OAuth2.Extensions;
 
 namespace Toki.Controllers.MastodonApi.Notifications;
 
@@ -11,7 +15,10 @@ namespace Toki.Controllers.MastodonApi.Notifications;
 [ApiController]
 [EnableCors("MastodonAPI")]
 [Route("/api/v1/notifications")]
-public class NotificationsController : ControllerBase
+public class NotificationsController(
+    NotificationRepository repo,
+    AccountRenderer accountRenderer,
+    StatusRenderer statusRenderer) : ControllerBase
 {
     /// <summary>
     /// Gets the notifications related to the users.
@@ -21,9 +28,21 @@ public class NotificationsController : ControllerBase
     [OAuth("read:notifications")]
     public async Task<IEnumerable<Notification>> GetNotifications()
     {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+        
         // TODO: Query parameters as described by: https://docs.joinmastodon.org/methods/notifications/
-        // TODO: Stub
-
-        return Array.Empty<Notification>();
+        var notifs = await repo.GetForUser(user);
+        return notifs.Select(n => new Notification
+        {
+            Id = n.Id.ToString(),
+            Type = n.Type.ToMastodonNotificationType(),
+            CreatedAt = n.CreatedAt,
+            
+            Account = accountRenderer.RenderAccountFrom(n.Actor),
+            Status = n.RelevantPost is not null ?
+                statusRenderer.RenderForPost(n.RelevantPost) :
+                null
+        });
     }
 }
