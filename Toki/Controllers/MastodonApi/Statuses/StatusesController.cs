@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.Binding;
@@ -45,10 +46,20 @@ public class StatusesController(
         if (request.Status is null)
             return BadRequest(new MastodonApiError("Validation error: Post cannot be empty."));
 
-        var post = await postManagementService.Create(
-            user,
-            request.Status,
-            request.GetVisibility());
+        var replyingTo = Guid.TryParse(request.InReplyTo, out var replyingGuid)
+            ? await repo.FindById(replyingGuid)
+            : null;
+        
+        var post = await postManagementService.Create(new PostCreationRequest
+        {
+            Author = user,
+            Content = request.Status,
+            Visibility = request.GetVisibility(),
+            
+            IsSensitive = request.Sensitive,
+            ContentWarning = request.SpoilerText,
+            InReplyTo = replyingTo
+        });
         
         if (post is null)
             return BadRequest(new MastodonApiError("Posting error: Cannot post status."));

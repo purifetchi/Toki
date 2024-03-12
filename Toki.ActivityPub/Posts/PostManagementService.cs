@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -24,36 +25,40 @@ public class PostManagementService(
     /// <summary>
     /// Creates a new post.
     /// </summary>
-    /// <param name="author">The author of the post.</param>
-    /// <param name="content">The content of the post.</param>
-    /// <param name="visibility">The visibility.</param>
+    /// <param name="creationRequest">The creation request.</param>
     /// <returns>The created post.</returns>
     public async Task<Post?> Create(
-        User author,
-        string content,
-        PostVisibility visibility)
+        PostCreationRequest creationRequest)
     {
-        if (author.IsRemote)
+        if (creationRequest.Author.IsRemote)
             return null;
 
         var post = new Post()
         {
             Id = Guid.NewGuid(),
-            Context = Guid.NewGuid(),
+            Context = creationRequest.InReplyTo?.Context ??
+                      Guid.NewGuid(),
             
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
+            ReceivedAt = DateTimeOffset.UtcNow,
             
-            Author = author,
-            AuthorId = author.Id,
+            Author = creationRequest.Author,
+            AuthorId = creationRequest.Author.Id,
 
-            Content = content,
+            Content = creationRequest.Content,
             
-            Visibility = visibility
+            Sensitive = creationRequest.IsSensitive,
+            ContentWarning = creationRequest.ContentWarning,
+            
+            Visibility = creationRequest.Visibility,
+            
+            Parent = creationRequest.InReplyTo,
+            ParentId = creationRequest.InReplyTo?.Id
         };
 
         await repo.Add(post);
         await federationService.SendToFollowers(
-            author,
+            creationRequest.Author,
             postRenderer.RenderCreationForNote(post));
         
         return post;
