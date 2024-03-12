@@ -108,6 +108,12 @@ public record Status
     /// </summary>
     [JsonPropertyName("mentions")]
     public IReadOnlyList<Mention> Mentions { get; init; } = [];
+
+    /// <summary>
+    /// Hashtags used within the status content.
+    /// </summary>
+    [JsonPropertyName("tags")]
+    public IReadOnlyList<StatusTag> Tags { get; init; } = [];
     
     /// <summary>
     /// The url to the HTML representation of the post.
