@@ -204,4 +204,24 @@ public class AccountsController(
         return Ok(
             renderer.RenderRelationshipFrom(them, relationship));
     }
+
+    /// <summary>
+    /// Quickly lookup a username to see if it is available, skipping WebFinger resolution.
+    /// </summary>
+    /// <param name="acct">The username or WebFinger address to lookup.</param>
+    /// <returns>Either an <see cref="Account"/> or an error.</returns>
+    [HttpGet]
+    [Route("lookup")]
+    public async Task<ActionResult<Account>> Lookup(
+        [FromQuery] string? acct)
+    {
+        if (acct is null)
+            return UnprocessableEntity(new MastodonApiError("Missing acct."));
+
+        var user = await repo.FindByHandle(acct);
+        if (user is null)
+            return NotFound(new MastodonApiError("Record not found"));
+
+        return renderer.RenderAccountFrom(user);
+    }
 }
