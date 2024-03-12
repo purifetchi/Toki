@@ -71,4 +71,30 @@ public class NotificationService(
         await repo.Add(notif);
         return notif;
     }
+
+    /// <summary>
+    /// Dispatches a follow notification.
+    /// </summary>
+    /// <param name="target">The target user.</param>
+    /// <param name="follower">The follower.</param>
+    /// <returns>The dispatched notification.</returns>
+    public async Task<Notification> DispatchFollow(
+        User target,
+        User follower)
+    {
+        var notif = new Notification
+        {
+            Id = Guid.NewGuid(),
+            Type = NotificationType.Follow,
+            
+            Target = target,
+            TargetId = target.Id,
+
+            Actor = follower,
+            ActorId = follower.Id
+        };
+        
+        await repo.Add(notif);
+        return notif;
+    }
 }

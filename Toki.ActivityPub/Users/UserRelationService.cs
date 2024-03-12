@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
+using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Activities;
@@ -17,6 +18,7 @@ public class UserRelationService(
     UserRepository repo,
     InstancePathRenderer pathRenderer,
     MessageFederationService messageFederation,
+    NotificationService notificationService,
     ILogger<UserRelationService> logger)
 {
     /// <summary>
@@ -154,6 +156,10 @@ public class UserRelationService(
         else
             await CreateFollow(fr.From, fr.To);
 
+        await notificationService.DispatchFollow(
+            fr.To,
+            fr.From);
+        
         if (!fr.From.IsRemote)
             return;
         
