@@ -170,4 +170,38 @@ public class AccountsController(
         
         return Ok(results);
     }
+
+    /// <summary>
+    /// Follow the given account. Can also be used to update whether to show reblogs or enable notifications.
+    /// </summary>
+    /// <param name="id">The id of the account.</param>
+    /// <returns>Either a <see cref="Relationship"/> or an error.</returns>
+    [HttpPost]
+    [Route("{id:guid}/follow")]
+    [OAuth("write:follows")]
+    public async Task<ActionResult<Relationship>> FollowAccount(
+        [FromRoute] Guid id)
+    {
+        // TODO: Support reblogs and notify.
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+        
+        var them = await repo.FindById(id);
+        if (them is null)
+            return NotFound(new MastodonApiError("Record not found."));
+
+        if (user.Id == them.Id)
+            return Forbid();
+        
+        await relationService.RequestFollow(
+            user,
+            them);
+
+        var relationship = await relationService.GetRelationshipInfoBetween(
+            user,
+            them);
+
+        return Ok(
+            renderer.RenderRelationshipFrom(them, relationship));
+    }
 }
