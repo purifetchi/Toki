@@ -217,10 +217,10 @@ public class UserRelationService(
         var requests = await followRepo.GetFollowRequestsFor(source, target);
 
         return new RelationshipInformation(
-            relations.Any(f => f.Follower == target),
             relations.Any(f => f.Follower == source),
-            requests.Any(f => f.From == target),
-            requests.Any(f => f.From == source)
+            relations.Any(f => f.Follower == target),
+            requests.Any(f => f.From == source),
+            requests.Any(f => f.From == target)
         );
     }
 }
