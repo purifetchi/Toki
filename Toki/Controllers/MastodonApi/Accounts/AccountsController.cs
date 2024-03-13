@@ -141,18 +141,21 @@ public class AccountsController(
     /// <summary>
     /// Gets all of the relationships between this user and users specified by "id".
     /// </summary>
-    /// <param name="id">The ids.</param>
+    /// <param name="mastoId">The ids as passed in by any mastodon-fe client.</param>
+    /// <param name="normalId">The ids as passed in by any normal client.</param>
     /// <returns>An array of Relationship.</returns>
     [HttpGet]
     [Route("relationships")]
     [Produces("application/json")]
     [OAuth("read:follows")]
     public async Task<IActionResult> GetRelationships(
-        [FromQuery] Guid[] id)
+        [FromQuery(Name = "id[]")] Guid[] mastoId,
+        [FromQuery(Name = "id")] Guid[] normalId)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;
 
+        var id = normalId.Length > 0 ? normalId : mastoId;
         var results = new List<Relationship>();
         foreach (var uid in id)
         {
