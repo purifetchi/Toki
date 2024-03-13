@@ -21,17 +21,24 @@ public class StatusRenderer(
     private IReadOnlyList<MediaAttachment>? RenderAttachmentsFor(Post post)
     {
         return post.Attachments?
-            .Select(postAttachment => new MediaAttachment 
-            {
-                Id = $"{postAttachment.Id}",
-                Type = "image", // TODO: Deduce this based on the MIME
-
-                Url = postAttachment.Url,
-                PreviewUrl = postAttachment.Url,
-                Description = postAttachment.Description,
-            })
+            .Select(RenderAttachmentFrom)
             .ToList();
     }
+
+    /// <summary>
+    /// Renders a media attachment from the Toki <see cref="PostAttachment"/>.
+    /// </summary>
+    /// <param name="postAttachment">The post attachment.</param>
+    /// <returns>The resulting media attachment.</returns>
+    public MediaAttachment RenderAttachmentFrom(PostAttachment postAttachment) => new MediaAttachment
+    {
+        Id = $"{postAttachment.Id}",
+        Type = "image", // TODO: Deduce this based on the MIME
+
+        Url = postAttachment.Url,
+        PreviewUrl = postAttachment.Url,
+        Description = postAttachment.Description,
+    };
     
     /// <summary>
     /// Renders a status for a post.

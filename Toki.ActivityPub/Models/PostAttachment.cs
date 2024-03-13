@@ -8,12 +8,12 @@ public class PostAttachment : AbstractModel
     /// <summary>
     /// The parent of this attachment.
     /// </summary>
-    public required Post Parent { get; init; }
+    public Post? Parent { get; set; }
     
     /// <summary>
     /// The id of the parent.
     /// </summary>
-    public required Guid ParentId { get; init; }
+    public Guid? ParentId { get; set; }
     
     /// <summary>
     /// The link to the attachment.

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
@@ -12,9 +13,11 @@ using Toki.ActivityPub.Persistence.DatabaseContexts;
 namespace Toki.ActivityPub.Migrations
 {
     [DbContext(typeof(TokiDatabaseContext))]
-    partial class TokiDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240313114627_Make posts optional for the attachments")]
+    partial class Makepostsoptionalfortheattachments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

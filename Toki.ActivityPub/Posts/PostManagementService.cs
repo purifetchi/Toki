@@ -53,7 +53,9 @@ public class PostManagementService(
             Visibility = creationRequest.Visibility,
             
             Parent = creationRequest.InReplyTo,
-            ParentId = creationRequest.InReplyTo?.Id
+            ParentId = creationRequest.InReplyTo?.Id,
+            
+            Attachments = creationRequest.Media
         };
 
         await repo.Add(post);

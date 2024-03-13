@@ -40,6 +40,23 @@ public class PostRenderer(
 
         return (to, cc);
     }
+
+    /// <summary>
+    /// Renders the attachments for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The attachments.</returns>
+    private IReadOnlyList<ASDocument>? RenderAttachmentsFrom(
+        Post post)
+    {
+        return post.Attachments?.Select(attach => new ASDocument
+            {
+                Type = "Image",
+                Name = attach.Description,
+                Url = attach.Url,
+            })
+            .ToList();
+    }
     
     /// <summary>
     /// Renders an <see cref="ASNote"/> from a <see cref="Post"/>
@@ -68,6 +85,7 @@ public class PostRenderer(
             To = to,
             Cc = cc,
             
+            Attachments = RenderAttachmentsFrom(post),
             PublishedAt = post.CreatedAt
         };
     }

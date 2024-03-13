@@ -65,6 +65,7 @@ public class PostRepository(
     public async Task<Post?> FindById(Guid id)
     {
         return await db.Posts
+            .Include(post => post.Attachments)
             .Include(post => post.Author)
             .Include(post => post.Parent)
             .ThenInclude(parent => parent!.Author)
@@ -121,6 +122,65 @@ public class PostRepository(
     /// <returns>The query.</returns>
     public IQueryable<Post> CreateCustomQuery() =>
         db.Posts;
+
+    /// <summary>
+    /// Creates a detached attachment (one without a parent <see cref="Post"/>).
+    /// </summary>
+    /// <param name="url">The url of the file.</param>
+    /// <param name="description">Its description.</param>
+    /// <returns>The attachment.</returns>
+    public async Task<PostAttachment> CreateDetachedAttachment(
+        string url,
+        string? description)
+    {
+        var attachment = new PostAttachment
+        {
+            Id = Guid.NewGuid(),
+            Url = url,
+            Description = description
+        };
+
+        db.PostAttachments.Add(attachment);
+        await db.SaveChangesAsync();
+
+        return attachment;
+    }
+
+    /// <summary>
+    /// Returns multiple attachments by their ids.
+    /// </summary>
+    /// <param name="ids">The id list.</param>
+    /// <returns>The list of attachments.</returns>
+    public async Task<IList<PostAttachment>?> FindMultipleAttachmentsByIds(
+        IList<Guid> ids)
+    {
+        return await db.PostAttachments
+            .Where(pa => ids.Contains(pa.Id))
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Finds an attachment by its id.
+    /// </summary>
+    /// <param name="id">The id of the attachment.</param>
+    /// <returns>The attachment, or nothing.</returns>
+    public async Task<PostAttachment?> FindAttachmentById(
+        Guid id)
+    {
+        return await db.PostAttachments
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    /// <summary>
+    /// Updates an attachment
+    /// </summary>
+    /// <param name="attachment">The attachment.</param>
+    public async Task UpdateAttachment(
+        PostAttachment attachment)
+    {
+        db.PostAttachments.Update(attachment);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Imports attachments for a given post.

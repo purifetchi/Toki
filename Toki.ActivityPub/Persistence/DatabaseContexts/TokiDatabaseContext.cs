@@ -154,8 +154,7 @@ public class TokiDatabaseContext : DbContext
             .HasOne<Post>(pa => pa.Parent)
             .WithMany(p => p.Attachments)
             .HasForeignKey(pa => pa.ParentId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull); // TODO: Instead of cascading we'll have to run a drive prune job on this.
 
         modelBuilder.Entity<OAuthToken>()
             .HasOne<OAuthApp>(oa => oa.ParentApp)

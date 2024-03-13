@@ -40,5 +40,5 @@ public record PostCreationRequest
     /// <summary>
     /// The media that are going to be attached to the post.
     /// </summary>
-    public IReadOnlyList<PostAttachment>? Media { get; init; }
+    public IList<PostAttachment>? Media { get; init; }
 }

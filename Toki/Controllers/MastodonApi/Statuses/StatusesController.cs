@@ -49,6 +49,14 @@ public class StatusesController(
         var replyingTo = Guid.TryParse(request.InReplyTo, out var replyingGuid)
             ? await repo.FindById(replyingGuid)
             : null;
+
+        var guids = request.MediaIds?
+            .Select(Guid.Parse)
+            .ToList();
+
+        var attachments = guids is not null ? 
+            await repo.FindMultipleAttachmentsByIds(guids) : 
+            null;
         
         var post = await postManagementService.Create(new PostCreationRequest
         {
@@ -58,7 +66,9 @@ public class StatusesController(
             
             IsSensitive = request.Sensitive,
             ContentWarning = request.SpoilerText,
-            InReplyTo = replyingTo
+            InReplyTo = replyingTo,
+            
+            Media = attachments
         });
         
         if (post is null)

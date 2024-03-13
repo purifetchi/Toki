@@ -80,7 +80,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The attachments this post has.
     /// </summary>
-    public ICollection<PostAttachment>? Attachments { get; private set; }
+    public ICollection<PostAttachment>? Attachments { get; set; }
     
     /// <summary>
     /// The likes this post has.
