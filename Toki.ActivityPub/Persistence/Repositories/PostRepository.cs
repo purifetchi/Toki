@@ -128,16 +128,19 @@ public class PostRepository(
     /// </summary>
     /// <param name="url">The url of the file.</param>
     /// <param name="description">Its description.</param>
+    /// <param name="mime">The mime type of the file.</param>
     /// <returns>The attachment.</returns>
     public async Task<PostAttachment> CreateDetachedAttachment(
         string url,
-        string? description)
+        string? description,
+        string? mime)
     {
         var attachment = new PostAttachment
         {
             Id = Guid.NewGuid(),
             Url = url,
-            Description = description
+            Description = description,
+            Mime = mime
         };
 
         db.PostAttachments.Add(attachment);

@@ -44,7 +44,8 @@ public class MediaController(
 
         var attachment = await postRepository.CreateDetachedAttachment(
             path,
-            request.Description);
+            request.Description,
+            request.File.ContentType);
 
         return statusRenderer.RenderAttachmentFrom(
             attachment);

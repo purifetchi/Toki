@@ -49,10 +49,12 @@ public class PostRenderer(
     private IReadOnlyList<ASDocument>? RenderAttachmentsFrom(
         Post post)
     {
-        return post.Attachments?.Select(attach => new ASDocument
+        return post.Attachments?
+            .Select(attach => new ASDocument
             {
-                Type = "Image",
+                Type = "Document",
                 Name = attach.Description,
+                MediaType = attach.Mime,
                 Url = attach.Url,
             })
             .ToList();

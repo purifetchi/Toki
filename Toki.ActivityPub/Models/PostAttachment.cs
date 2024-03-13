@@ -24,4 +24,9 @@ public class PostAttachment : AbstractModel
     /// The description of the attachment.
     /// </summary>
     public string? Description { get; set; }
+    
+    /// <summary>
+    /// The mime type of this attachment.
+    /// </summary>
+    public string? Mime { get; set; }
 }
