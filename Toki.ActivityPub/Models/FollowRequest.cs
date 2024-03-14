@@ -13,7 +13,7 @@ public class FollowRequest : RemoteableModel
     /// <summary>
     /// The ID of the origin user.
     /// </summary>
-    public required Guid FromId { get; init; }
+    public required Ulid FromId { get; init; }
     
     /// <summary>
     /// To who is the follow request directed.
@@ -23,5 +23,5 @@ public class FollowRequest : RemoteableModel
     /// <summary>
     /// The id of the destination user.
     /// </summary>
-    public required Guid ToId { get; init; }
+    public required Ulid ToId { get; init; }
 }

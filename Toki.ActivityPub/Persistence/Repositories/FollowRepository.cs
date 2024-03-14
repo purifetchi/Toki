@@ -112,7 +112,7 @@ public class FollowRepository(
     /// </summary>
     /// <param name="id">The id of the request.</param>
     /// <returns>The follow request.</returns>
-    public async Task<FollowRequest?> FindFollowRequestById(Guid id)
+    public async Task<FollowRequest?> FindFollowRequestById(Ulid id)
     {
         return await db.FollowRequests
             .Where(fr => fr.Id == id)
@@ -129,7 +129,7 @@ public class FollowRepository(
 
         var followRelation = new FollowerRelation()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             Follower = fr.From,
             FollowerId = fr.FromId,

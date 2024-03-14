@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Toki.ActivityPub.Converters.Ulid;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.OAuth;
 
@@ -68,10 +69,22 @@ public class TokiDatabaseContext : DbContext
     /// The notifications set.
     /// </summary>
     public DbSet<Notification> Notifications { get; private set; } = null!;
-    
+
+    /// <inheritdoc/>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder
+            .Properties<Ulid>()
+            .HaveConversion<UlidToStringConverter>();
+    }
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Id)
+            .HasDatabaseName("IX_User_Id_Descending");
+        
         modelBuilder.Entity<User>()
             .HasOne<Keypair>(u => u.Keypair)
             .WithOne(k => k.Owner)
@@ -79,6 +92,11 @@ public class TokiDatabaseContext : DbContext
             .HasForeignKey<Keypair>(k => k.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Post>()
+            .HasIndex(p => p.Id)
+            .HasDatabaseName("IX_Post_Id_Descending")
+            .IsDescending();
+        
         modelBuilder.Entity<Post>()
             .HasOne(p => p.Author)
             .WithMany()
@@ -96,7 +114,7 @@ public class TokiDatabaseContext : DbContext
             .WithMany()
             .HasForeignKey(p => p.BoostingId)
             .OnDelete(DeleteBehavior.Cascade);
-
+        
         modelBuilder.Entity<FollowerRelation>()
             .HasOne(fr => fr.Followee)
             .WithMany(user => user.FollowerRelations)

@@ -23,7 +23,7 @@ public class PostsController(
     [HttpGet]
     [Route("")]
     [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
-    public async Task<ActionResult<ASNote?>> FetchNote([FromRoute] Guid id)
+    public async Task<ActionResult<ASNote?>> FetchNote([FromRoute] Ulid id)
     {
         var post = await postRepo.FindById(id);
         if (post is null)

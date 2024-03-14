@@ -23,7 +23,7 @@ public class TimelineBuilder(
     /// <summary>
     /// Since what should we paginate?
     /// </summary>
-    private Guid? _since = null;
+    private Ulid? _since = null;
 
     /// <summary>
     /// The count to get.
@@ -36,7 +36,7 @@ public class TimelineBuilder(
     /// <param name="since">What ID to start at?</param>
     /// <param name="count">The count to fetch.</param>
     /// <returns>Ourselves.</returns>
-    public TimelineBuilder Paginate(Guid since, int count)
+    public TimelineBuilder Paginate(Ulid since, int count)
     {
         const int maxResults = 40;
         

@@ -13,7 +13,7 @@ public class FollowerRelation : AbstractModel
     /// <summary>
     /// The id of the follower.
     /// </summary>
-    public required Guid FollowerId { get; init; }
+    public required Ulid FollowerId { get; init; }
     
     /// <summary>
     /// The followee user.
@@ -23,5 +23,5 @@ public class FollowerRelation : AbstractModel
     /// <summary>
     /// The ID of the followee.
     /// </summary>
-    public required Guid FolloweeId { get; init; }
+    public required Ulid FolloweeId { get; init; }
 }

@@ -76,7 +76,7 @@ public class InstanceRepository(
         var nodeInfo = await resolver.Get(domain);
         var instance = new RemoteInstance()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             Domain = domain,
             SharedInbox = actor.Endpoints?.SharedInbox?.Id,

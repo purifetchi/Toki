@@ -24,7 +24,7 @@ public class UserRepository(
     /// </summary>
     /// <param name="id">The id.</param>
     /// <returns>Said user.</returns>
-    public async Task<User?> FindById(Guid id)
+    public async Task<User?> FindById(Ulid id)
     {
         var result = await db.Users.Where(u => u.Id == id)
             .Include(u => u.Keypair)
@@ -111,7 +111,7 @@ public class UserRepository(
         
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             ParentInstance = instance,
             ParentInstanceId = instance.Id,
@@ -134,7 +134,7 @@ public class UserRepository(
             
             Keypair = new Keypair
             {
-                Id = Guid.NewGuid(),
+                Id = Ulid.NewUlid(),
             
                 RemoteId = actor.PublicKey!.Id,
                 PublicKey = actor.PublicKey!.PublicKeyPem!
@@ -182,7 +182,7 @@ public class UserRepository(
         
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             DisplayName = handle,
             IsRemote = false,
@@ -202,7 +202,7 @@ public class UserRepository(
         
             var credentials = new Credentials()
             {
-                Id = Guid.NewGuid(),
+                Id = Ulid.NewUlid(),
                 User = user,
                 UserId = user.Id,
 

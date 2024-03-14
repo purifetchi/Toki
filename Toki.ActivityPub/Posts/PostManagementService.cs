@@ -35,7 +35,7 @@ public class PostManagementService(
 
         var post = new Post()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             Context = creationRequest.InReplyTo?.Context ??
                       Guid.NewGuid(),
             
@@ -81,7 +81,7 @@ public class PostManagementService(
         
         var boost = new Post()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             Author = user,
             AuthorId = user.Id,
@@ -131,7 +131,7 @@ public class PostManagementService(
         
         var like = new PostLike()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             
             Post = post,
             PostId = post.Id,

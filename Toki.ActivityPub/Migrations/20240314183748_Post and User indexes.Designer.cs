@@ -13,8 +13,8 @@ using Toki.ActivityPub.Persistence.DatabaseContexts;
 namespace Toki.ActivityPub.Migrations
 {
     [DbContext(typeof(TokiDatabaseContext))]
-    [Migration("20240313114627_Make posts optional for the attachments")]
-    partial class Makepostsoptionalfortheattachments
+    [Migration("20240314183748_Post and User indexes")]
+    partial class PostandUserindexes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,9 +28,8 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.Credentials", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -40,8 +39,9 @@ namespace Toki.ActivityPub.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.HasKey("Id");
 
@@ -53,15 +53,15 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.FollowRequest", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("FromId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("FromId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
                         .HasColumnType("timestamp with time zone");
@@ -69,8 +69,9 @@ namespace Toki.ActivityPub.Migrations
                     b.Property<string>("RemoteId")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ToId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ToId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.HasKey("Id");
 
@@ -83,15 +84,16 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.FollowerRelation", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("FolloweeId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("FolloweeId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("FollowerId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("FollowerId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.HasKey("Id");
 
@@ -104,15 +106,15 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.Keypair", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("PrivateKey")
                         .HasColumnType("text");
@@ -137,21 +139,22 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.Notification", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("ActorId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("RelevantPostId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("RelevantPostId")
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("TargetId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("TargetId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -169,9 +172,8 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.OAuth.OAuthApp", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
@@ -202,9 +204,8 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.OAuth.OAuthToken", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
@@ -216,8 +217,9 @@ namespace Toki.ActivityPub.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ParentAppId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ParentAppId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<List<string>>("Scopes")
                         .HasColumnType("text[]");
@@ -226,8 +228,9 @@ namespace Toki.ActivityPub.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.HasKey("Id");
 
@@ -240,18 +243,18 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.Post", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("AuthorId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.Property<int>("BoostCount")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("BoostingId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("BoostingId")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("Content")
                         .HasColumnType("text");
@@ -268,11 +271,11 @@ namespace Toki.ActivityPub.Migrations
                     b.Property<int>("LikeCount")
                         .HasColumnType("integer");
 
-                    b.Property<List<Guid>>("Mentions")
-                        .HasColumnType("uuid[]");
+                    b.Property<List<string>>("Mentions")
+                        .HasColumnType("text[]");
 
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ParentId")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
                         .HasColumnType("timestamp with time zone");
@@ -292,6 +295,10 @@ namespace Toki.ActivityPub.Migrations
 
                     b.HasIndex("BoostingId");
 
+                    b.HasIndex("Id")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Post_Id_Descending");
+
                     b.HasIndex("ParentId");
 
                     b.ToTable("Posts");
@@ -299,15 +306,17 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.PostAttachment", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Mime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ParentId")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -322,15 +331,16 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.PostLike", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("LikingUserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("LikingUserId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
-                    b.Property<Guid>("PostId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("PostId")
+                        .IsRequired()
+                        .HasColumnType("character varying(26)");
 
                     b.HasKey("Id");
 
@@ -343,9 +353,8 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.RemoteInstance", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -370,9 +379,8 @@ namespace Toki.ActivityPub.Migrations
 
             modelBuilder.Entity("Toki.ActivityPub.Models.User", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<string>("AvatarUrl")
                         .HasColumnType("text");
@@ -400,8 +408,8 @@ namespace Toki.ActivityPub.Migrations
                     b.Property<bool>("IsRemote")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ParentInstanceId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("ParentInstanceId")
+                        .HasColumnType("character varying(26)");
 
                     b.Property<DateTimeOffset>("ReceivedAt")
                         .HasColumnType("timestamp with time zone");
@@ -413,6 +421,9 @@ namespace Toki.ActivityPub.Migrations
                         .HasColumnType("boolean");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .HasDatabaseName("IX_User_Id_Descending");
 
                     b.HasIndex("ParentInstanceId");
 

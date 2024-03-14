@@ -50,10 +50,10 @@ public class AccountsController(
     /// <param name="id">Its id.</param>
     /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
     [HttpGet]
-    [Route("{id:guid}")]
+    [Route("{id}")]
     [Produces("application/json")]
     public async Task<IActionResult> FetchAccount(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = await repo.FindById(id);
         if (user is null)
@@ -69,11 +69,11 @@ public class AccountsController(
     /// <param name="pinned">Should we fetch only pinned posts?</param>
     /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
     [HttpGet]
-    [Route("{id:guid}/statuses")]
+    [Route("{id}/statuses")]
     [Produces("application/json")]
     [OAuth(manualScopeValidation: true)]
     public async Task<IActionResult> FetchAccountStatuses(
-        [FromRoute] Guid id,
+        [FromRoute] Ulid id,
         [FromQuery] bool pinned = false)
     {
         // TODO: Support pinned posts.
@@ -102,10 +102,10 @@ public class AccountsController(
     /// <param name="id">The ID of the Account in the database.</param>
     /// <returns>The list of <see cref="Account"/></returns>
     [HttpGet]
-    [Route("{id:guid}/followers")]
+    [Route("{id}/followers")]
     [Produces("application/json")]
     public async Task<IActionResult> GetAccountFollowers(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = await repo.FindById(id);
         if (user is null)
@@ -123,10 +123,10 @@ public class AccountsController(
     /// <param name="id">The ID of the Account in the database.</param>
     /// <returns>The list of <see cref="Account"/></returns>
     [HttpGet]
-    [Route("{id:guid}/following")]
+    [Route("{id}/following")]
     [Produces("application/json")]
     public async Task<IActionResult> GetAccountFollowing(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = await repo.FindById(id);
         if (user is null)
@@ -149,8 +149,8 @@ public class AccountsController(
     [Produces("application/json")]
     [OAuth("read:follows")]
     public async Task<IActionResult> GetRelationships(
-        [FromQuery(Name = "id[]")] Guid[] mastoId,
-        [FromQuery(Name = "id")] Guid[] normalId)
+        [FromQuery(Name = "id[]")] Ulid[] mastoId,
+        [FromQuery(Name = "id")] Ulid[] normalId)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;
@@ -180,10 +180,10 @@ public class AccountsController(
     /// <param name="id">The id of the account.</param>
     /// <returns>Either a <see cref="Relationship"/> or an error.</returns>
     [HttpPost]
-    [Route("{id:guid}/follow")]
+    [Route("{id}/follow")]
     [OAuth("write:follows")]
     public async Task<ActionResult<Relationship>> FollowAccount(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         // TODO: Support reblogs and notify.
         var user = HttpContext.GetOAuthToken()!

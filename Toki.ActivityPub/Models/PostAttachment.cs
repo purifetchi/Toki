@@ -13,7 +13,7 @@ public class PostAttachment : AbstractModel
     /// <summary>
     /// The id of the parent.
     /// </summary>
-    public Guid? ParentId { get; set; }
+    public Ulid? ParentId { get; set; }
     
     /// <summary>
     /// The link to the attachment.

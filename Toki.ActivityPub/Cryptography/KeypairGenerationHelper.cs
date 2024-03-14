@@ -18,7 +18,7 @@ public static class KeypairGenerationHelper
         
         return new Keypair
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             PublicKey = rsa.ExportRSAPublicKeyPem(),
             PrivateKey = rsa.ExportRSAPrivateKeyPem()
         };
