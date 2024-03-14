@@ -25,7 +25,7 @@ public class User : RemoteableModel
     /// <summary>
     /// The id of the parent instance.
     /// </summary>
-    public Guid? ParentInstanceId { get; set; }
+    public Ulid? ParentInstanceId { get; set; }
     
     /// <summary>
     /// Does this user require follow approval?

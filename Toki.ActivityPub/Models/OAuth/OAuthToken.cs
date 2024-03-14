@@ -31,7 +31,7 @@ public class OAuthToken : AbstractModel
     /// <summary>
     /// The id of the parent app.
     /// </summary>
-    public required Guid ParentAppId { get; init; }
+    public required Ulid ParentAppId { get; init; }
 
     /// <summary>
     /// The user this token is for.
@@ -41,7 +41,7 @@ public class OAuthToken : AbstractModel
     /// <summary>
     /// The id of the user.
     /// </summary>
-    public required Guid UserId { get; init; }
+    public required Ulid UserId { get; init; }
     
     /// <summary>
     /// When was this token created at.

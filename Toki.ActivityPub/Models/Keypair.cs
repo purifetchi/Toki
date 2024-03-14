@@ -13,7 +13,7 @@ public class Keypair : RemoteableModel
     /// <summary>
     /// The ID of the owner.
     /// </summary>
-    public Guid OwnerId { get; set; }
+    public Ulid OwnerId { get; set; }
     
     /// <summary>
     /// The public key.

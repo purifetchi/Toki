@@ -58,12 +58,12 @@ public class MediaController(
     /// <param name="request">The request.</param>
     /// <returns>The resulting <see cref="MediaAttachment"/>, or nothing.</returns>
     [HttpPut]
-    [Route("v2/media/{id:guid}")]
-    [Route("v1/media/{id:guid}")]
+    [Route("v2/media/{id}")]
+    [Route("v1/media/{id}")]
     [Produces("application/json")]
     [OAuth("write:media")]
     public async Task<ActionResult<MediaAttachment>> UpdateMedia(
-        [FromRoute] Guid id,
+        [FromRoute] Ulid id,
         [FromHybrid] PostMediaRequest request)
     {
         var attachment = await postRepository.FindAttachmentById(id);

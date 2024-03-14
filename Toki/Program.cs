@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -28,6 +29,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
+builder.Services.AddHttpLogging(o =>
+{
+    o.LoggingFields = HttpLoggingFields.All;
+    o.RequestBodyLogLimit = 100000;
+    o.ResponseBodyLogLimit = 100000;
+});
 builder.Services.AddControllers( o => o.ModelBinderProviders.AddHybridBindingProvider());
 builder.Services.AddTransient<OAuthMiddleware>();
 builder.Services.AddTransient<TimelineBuilder>();
@@ -52,6 +59,7 @@ builder.Services.AddHangfire(
     .AddHangfireServer();
 
 var app = builder.Build();
+app.UseHttpLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

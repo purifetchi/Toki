@@ -35,7 +35,7 @@ public class MessageFederationJob(
     public async Task FederateMessage(
         string message,
         IEnumerable<string> targets,
-        Guid actorId,
+        Ulid actorId,
         int retries = 0)
     {
         var actor = await userRepo.FindById(actorId);

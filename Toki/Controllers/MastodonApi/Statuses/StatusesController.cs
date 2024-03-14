@@ -46,12 +46,12 @@ public class StatusesController(
         if (request.Status is null)
             return BadRequest(new MastodonApiError("Validation error: Post cannot be empty."));
 
-        var replyingTo = Guid.TryParse(request.InReplyTo, out var replyingGuid)
+        var replyingTo = Ulid.TryParse(request.InReplyTo, out var replyingGuid)
             ? await repo.FindById(replyingGuid)
             : null;
 
         var guids = request.MediaIds?
-            .Select(Guid.Parse)
+            .Select(Ulid.Parse)
             .ToList();
 
         var attachments = guids is not null ? 
@@ -84,11 +84,11 @@ public class StatusesController(
     /// <param name="id">The id of the status.</param>
     /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
     [HttpGet]
-    [Route("{id:guid}")]
+    [Route("{id}")]
     [OAuth(manualScopeValidation: true)]
     [Produces("application/json")]
     public async Task<IActionResult> FetchStatus(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = HttpContext.GetOAuthToken()?
             .User;
@@ -107,11 +107,11 @@ public class StatusesController(
     /// <param name="id">The id of the status.</param>
     /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
     [HttpGet]
-    [Route("{id:guid}/context")]
+    [Route("{id}/context")]
     [OAuth(manualScopeValidation: true)]
     [Produces("application/json")]
     public async Task<IActionResult> FetchStatusContext(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         // TODO: Implement the limits as described in https://docs.joinmastodon.org/methods/statuses/#context
         
@@ -150,7 +150,7 @@ public class StatusesController(
         }
 
         var children = new List<Post>();
-        var queue = new Queue<Guid>();
+        var queue = new Queue<Ulid>();
         queue.Enqueue(post.Id);
 
         // Traverse the tree downwards.
@@ -184,9 +184,9 @@ public class StatusesController(
     [HttpPost]
     [Produces("application/json")]
     [OAuth("write:favourites")]
-    [Route("{id:guid}/favourite")]
+    [Route("{id}/favourite")]
     public async Task<IActionResult> Favourite(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;
@@ -211,9 +211,9 @@ public class StatusesController(
     [HttpPost]
     [Produces("application/json")]
     [OAuth("write:favourites")]
-    [Route("{id:guid}/reblog")]
+    [Route("{id}/reblog")]
     public async Task<IActionResult> Reblog(
-        [FromRoute] Guid id)
+        [FromRoute] Ulid id)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;

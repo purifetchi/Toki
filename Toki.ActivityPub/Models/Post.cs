@@ -15,7 +15,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The id of the author.
     /// </summary>
-    public required Guid AuthorId { get; init; }
+    public required Ulid AuthorId { get; init; }
     
     /// <summary>
     /// The content of this post.
@@ -30,7 +30,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The id of the parent post.
     /// </summary>
-    public Guid? ParentId { get; set; }
+    public Ulid? ParentId { get; set; }
     
     /// <summary>
     /// The id of the current thread context.
@@ -45,7 +45,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The id of the post we're boosting.
     /// </summary>
-    public Guid? BoostingId { get; set; }
+    public Ulid? BoostingId { get; set; }
     
     /// <summary>
     /// Is this post sensitive?
@@ -75,7 +75,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The list of mentioned users (DENORMALIZED).
     /// </summary>
-    public List<Guid>? Mentions { get; set; }
+    public List<string>? Mentions { get; set; }
     
     /// <summary>
     /// The attachments this post has.

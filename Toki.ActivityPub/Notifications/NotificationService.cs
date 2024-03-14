@@ -24,7 +24,7 @@ public class NotificationService(
     {
         var notif = new Notification
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             Type = NotificationType.Like,
             
             Target = author,
@@ -55,7 +55,7 @@ public class NotificationService(
     {
         var notif = new Notification
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             Type = NotificationType.Boost,
             
             Target = author,
@@ -84,7 +84,7 @@ public class NotificationService(
     {
         var notif = new Notification
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             Type = NotificationType.Follow,
             
             Target = target,

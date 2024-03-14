@@ -29,7 +29,7 @@ public class OAuthManagementService(
     {
         var app = new OAuthApp()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
 
             ClientId = SecureRandomStringGenerator.Generate(),
             ClientSecret = SecureRandomStringGenerator.Generate(),
@@ -63,7 +63,7 @@ public class OAuthManagementService(
         
         var token = new OAuthToken()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
 
             ParentApp = app,
             ParentAppId = app.Id,

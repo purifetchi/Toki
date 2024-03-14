@@ -17,11 +17,16 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+      <PackageReference Include="Ulid" Version="1.3.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Toki.ActivityStreams\Toki.ActivityStreams.csproj" />
       <ProjectReference Include="..\Toki.HTTPSignatures\Toki.HTTPSignatures.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

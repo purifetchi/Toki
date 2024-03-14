@@ -28,7 +28,7 @@ public class Notification : AbstractModel
     /// <summary>
     /// The id of the target user.
     /// </summary>
-    public required Guid TargetId { get; init; }
+    public required Ulid TargetId { get; init; }
     
     /// <summary>
     /// The actor of the notification.
@@ -38,7 +38,7 @@ public class Notification : AbstractModel
     /// <summary>
     /// The id of the actor user.
     /// </summary>
-    public required Guid ActorId { get; init; }
+    public required Ulid ActorId { get; init; }
     
     /// <summary>
     /// When was this notification created?
@@ -53,5 +53,5 @@ public class Notification : AbstractModel
     /// <summary>
     /// The id of the relevant post.
     /// </summary>
-    public Guid? RelevantPostId { get; set; }
+    public Ulid? RelevantPostId { get; set; }
 }

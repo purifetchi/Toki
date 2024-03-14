@@ -35,7 +35,7 @@ public class PostRepository(
             var handle = remoteId.Split('/')
                 .Last();
             
-            if (Guid.TryParse(handle, out var id))
+            if (Ulid.TryParse(handle, out var id))
                 return await FindById(id);
         }
 
@@ -49,8 +49,8 @@ public class PostRepository(
     /// <param name="userId">The user id.</param>
     /// <returns>The post, if it exists.</returns>
     public async Task<PostLike?> FindLikeByIds(
-        Guid postId,
-        Guid userId)
+        Ulid postId,
+        Ulid userId)
     {
         return await db.PostLikes
             .FirstOrDefaultAsync(like => like.LikingUserId == userId &&
@@ -62,7 +62,7 @@ public class PostRepository(
     /// </summary>
     /// <param name="id">The id of the post.</param>
     /// <returns>The post if it exists.</returns>
-    public async Task<Post?> FindById(Guid id)
+    public async Task<Post?> FindById(Ulid id)
     {
         return await db.Posts
             .Include(post => post.Attachments)
@@ -137,7 +137,7 @@ public class PostRepository(
     {
         var attachment = new PostAttachment
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             Url = url,
             Description = description,
             Mime = mime
@@ -155,7 +155,7 @@ public class PostRepository(
     /// <param name="ids">The id list.</param>
     /// <returns>The list of attachments.</returns>
     public async Task<IList<PostAttachment>?> FindMultipleAttachmentsByIds(
-        IList<Guid> ids)
+        IList<Ulid> ids)
     {
         return await db.PostAttachments
             .Where(pa => ids.Contains(pa.Id))
@@ -168,7 +168,7 @@ public class PostRepository(
     /// <param name="id">The id of the attachment.</param>
     /// <returns>The attachment, or nothing.</returns>
     public async Task<PostAttachment?> FindAttachmentById(
-        Guid id)
+        Ulid id)
     {
         return await db.PostAttachments
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -201,7 +201,7 @@ public class PostRepository(
             
             var attachment = new PostAttachment()
             {
-                Id = Guid.NewGuid(),
+                Id = Ulid.NewUlid(),
 
                 Parent = post,
                 ParentId = post.Id,
@@ -221,7 +221,7 @@ public class PostRepository(
     /// </summary>
     /// <param name="note">The note.</param>
     /// <returns>The mentions, if any exist.</returns>
-    private async Task<List<Guid>?> CollectMentions(
+    private async Task<List<string>?> CollectMentions(
         ASNote note)
     {
         if (note.Tags is null)
@@ -231,7 +231,7 @@ public class PostRepository(
             .OfType<ASMention>()
             .ToList();
 
-        var mentions = new List<Guid>();
+        var mentions = new List<string>();
         foreach (var mention in asMentions)
         {
             var user = await userRepo.FindByRemoteId(mention.Href);
@@ -241,7 +241,7 @@ public class PostRepository(
                 continue;
             }
             
-            mentions.Add(user.Id);
+            mentions.Add(user.Id.ToString());
         }
 
         return mentions;
@@ -259,7 +259,7 @@ public class PostRepository(
     {
         var post = new Post()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
             RemoteId = note.Id,
             
             Context = Guid.NewGuid(),

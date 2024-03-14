@@ -70,7 +70,7 @@ public class UserRelationService(
             .Split('/')
             .Last();
 
-        if (!Guid.TryParse(id, out var guid))
+        if (!Ulid.TryParse(id, out var guid))
             return false;
 
         var fr = await followRepo.FindFollowRequestById(guid);
@@ -104,7 +104,7 @@ public class UserRelationService(
         {
             await AcceptFollowRequest(new FollowRequest
             {
-                Id = Guid.NewGuid(),
+                Id = Ulid.NewUlid(),
                 
                 From = actor,
                 FromId = actor.Id,
@@ -129,7 +129,7 @@ public class UserRelationService(
         
         var fr = new FollowerRelation()
         {
-            Id = Guid.NewGuid(),
+            Id = Ulid.NewUlid(),
 
             Follower = from,
             FollowerId = from.Id,
@@ -190,7 +190,7 @@ public class UserRelationService(
     {
         logger.LogDebug($"Created a follow request from {from.DisplayName} to {to.DisplayName}");
         
-        var id = Guid.NewGuid();
+        var id = Ulid.NewUlid();
         var fr = new FollowRequest
         {
             Id = id,

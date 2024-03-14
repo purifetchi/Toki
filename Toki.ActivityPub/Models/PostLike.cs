@@ -13,7 +13,7 @@ public class PostLike : AbstractModel
     /// <summary>
     /// The id of the post.
     /// </summary>
-    public required Guid PostId { get; init; }
+    public required Ulid PostId { get; init; }
     
     /// <summary>
     /// The user who liked this post.
@@ -23,5 +23,5 @@ public class PostLike : AbstractModel
     /// <summary>
     /// The id of the user.
     /// </summary>
-    public required Guid LikingUserId { get; init; }
+    public required Ulid LikingUserId { get; init; }
 }
