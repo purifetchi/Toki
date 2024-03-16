@@ -11,19 +11,12 @@ public abstract class RemoteableModel : AbstractModel
     public RemoteableModel()
     {
         CreatedAt = DateTimeOffset.UtcNow;
-        ReceivedAt = DateTimeOffset.UtcNow;
     }
     
     /// <summary>
     /// When was this object created?
     /// </summary>
     public DateTimeOffset CreatedAt { get; set; }
-    
-    /// <summary>
-    /// When did we receive this message from the remote server? (identical to <see cref="RemoteableModel.CreatedAt"/> for local posts.)
-    /// </summary>
-    // This is required, since according to @arnelson@fosstodon.org, mastoapi orders by date received not date of creation.
-    public DateTimeOffset ReceivedAt { get; set; }
     
     /// <summary>
     /// The remote ID of this object.

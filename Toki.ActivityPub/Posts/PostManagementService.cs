@@ -39,9 +39,6 @@ public class PostManagementService(
             Context = creationRequest.InReplyTo?.Context ??
                       Guid.NewGuid(),
             
-            CreatedAt = DateTimeOffset.UtcNow,
-            ReceivedAt = DateTimeOffset.UtcNow,
-            
             Author = creationRequest.Author,
             AuthorId = creationRequest.Author.Id,
 
