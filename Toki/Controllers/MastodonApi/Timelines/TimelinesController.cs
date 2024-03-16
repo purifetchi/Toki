@@ -5,6 +5,7 @@ using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
+using Toki.MastodonApi.Schemas.Params;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
 using Toki.Services.Timelines;
@@ -29,12 +30,14 @@ public class TimelinesController(
     [HttpGet]
     [Route("public")]
     [Produces("application/json")]
-    public async Task<IEnumerable<Status>> PublicTimeline()
+    public async Task<IEnumerable<Status>> PublicTimeline(
+        [FromQuery] PaginationParams paginationParams)
     {
         // TODO: Give a heck about the query parameters.
         
         var list = await timelineBuilder
             .Filter(post => post.Visibility == PostVisibility.Public)
+            .Paginate(paginationParams)
             .GetTimeline();
 
         return list.Select(statusRenderer.RenderForPost);
@@ -48,7 +51,8 @@ public class TimelinesController(
     [Route("home")]
     [Produces("application/json")]
     [OAuth("read:statuses")]
-    public async Task<IEnumerable<Status>> HomeTimeline()
+    public async Task<IEnumerable<Status>> HomeTimeline(
+        [FromQuery] PaginationParams paginationParams)
     {
         // TODO: Give a heck about the query parameters.
         var user = HttpContext.GetOAuthToken()!
@@ -56,6 +60,7 @@ public class TimelinesController(
 
         var list = await timelineBuilder
             .ViewAs(user)
+            .Paginate(paginationParams)
             .GetTimeline();
 
         return list.Select(statusRenderer.RenderForPost);
