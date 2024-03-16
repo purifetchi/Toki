@@ -4,6 +4,7 @@ using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.Extensions;
+using Toki.MastodonApi.Schemas.Params;
 
 namespace Toki.Services.Timelines;
 
@@ -18,12 +19,12 @@ public class TimelineBuilder(
     /// </summary>
     private IQueryable<Post> _query = postRepo.CreateCustomQuery()
         .AddMastodonRenderNecessities()
-        .OrderByDescending(post => post.ReceivedAt);
+        .OrderByDescending(post => post.Id);
 
     /// <summary>
-    /// Since what should we paginate?
+    /// The pagination params.
     /// </summary>
-    private Ulid? _since = null;
+    private PaginationParams? _paginationParams = null;
 
     /// <summary>
     /// The count to get.
@@ -33,15 +34,17 @@ public class TimelineBuilder(
     /// <summary>
     /// Paginates this query.
     /// </summary>
-    /// <param name="since">What ID to start at?</param>
-    /// <param name="count">The count to fetch.</param>
+    /// <param name="paginationParams">The pagination parameters.</param>
     /// <returns>Ourselves.</returns>
-    public TimelineBuilder Paginate(Ulid since, int count)
+    public TimelineBuilder Paginate(
+        PaginationParams paginationParams)
     {
         const int maxResults = 40;
         
-        _since = since;
-        _count = count > maxResults ? maxResults : count;
+        _paginationParams = paginationParams;
+        _count = paginationParams.Limit > maxResults ? 
+            maxResults : 
+            paginationParams.Limit;
 
         return this;
     }
@@ -92,16 +95,22 @@ public class TimelineBuilder(
     /// <returns>The timeline.</returns>
     public async Task<IEnumerable<Post>> GetTimeline()
     {
-        if (_since is null)
+        if (_paginationParams is null)
             return await _query.ToListAsync();
-        
-        var lastDate = await postRepo.CreateCustomQuery()
-            .Where(post => post.Id == _since)
-            .Select(post => post.ReceivedAt)
-            .FirstOrDefaultAsync();
+
+        // TODO: Checking out the EXPLAIN output of this, we could save A LOT of processing
+        //       if not for the fact that EF Core puts some really weird stuff in the ORDER BY
+        //       clause. I think we can somehow optimize it later down the line.
+        if (_paginationParams.MaxId is not null)
+        {
+            var q = _query
+                .Where(post => post.Id.CompareTo(_paginationParams.MaxId.Value) == -1)
+                .Take(_count);
             
+            return await q.ToListAsync();
+        }
+        
         return await _query
-            .Where(post => post.ReceivedAt < lastDate)
             .Take(_count)
             .ToListAsync();
     }
