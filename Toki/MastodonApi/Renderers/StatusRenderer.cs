@@ -1,5 +1,4 @@
 using Toki.ActivityPub.Models;
-using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Renderers;
 using Toki.Extensions;
 using Toki.MastodonApi.Schemas.Objects;
@@ -22,6 +21,24 @@ public class StatusRenderer(
     {
         return post.Attachments?
             .Select(RenderAttachmentFrom)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Renders the mentions for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The mentions.</returns>
+    private IReadOnlyList<Mention>? RenderMentionsFor(Post post)
+    {
+        return post.UserMentions?
+            .Select(m => new Mention
+            {
+                Id = m.Id,
+                Url = m.Url,
+                Username = m.Handle,
+                WebFingerResource = m.Handle
+            })
             .ToList();
     }
 
@@ -79,7 +96,8 @@ public class StatusRenderer(
             InReplyToId = post.ParentId?.ToString(),
             InReplyToAccountId = post.Parent?.AuthorId.ToString(),
 
-            Attachments = RenderAttachmentsFor(post) ?? []
+            Attachments = RenderAttachmentsFor(post) ?? [],
+            Mentions = RenderMentionsFor(post) ?? []
         };
     }
 }

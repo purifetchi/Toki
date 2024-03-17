@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Federation;
+using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.NodeInfo;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.OAuth2;
@@ -27,6 +28,7 @@ public static class ServiceCollectionExtensions
     {
         collection.AddDbContext<TokiDatabaseContext>();
         collection.AddScoped<InstanceActorResolver>();
+        collection.AddTransient<ContentFormatter>();
 
         collection.AddScoped<InstanceRepository>();
 
