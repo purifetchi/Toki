@@ -37,7 +37,7 @@ public static class PostExtensions
         PostVisibility.Followers when 
             user != null && post.Author.FollowerRelations?.Any(fr => fr.FollowerId == user.Id) == true => true,
         PostVisibility.Direct when
-            user != null && post.Mentions?.Contains(user.Id.ToString()) == true => true,
+            user != null && post.UserMentions?.Any(m => m.Id == user.Id.ToString()) == true => true,
         
         _ => false
     };

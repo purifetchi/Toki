@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Toki.ActivityPub.Converters.Ulid;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.OAuth;
+using Toki.ActivityPub.Models.Posts;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
 
@@ -96,6 +98,12 @@ public class TokiDatabaseContext : DbContext
             .HasIndex(p => p.Id)
             .HasDatabaseName("IX_Post_Id_Descending")
             .IsDescending();
+
+        modelBuilder.Entity<Post>()
+            .Property(p => p.UserMentions)
+            .HasColumnType("jsonb")
+            .HasConversion(a => JsonConvert.SerializeObject(a),
+                a => JsonConvert.DeserializeObject<List<PostMention>?>(a));
         
         modelBuilder.Entity<Post>()
             .HasOne(p => p.Author)

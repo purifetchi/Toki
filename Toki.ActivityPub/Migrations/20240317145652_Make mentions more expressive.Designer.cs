@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Toki.ActivityPub.Models.Posts;
@@ -13,9 +14,11 @@ using Toki.ActivityPub.Persistence.DatabaseContexts;
 namespace Toki.ActivityPub.Migrations
 {
     [DbContext(typeof(TokiDatabaseContext))]
-    partial class TokiDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240317145652_Make mentions more expressive")]
+    partial class Makementionsmoreexpressive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

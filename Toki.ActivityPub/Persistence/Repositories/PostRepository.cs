@@ -3,7 +3,9 @@ using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.Posts;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
@@ -15,7 +17,8 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 public class PostRepository(
     TokiDatabaseContext db,
     UserRepository userRepo,
-    IOptions<InstanceConfiguration> opts)
+    IOptions<InstanceConfiguration> opts,
+    InstancePathRenderer pathRenderer)
 {
     /// <summary>
     /// Finds a post by its remote id.
@@ -221,7 +224,7 @@ public class PostRepository(
     /// </summary>
     /// <param name="note">The note.</param>
     /// <returns>The mentions, if any exist.</returns>
-    private async Task<List<string>?> CollectMentions(
+    private async Task<List<PostMention>?> CollectMentions(
         ASNote note)
     {
         if (note.Tags is null)
@@ -231,7 +234,7 @@ public class PostRepository(
             .OfType<ASMention>()
             .ToList();
 
-        var mentions = new List<string>();
+        var mentions = new List<PostMention>();
         foreach (var mention in asMentions)
         {
             var user = await userRepo.FindByRemoteId(mention.Href);
@@ -241,7 +244,12 @@ public class PostRepository(
                 continue;
             }
             
-            mentions.Add(user.Id.ToString());
+            mentions.Add(new PostMention
+            {
+                Id = user.Id.ToString(),
+                Handle = user.Handle,
+                Url = user.RemoteId ?? pathRenderer.GetPathToActor(user)
+            });
         }
 
         return mentions;
@@ -276,7 +284,7 @@ public class PostRepository(
             
             Visibility = note.GetPostVisibility(author),
             
-            Mentions = await CollectMentions(note)
+            UserMentions = await CollectMentions(note)
         };
         
         // TODO: Resolve parent post chain.

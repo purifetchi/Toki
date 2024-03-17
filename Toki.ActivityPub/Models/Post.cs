@@ -1,4 +1,5 @@
 using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Models.Posts;
 
 namespace Toki.ActivityPub.Models;
 
@@ -75,7 +76,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The list of mentioned users (DENORMALIZED).
     /// </summary>
-    public List<string>? Mentions { get; set; }
+    public List<PostMention>? UserMentions { get; set; }
     
     /// <summary>
     /// The attachments this post has.
