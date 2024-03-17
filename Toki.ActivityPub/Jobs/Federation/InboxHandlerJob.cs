@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Resolvers;
@@ -20,7 +21,8 @@ public class InboxHandlerJob(
     UserRepository repo,
     PostRepository postRepo,
     PostManagementService postManagementService,
-    ILogger<InboxHandlerJob> logger)
+    ILogger<InboxHandlerJob> logger,
+    NotificationService notificationService)
 {
     /// <summary>
     /// Handles an activity.
@@ -125,7 +127,13 @@ public class InboxHandlerJob(
 
         var obj = await resolver.Fetch<ASObject>(create.Object);
         if (obj is ASNote note)
-            await postRepo.ImportFromActivityStreams(note, actor);
+        {
+            var post = await postRepo.ImportFromActivityStreams(note, actor);
+            if (post is null)
+                return;
+            
+            await notificationService.DispatchAllNotificationsForPost(post);
+        }
     }
     
     /// <summary>

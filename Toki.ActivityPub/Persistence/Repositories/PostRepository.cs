@@ -287,7 +287,6 @@ public class PostRepository(
             UserMentions = await CollectMentions(note)
         };
         
-        // TODO: Resolve parent post chain.
         if (note.InReplyTo is not null)
         {
             var parent = await FindByRemoteId(note.InReplyTo.Id);
@@ -313,7 +312,7 @@ public class PostRepository(
                 post,
                 note.Attachments);
         }
-        
+
         return post;
     }
 }

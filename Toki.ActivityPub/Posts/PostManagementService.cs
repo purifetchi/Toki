@@ -78,6 +78,8 @@ public class PostManagementService(
         await federationService.SendToFollowers(
             creationRequest.Author,
             postRenderer.RenderCreationForNote(post));
+
+        await notificationService.DispatchAllNotificationsForPost(post);
         
         return post;
     }
