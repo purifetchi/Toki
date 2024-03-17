@@ -76,4 +76,9 @@ public class User : RemoteableModel
     /// The following count of this user. (DENORMALIZED)
     /// </summary>
     public int FollowingCount { get; set; }
+    
+    /// <summary>
+    /// The amount of posts this user has made. (DENORMALIZED)
+    /// </summary>
+    public int PostCount { get; set; }
 }

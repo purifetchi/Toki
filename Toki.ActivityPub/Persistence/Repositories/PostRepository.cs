@@ -82,6 +82,11 @@ public class PostRepository(
     public async Task Add(Post post)
     {
         db.Posts.Add(post);
+
+        // Update the post count.
+        post.Author.PostCount++;
+        db.Users.Update(post.Author);
+        
         await db.SaveChangesAsync();
     }
 

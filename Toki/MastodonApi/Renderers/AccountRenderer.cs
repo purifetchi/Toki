@@ -56,7 +56,8 @@ public class AccountRenderer(
             CreatedAt = user.CreatedAt,
             
             FollowingCount = user.FollowingCount,
-            FollowersCount = user.FollowerCount
+            FollowersCount = user.FollowerCount,
+            StatusesCount = user.PostCount
         };
     }
 
