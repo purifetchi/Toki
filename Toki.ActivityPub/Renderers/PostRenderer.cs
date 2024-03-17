@@ -59,6 +59,24 @@ public class PostRenderer(
             })
             .ToList();
     }
+
+    /// <summary>
+    /// Renders the mentions for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The mentions.</returns>
+    private IReadOnlyList<ASLink>? RenderMentionsFrom(
+        Post post)
+    {
+        return post.UserMentions?
+            .Select(mention => new ASMention()
+            {
+                Type = "Mention",
+                Name = $"@{mention.Handle}",
+                Href = mention.Url
+            })
+            .ToList();
+    }
     
     /// <summary>
     /// Renders an <see cref="ASNote"/> from a <see cref="Post"/>
@@ -88,6 +106,7 @@ public class PostRenderer(
             Cc = cc,
             
             Attachments = RenderAttachmentsFrom(post),
+            Tags = RenderMentionsFrom(post),
             PublishedAt = post.CreatedAt
         };
     }

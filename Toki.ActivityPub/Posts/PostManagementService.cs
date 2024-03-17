@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
+using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Models.Posts;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
@@ -20,7 +22,9 @@ public class PostManagementService(
     PostRepository repo,
     PostRenderer postRenderer,
     MessageFederationService federationService,
-    NotificationService notificationService)
+    NotificationService notificationService,
+    ContentFormatter formatter,
+    InstancePathRenderer pathRenderer)
 {
     /// <summary>
     /// Creates a new post.
@@ -33,6 +37,12 @@ public class PostManagementService(
         if (creationRequest.Author.IsRemote)
             return null;
 
+        var formattingResult = await formatter.Format(
+            creationRequest.Content);
+
+        if (formattingResult is null)
+            return null;
+
         var post = new Post()
         {
             Id = Ulid.NewUlid(),
@@ -42,7 +52,7 @@ public class PostManagementService(
             Author = creationRequest.Author,
             AuthorId = creationRequest.Author.Id,
 
-            Content = creationRequest.Content,
+            Content = formattingResult.Formatted,
             
             Sensitive = creationRequest.IsSensitive,
             ContentWarning = creationRequest.ContentWarning,
@@ -52,7 +62,16 @@ public class PostManagementService(
             Parent = creationRequest.InReplyTo,
             ParentId = creationRequest.InReplyTo?.Id,
             
-            Attachments = creationRequest.Media
+            Attachments = creationRequest.Media,
+            
+            UserMentions = formattingResult.Mentions
+                .Select(u => new PostMention
+                {
+                    Id = u.Id.ToString(),
+                    Handle = u.Handle,
+                    Url = u.RemoteId ?? pathRenderer.GetPathToActor(u)
+                })
+                .ToList()
         };
 
         await repo.Add(post);
