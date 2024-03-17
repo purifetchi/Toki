@@ -53,7 +53,10 @@ public class AccountRenderer(
                 Note = user.Bio
             } : null,
             
-            CreatedAt = user.CreatedAt
+            CreatedAt = user.CreatedAt,
+            
+            FollowingCount = user.FollowingCount,
+            FollowersCount = user.FollowerCount
         };
     }
 

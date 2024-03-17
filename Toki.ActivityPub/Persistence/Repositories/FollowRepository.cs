@@ -94,6 +94,13 @@ public class FollowRepository(
     public async Task AddFollow(FollowerRelation fr)
     {
         db.FollowerRelations.Add(fr);
+
+        // Update the counts of both of the users.
+        fr.Followee.FollowerCount++;
+        fr.Follower.FollowingCount++;
+        db.Users.Update(fr.Followee);
+        db.Users.Update(fr.Follower);
+        
         await db.SaveChangesAsync();
     }
 
@@ -116,6 +123,8 @@ public class FollowRepository(
     {
         return await db.FollowRequests
             .Where(fr => fr.Id == id)
+            .Include(fr => fr.From)
+            .Include(fr => fr.To)
             .FirstOrDefaultAsync();
     }
 

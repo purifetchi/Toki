@@ -66,4 +66,14 @@ public class User : RemoteableModel
     /// The follower relations of this user.
     /// </summary>
     public ICollection<FollowerRelation>? FollowerRelations { get; set; }
+    
+    /// <summary>
+    /// The follower count of this user. (DENORMALIZED)
+    /// </summary>
+    public int FollowerCount { get; set; }
+    
+    /// <summary>
+    /// The following count of this user. (DENORMALIZED)
+    /// </summary>
+    public int FollowingCount { get; set; }
 }
