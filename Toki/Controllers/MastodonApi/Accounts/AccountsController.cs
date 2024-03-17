@@ -5,6 +5,8 @@ using Toki.ActivityPub.Users;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
+using Toki.MastodonApi.Schemas.Params;
+using Toki.MastodonApi.Schemas.Requests.Accounts;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
 using Toki.Services.Timelines;
@@ -66,7 +68,8 @@ public class AccountsController(
     /// Fetches the data for an account.
     /// </summary>
     /// <param name="id">Its id.</param>
-    /// <param name="pinned">Should we fetch only pinned posts?</param>
+    /// <param name="filters">The filters for statuses.</param>
+    /// <param name="paginationParams">The pagination params.</param>
     /// <returns>The <see cref="Account"/> if one exists, an error otherwise.</returns>
     [HttpGet]
     [Route("{id}/statuses")]
@@ -74,10 +77,11 @@ public class AccountsController(
     [OAuth(manualScopeValidation: true)]
     public async Task<IActionResult> FetchAccountStatuses(
         [FromRoute] Ulid id,
-        [FromQuery] bool pinned = false)
+        [FromQuery] StatusesFilters filters,
+        [FromQuery] PaginationParams paginationParams)
     {
         // TODO: Support pinned posts.
-        if (pinned)
+        if (filters.Pinned)
             return Ok(Array.Empty<Status>());
         
         var us = HttpContext.GetOAuthToken()?
@@ -87,11 +91,21 @@ public class AccountsController(
         if (user is null)
             return NotFound();
 
-        var posts = await timelineBuilder
+        var query = timelineBuilder
             .ViewAs(us)
-            .Filter(post => post.AuthorId == id)
-            .GetTimeline();
+            .Paginate(paginationParams)
+            .Filter(post => post.AuthorId == id);
 
+        if (filters.OnlyMedia)
+            query = query.Filter(post => post.Attachments != null && post.Attachments.Count > 0);
+
+        if (filters.ExcludeBoosts)
+            query = query.Filter(post => post.BoostingId == null);
+
+        if (filters.ExcludeReplies)
+            query = query.Filter(post => post.ParentId == null);
+
+        var posts = await query.GetTimeline();
         return Ok(
             posts.Select(statusRenderer.RenderForPost));
     }
