@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
+using Toki.Binding;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
@@ -9,6 +10,7 @@ using Toki.MastodonApi.Schemas.Params;
 using Toki.MastodonApi.Schemas.Requests.Accounts;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
+using Toki.Services.Drive;
 using Toki.Services.Timelines;
 
 namespace Toki.Controllers.MastodonApi.Accounts;
@@ -25,7 +27,8 @@ public class AccountsController(
     UserRepository repo,
     FollowRepository followRepo,
     UserRelationService relationService,
-    TimelineBuilder timelineBuilder) : ControllerBase
+    TimelineBuilder timelineBuilder,
+    DriveService drive) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -240,5 +243,42 @@ public class AccountsController(
             return NotFound(new MastodonApiError("Record not found"));
 
         return renderer.RenderAccountFrom(user);
+    }
+
+    /// <summary>
+    /// Update the user’s display and preferences.
+    /// </summary>
+    /// <param name="request">The new settings.</param>
+    /// <returns>On success, the user’s own <see cref="Account"/> with source attribute. Error otherwise.</returns>
+    [HttpPatch]
+    [Route("update_credentials")]
+    [OAuth("write:accounts")]
+    public async Task<IActionResult> UpdateCredentials(
+        [FromHybrid] UpdateCredentialsRequest request)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        user.DisplayName = request.DisplayName ?? user.DisplayName;
+        user.Bio = request.Bio ?? user.Bio;
+        user.RequiresFollowApproval = request.RequiresFollowApproval ?? user.RequiresFollowApproval;
+
+        if (request.Avatar is not null)
+        {
+            var url = await drive.Store(request.Avatar);
+            user.AvatarUrl = url;
+        }
+        
+        if (request.Header is not null)
+        {
+            var url = await drive.Store(request.Header);
+            user.BannerUrl = url;
+        }
+        
+        // TODO: Propagate this over AP
+        await repo.Update(user);
+        
+        return Ok(
+            renderer.RenderAccountFrom(user));
     }
 }
