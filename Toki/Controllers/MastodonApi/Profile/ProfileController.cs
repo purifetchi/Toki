@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Users;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
@@ -11,14 +12,14 @@ namespace Toki.Controllers.MastodonApi.Profile;
 /// <summary>
 /// Controller for the "/api/v1/profile" route.
 /// </summary>
-/// <param name="repo">The user repository.</param>
 /// <param name="accountRenderer">The mastodon account renderer.</param>
+/// <param name="managementService">The user management service.</param>
 [ApiController]
 [Route("/api/v1/profile")]
 [EnableCors("MastodonAPI")]
 public class ProfileController(
-    UserRepository repo,
-    AccountRenderer accountRenderer) : ControllerBase
+    AccountRenderer accountRenderer,
+    UserManagementService managementService) : ControllerBase
 {
     /// <summary>
     /// Deletes the avatar associated with the user’s profile.
@@ -34,7 +35,7 @@ public class ProfileController(
             .User;
 
         user.AvatarUrl = null;
-        await repo.Update(user);
+        await managementService.Update(user);
 
         return accountRenderer.RenderAccountFrom(user, true);
     }
@@ -53,7 +54,7 @@ public class ProfileController(
             .User;
 
         user.BannerUrl = null;
-        await repo.Update(user);
+        await managementService.Update(user);
 
         return accountRenderer.RenderAccountFrom(user, true);
     }

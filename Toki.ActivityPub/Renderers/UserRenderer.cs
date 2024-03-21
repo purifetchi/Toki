@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Renderers;
@@ -71,5 +72,22 @@ public class UserRenderer(
         return ASObject.Link(
             user.RemoteId ?? 
             pathRenderer.GetPathToActor(user));
+    }
+
+    /// <summary>
+    /// Renders an <see cref="ASUpdate"/> for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The update.</returns>
+    public async Task<ASUpdate> RenderUpdateFor(User user)
+    {
+        var link = RenderLinkedActorFrom(user);
+        return new ASUpdate()
+        {
+            Id = $"{link.Id}#updates/{Ulid.NewUlid()}",
+
+            Actor = link,
+            Object = await RenderFullActorFrom(user)
+        };
     }
 }

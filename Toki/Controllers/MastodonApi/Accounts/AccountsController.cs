@@ -28,7 +28,8 @@ public class AccountsController(
     FollowRepository followRepo,
     UserRelationService relationService,
     TimelineBuilder timelineBuilder,
-    DriveService drive) : ControllerBase
+    DriveService drive,
+    UserManagementService managementService) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -275,8 +276,7 @@ public class AccountsController(
             user.BannerUrl = url;
         }
         
-        // TODO: Propagate this over AP
-        await repo.Update(user);
+        await managementService.Update(user);
         
         return Ok(
             renderer.RenderAccountFrom(user));
