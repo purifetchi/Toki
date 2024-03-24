@@ -4,7 +4,6 @@ using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
-using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Models.Posts;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -180,6 +179,35 @@ public class PostManagementService(
         await federationService.SendToFollowers(
             actor,
             likeActivity);
+    }
+
+    /// <summary>
+    /// Undoes a like on a post done by an actor.
+    /// </summary>
+    /// <param name="actor">The actor which did the like.</param>
+    /// <param name="post">The post.</param>
+    public async Task UndoLike(
+        User actor,
+        Post post)
+    {
+        var like = await repo.FindLikeByIds(
+            post.Id,
+            actor.Id);
+
+        if (like is null)
+            return;
+
+        await repo.RemoveLike(like);
+        if (actor.IsRemote)
+            return;
+
+        var undoLike = postRenderer.RenderUndoLikeForNote(
+            actor,
+            post);
+        
+        await federationService.SendToFollowers(
+            actor,
+            undoLike);
     }
 
     /// <summary>

@@ -108,6 +108,21 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Removes a like from a post.
+    /// </summary>
+    /// <param name="like">The like.</param>
+    public async Task RemoveLike(
+        PostLike like)
+    {
+        var post = like.Post;
+        post.LikeCount--;
+        db.Posts.Update(post);
+        
+        db.PostLikes.Remove(like);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Adds a boost to the post.
     /// </summary>
     /// <param name="boost">The boost.</param>

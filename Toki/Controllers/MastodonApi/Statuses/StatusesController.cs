@@ -202,6 +202,35 @@ public class StatusesController(
     }
     
     /// <summary>
+    /// Remove a status from your favourites list.
+    /// </summary>
+    /// <param name="id">The ID of the Status in the database.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id}/unfavourite")]
+    public async Task<IActionResult> Unfavourite(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        await postManagementService.UndoLike(
+            user,
+            post);
+        
+        var status = statusRenderer.RenderForPost(post);
+        status.Liked = false;
+        
+        return Ok(status);
+    }
+    
+    /// <summary>
     /// Reblogs a post.
     /// </summary>
     /// <param name="id">The id of the post.</param>
