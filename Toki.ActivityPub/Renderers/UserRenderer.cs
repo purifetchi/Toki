@@ -56,6 +56,16 @@ public class UserRenderer(
                 PublicKeyPem = key!.PublicKey
             },
             
+            Icon = user.AvatarUrl is not null ? new ASImage()
+            {
+                Url = user.AvatarUrl!
+            } : null,
+            
+            Banner = user.BannerUrl is not null ? new ASImage()
+            {
+                Url = user.BannerUrl!
+            } : null,
+            
             Endpoints = new ASEndpoints
             {
                 SharedInbox = ASObject.Link($"https://{domain}/inbox")
