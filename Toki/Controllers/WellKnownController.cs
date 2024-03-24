@@ -51,6 +51,11 @@ public class WellKnownController(
                 {
                     Relative = "http://nodeinfo.diaspora.software/ns/schema/2.1",
                     Hyperlink = $"https://{opts.Value.Domain}/nodeinfo/2.1"
+                },
+                new()
+                {
+                    Relative = "https://www.w3.org/ns/activitystreams#Application",
+                    Hyperlink = $"https://{opts.Value.Domain}/actor"
                 }
             ]
         };
