@@ -44,6 +44,7 @@ public class UserRenderer(
             PreferredUsername = user.Handle,
             
             Inbox = ASObject.Link(user.Inbox ?? $"{user.RemoteId ?? uri}/inbox"),
+            Outbox = ASObject.Link($"{user.RemoteId ?? uri}/outbox"),
             
             Followers = ASObject.Link($"{user.RemoteId ?? uri}/followers"),
             Following = ASObject.Link($"{user.RemoteId ?? uri}/following"),

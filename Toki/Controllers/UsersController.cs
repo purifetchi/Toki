@@ -8,6 +8,7 @@ using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
 using Toki.Extensions;
+using Toki.Services.Timelines;
 
 namespace Toki.Controllers;
 
@@ -20,8 +21,10 @@ public class UsersController(
     UserRepository repo,
     FollowRepository followRepo,
     UserRenderer renderer,
+    PostRenderer postRenderer,
     InstancePathRenderer pathRenderer,
-    ActivityPubMessageValidationService validator)
+    ActivityPubMessageValidationService validator,
+    TimelineBuilder timelineBuilder)
     : ControllerBase
 {
     /// <summary>
@@ -123,5 +126,39 @@ public class UsersController(
             job.HandleActivity(data));
         
         return Accepted();
+    }
+    
+    /// <summary>
+    /// Gets the user's outbox.
+    /// </summary>
+    /// <param name="handle">The user's handle.</param>
+    /// <returns>The activities produced by the user.</returns>
+    [HttpGet]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
+    [Route("outbox")]
+    public async Task<ActionResult<ASOrderedCollection<ASObject>>> Outbox(
+        [FromRoute] string handle)
+    {
+        var user = await repo.FindByHandle(handle);
+        if (user is null)
+            return NotFound();
+        
+        var posts = await timelineBuilder
+            .ViewAs(null)
+            .Filter(post => post.AuthorId == user.Id)
+            .GetTimeline();
+
+        var items = posts
+            .Select(postRenderer.RenderCreationForNote)
+            .Cast<ASObject>()
+            .ToList();
+        
+        return new ASOrderedCollection<ASObject>()
+        {
+            Id = $"{pathRenderer.GetPathToActor(user)}/outbox",
+
+            OrderedItems = items,
+            TotalItems = items.Count
+        };;
     }
 }
