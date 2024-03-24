@@ -1,4 +1,5 @@
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Renderers;
 using Toki.Extensions;
 using Toki.MastodonApi.Schemas.Objects;
@@ -10,7 +11,8 @@ namespace Toki.MastodonApi.Renderers;
 /// </summary>
 public class StatusRenderer(
     AccountRenderer accountRenderer,
-    InstancePathRenderer pathRenderer)
+    InstancePathRenderer pathRenderer,
+    PostManagementService postManagementService)
 {
     /// <summary>
     /// Renders the attachments for a post.
@@ -99,5 +101,75 @@ public class StatusRenderer(
             Attachments = RenderAttachmentsFor(post) ?? [],
             Mentions = RenderMentionsFor(post) ?? []
         };
+    }
+
+    /// <summary>
+    /// Renders a status for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="post">The post to render the status from.</param>
+    /// <returns>The resulting status.</returns>
+    public async Task<Status> RenderStatusForUser(
+        User? user,
+        Post post)
+    {
+        if (user is null)
+            return RenderForPost(post);
+        
+        var status = RenderForPost(post);
+        var liked = await postManagementService.HasLiked(user, post);
+        var boosted = await postManagementService.HasBoosted(user, post);
+
+        status.Liked = liked;
+        status.Boosted = boosted;
+
+        return status;
+    }
+
+    /// <summary>
+    /// Renders many statuses for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="posts">The posts to render from.</param>
+    /// <returns>The statuses.</returns>
+    public async Task<IReadOnlyList<Status>> RenderManyStatusesForUser(
+        User? user,
+        IList<Post> posts)
+    {
+        if (user is null)
+            return posts.Select(RenderForPost).ToList();
+        
+        // Get all ids we're interested in (this also includes the IDs of boosted posts)
+        var ids = posts
+            .Concat(posts
+                .Where(p => p.Boosting is not null)
+                .Select(p => p.Boosting!))
+            .Select(p => p.Id)
+            .Distinct()
+            .ToList();
+
+        // Fetch both of these at once so we only do 2 DB hits while rendering many.
+        var likes = await postManagementService.FindManyLikedPosts(user, ids);
+        var boosts = await postManagementService.FindManyBoostedPosts(user, ids);
+        
+        var results = new List<Status>();
+        foreach (var post in posts)
+        {
+            var status = RenderForPost(post);
+            if (status.Boost != null)
+            {
+                status.Boost.Liked = likes.Contains(post.Boosting!.Id);
+                status.Boost.Boosted = boosts.Contains(post.Boosting!.Id);
+            }
+            else
+            {
+                status.Liked = likes.Contains(post.Id);
+                status.Boosted = boosts.Contains(post.Id);
+            }
+            
+            results.Add(status);
+        }
+
+        return results;
     }
 }

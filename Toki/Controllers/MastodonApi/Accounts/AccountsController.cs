@@ -110,8 +110,7 @@ public class AccountsController(
             query = query.Filter(post => post.ParentId == null);
 
         var posts = await query.GetTimeline();
-        return Ok(
-            posts.Select(statusRenderer.RenderForPost));
+        return Ok(await statusRenderer.RenderManyStatusesForUser(us, posts));
     }
 
     /// <summary>

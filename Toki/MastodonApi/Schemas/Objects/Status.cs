@@ -120,6 +120,18 @@ public record Status
     /// </summary>
     [JsonPropertyName("url")]
     public string? Url { get; init; }
+    
+    /// <summary>
+    /// Have you liked this status?
+    /// </summary>
+    [JsonPropertyName("favourited")]
+    public bool? Liked { get; set; }
+    
+    /// <summary>
+    /// Have you boosted this status?
+    /// </summary>
+    [JsonPropertyName("reblogged")]
+    public bool? Boosted { get; set; }
 
     // TODO: The rest of the status.
 }

@@ -132,6 +132,13 @@ public class PostRepository(
         db.Posts;
 
     /// <summary>
+    /// Creates a custom query for post likes.
+    /// </summary>
+    /// <returns>The post likes query.</returns>
+    public IQueryable<PostLike> CreateCustomLikeQuery() =>
+        db.PostLikes;
+    
+    /// <summary>
     /// Creates a detached attachment (one without a parent <see cref="Post"/>).
     /// </summary>
     /// <param name="url">The url of the file.</param>

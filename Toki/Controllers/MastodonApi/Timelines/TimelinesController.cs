@@ -30,9 +30,12 @@ public class TimelinesController(
     [HttpGet]
     [Route("public")]
     [Produces("application/json")]
+    [OAuth(manualScopeValidation: true)]
     public async Task<IEnumerable<Status>> PublicTimeline(
         [FromQuery] PaginationParams paginationParams)
     {
+        var user = HttpContext.GetOAuthToken()?
+            .User;
         // TODO: Give a heck about the query parameters.
         
         var list = await timelineBuilder
@@ -40,7 +43,7 @@ public class TimelinesController(
             .Paginate(paginationParams)
             .GetTimeline();
 
-        return list.Select(statusRenderer.RenderForPost);
+        return await statusRenderer.RenderManyStatusesForUser(user, list);
     }
 
     /// <summary>
@@ -63,6 +66,6 @@ public class TimelinesController(
             .Paginate(paginationParams)
             .GetTimeline();
 
-        return list.Select(statusRenderer.RenderForPost);
+        return await statusRenderer.RenderManyStatusesForUser(user, list);
     }
 }

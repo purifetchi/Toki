@@ -93,7 +93,7 @@ public class TimelineBuilder(
     /// Gets the resulting timeline.
     /// </summary>
     /// <returns>The timeline.</returns>
-    public async Task<IEnumerable<Post>> GetTimeline()
+    public async Task<IList<Post>> GetTimeline()
     {
         if (_paginationParams is null)
             return await _query.ToListAsync();

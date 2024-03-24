@@ -198,4 +198,60 @@ public class PostManagementService(
 
         return like is not null;
     }
+    
+    /// <summary>
+    /// Checks whether a user has already boosted a post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>Whether they have boosted it.</returns>
+    public async Task<bool> HasBoosted(
+        User user,
+        Post post)
+    {
+        var hasBoosted = await repo.CreateCustomQuery()
+            .Where(p => p.AuthorId == user.Id)
+            .Where(p => p.BoostingId == post.Id)
+            .AnyAsync();
+
+        return hasBoosted;
+    }
+    
+    /// <summary>
+    /// Checks a list for which posts the user has boosted the post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="ids">The list of ids to look through.</param>
+    /// <returns>The boosted posts.</returns>
+    public async Task<IReadOnlyList<Ulid>> FindManyBoostedPosts(
+        User user,
+        IReadOnlyList<Ulid> ids)
+    {
+        var boostedPosts = await repo.CreateCustomQuery()
+            .Where(p => p.AuthorId == user.Id)
+            .Where(p => p.BoostingId != null && ids.Contains(p.BoostingId!.Value))
+            .Select(p => p.BoostingId!.Value)
+            .ToListAsync();
+
+        return boostedPosts ?? [];
+    }
+    
+    /// <summary>
+    /// Checks a list for which posts the user has liked the post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="ids">The list of ids to look through.</param>
+    /// <returns>The liked posts.</returns>
+    public async Task<IReadOnlyList<Ulid>> FindManyLikedPosts(
+        User user,
+        IReadOnlyList<Ulid> ids)
+    {
+        var likedPosts = await repo.CreateCustomLikeQuery()
+            .Where(p => p.LikingUserId == user.Id)
+            .Where(p => ids.Contains(p.PostId))
+            .Select(p => p.PostId!)
+            .ToListAsync();
+
+        return likedPosts ?? [];
+    }
 }

@@ -98,7 +98,7 @@ public class StatusesController(
             return NotFound(new MastodonApiError("Record not found."));
 
         return Ok(
-            statusRenderer.RenderForPost(post));
+            await statusRenderer.RenderStatusForUser(user, post));
     }
     
     /// <summary>
@@ -126,7 +126,7 @@ public class StatusesController(
         {
             return Ok(new Context
             {
-                Parents = [statusRenderer.RenderForPost(post)]
+                Parents = [await statusRenderer.RenderStatusForUser(user, post)]
             });
         }
         
@@ -167,12 +167,8 @@ public class StatusesController(
         
         return Ok(new Context
         {
-            Parents = parents
-                .Select(statusRenderer.RenderForPost)
-                .ToList(),
-            
-            Children = children.Select(statusRenderer.RenderForPost)
-                .ToList()
+            Parents = await statusRenderer.RenderManyStatusesForUser(user, parents),
+            Children = await statusRenderer.RenderManyStatusesForUser(user, children)
         });
     }
 
@@ -199,8 +195,10 @@ public class StatusesController(
             user,
             post);
         
-        return Ok(
-            statusRenderer.RenderForPost(post));
+        var status = statusRenderer.RenderForPost(post);
+        status.Liked = true;
+        
+        return Ok(status);
     }
     
     /// <summary>
@@ -229,7 +227,9 @@ public class StatusesController(
         if (boost is null)
             return BadRequest(new MastodonApiError("Error while boosting post."));
         
-        return Ok(
-            statusRenderer.RenderForPost(boost));
+        var status = statusRenderer.RenderForPost(post);
+        status.Boosted = true;
+        
+        return Ok(status);
     }
 }
