@@ -5,6 +5,8 @@
 
 <hr>
 
+![An image of Toki being accessed via the bloat-fe frontend.](Meta/screenshot.png)
+
 A C# ActivityPub Fediverse-compatible server. Very early in development, probably never will be good enough for a huge instance.
 
 I'm working on it as sort of a personal challenge, considering I've always wanted to implement the ActivityPub protocol.
