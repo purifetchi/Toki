@@ -13,16 +13,16 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     /// The client we're operating on.
     /// </summary>
     private readonly HttpClient _client = httpClientFactory.CreateClient();
-
-    /// <summary>
-    /// The request message to be sent.
-    /// </summary>
-    private readonly HttpRequestMessage _requestMessage = new();
-
+    
     /// <summary>
     /// The list of headers to sign.
     /// </summary>
     private readonly List<string> _signedHeaders = new();
+
+    /// <summary>
+    /// The request message to be sent.
+    /// </summary>
+    private HttpRequestMessage _requestMessage = new();
 
     /// <summary>
     /// The PEM of the public key.
@@ -38,6 +38,17 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     /// The body of the message.
     /// </summary>
     private string? _body;
+
+    /// <summary>
+    /// Creates a new request.
+    /// </summary>
+    /// <returns>Ourselves.</returns>
+    public SignedHttpClient NewRequest()
+    {
+        _requestMessage = new();
+        _signedHeaders.Clear();
+        return this;
+    }
     
     /// <summary>
     /// Adds a header to sign.

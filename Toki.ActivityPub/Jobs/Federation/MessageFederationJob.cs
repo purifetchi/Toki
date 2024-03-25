@@ -46,19 +46,23 @@ public class MessageFederationJob(
         var failed = new List<string>();
         logger.LogInformation($"httpClient: {httpClient}, keypair: {keypair?.Id}, publickey: {keypair?.PublicKey}, message: {message}");
         
-        httpClient.WithKey(
-                keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
-                keypair.PrivateKey!)
-            .WithBody(message)
-            .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
-            .AddHeaderToSign("Host")
-            .AddHeaderToSign("Digest")
-            .SetDate(DateTimeOffset.UtcNow.AddSeconds(5));
-
         foreach (var target in targets)
         {
             logger.LogInformation($"Delivering message to {target}");
-            var result = await httpClient.Post(target);
+            
+            // TODO: We should probably precalculate the digest, so we don't have to calculate it
+            //       every single time we send to a different endpoint.
+            var result = await httpClient
+                .NewRequest()
+                .WithKey(
+                    keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
+                    keypair.PrivateKey!)
+                .WithBody(message)
+                .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
+                .AddHeaderToSign("Host")
+                .AddHeaderToSign("Digest")
+                .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
+                .Post(target);
 
             if (result.IsSuccessStatusCode)
                 continue;
