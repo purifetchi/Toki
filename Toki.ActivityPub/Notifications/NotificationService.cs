@@ -13,13 +13,29 @@ public class NotificationService(
     UserRepository userRepository)
 {
     /// <summary>
+    /// Attempts to add the notification, if it makes sense to do so.
+    /// </summary>
+    /// <param name="notification">The notification.</param>
+    /// <returns>The added notification on success, nothing else.</returns>
+    private async Task<Notification?> MaybeAddNotification(
+        Notification notification)
+    {
+        // We aren't interested in what we've done to ourselves.
+        if (notification.ActorId == notification.TargetId)
+            return null;
+        
+        await repo.Add(notification);
+        return notification;
+    }
+    
+    /// <summary>
     /// Dispatches a like notification.
     /// </summary>
     /// <param name="author">The author of the post.</param>
     /// <param name="causer">The person liking the post.</param>
     /// <param name="note">The post that was liked.</param>
     /// <returns>The dispatched notification.</returns>
-    public async Task<Notification> DispatchLike(
+    public async Task<Notification?> DispatchLike(
         User author,
         User causer,
         Post note)
@@ -39,8 +55,7 @@ public class NotificationService(
             RelevantPostId = note.Id
         };
 
-        await repo.Add(notif);
-        return notif;
+        return await MaybeAddNotification(notif);
     }
     
     /// <summary>
@@ -50,7 +65,7 @@ public class NotificationService(
     /// <param name="causer">The person boosting the post.</param>
     /// <param name="note">The post that was boosted.</param>
     /// <returns>The dispatched notification.</returns>
-    public async Task<Notification> DispatchBoost(
+    public async Task<Notification?> DispatchBoost(
         User author,
         User causer,
         Post note)
@@ -70,8 +85,7 @@ public class NotificationService(
             RelevantPostId = note.Id
         };
 
-        await repo.Add(notif);
-        return notif;
+        return await MaybeAddNotification(notif);
     }
     
     /// <summary>
@@ -81,7 +95,7 @@ public class NotificationService(
     /// <param name="mentioner">The person mentioning them.</param>
     /// <param name="note">The post that was part of the mention.</param>
     /// <returns>The dispatched notification.</returns>
-    public async Task<Notification> DispatchMention(
+    public async Task<Notification?> DispatchMention(
         User mentioned,
         User mentioner,
         Post note)
@@ -101,8 +115,7 @@ public class NotificationService(
             RelevantPostId = note.Id
         };
 
-        await repo.Add(notif);
-        return notif;
+        return await MaybeAddNotification(notif);
     }
 
     /// <summary>
@@ -111,7 +124,7 @@ public class NotificationService(
     /// <param name="target">The target user.</param>
     /// <param name="follower">The follower.</param>
     /// <returns>The dispatched notification.</returns>
-    public async Task<Notification> DispatchFollow(
+    public async Task<Notification?> DispatchFollow(
         User target,
         User follower)
     {
@@ -127,8 +140,7 @@ public class NotificationService(
             ActorId = follower.Id
         };
         
-        await repo.Add(notif);
-        return notif;
+        return await MaybeAddNotification(notif);
     }
     
     /// <summary>
@@ -136,10 +148,10 @@ public class NotificationService(
     /// </summary>
     /// <param name="post">The post.</param>
     /// <returns>The notifications.</returns>
-    public async Task<IReadOnlyList<Notification>?> DispatchAllNotificationsForPost(
+    public async Task<IReadOnlyList<Notification?>?> DispatchAllNotificationsForPost(
         Post post)
     {
-        var notifs = new List<Notification>();
+        var notifs = new List<Notification?>();
         
         // Send out mentions
         if (post.UserMentions is not null)
@@ -151,11 +163,16 @@ public class NotificationService(
 
                 if (user is null || user == post.Author)
                     continue;
-                
-                notifs.Add(await DispatchMention(
+
+                var notif = await DispatchMention(
                     user,
                     post.Author,
-                    post));
+                    post);
+
+                if (notif is null)
+                    continue;
+                
+                notifs.Add(notif);
             }
         }
         
