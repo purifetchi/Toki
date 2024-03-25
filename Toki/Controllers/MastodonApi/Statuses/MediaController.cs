@@ -28,6 +28,7 @@ public class MediaController(
     /// <param name="request">The request.</param>
     /// <returns>The resulting <see cref="MediaAttachment"/>, or nothing.</returns>
     [HttpPost]
+    [Route("v1/media")]
     [Route("v2/media")]
     [Produces("application/json")]
     [OAuth("write:media")]
