@@ -125,6 +125,13 @@ public class UserRelationService(
         User from,
         User to)
     {
+        // Check if we already aren't in a follow relation.
+        var relations = await followRepo.GetFollowRelationsFor(from, to);
+        var relation = relations.FirstOrDefault(
+            r => r.FollowerId == from.Id && r.FolloweeId == to.Id);
+        if (relation is not null)
+            return relation;
+        
         logger.LogDebug($"Created a follow relation from {from.DisplayName} to {to.DisplayName}");
         
         var fr = new FollowerRelation()
@@ -150,16 +157,16 @@ public class UserRelationService(
         FollowRequest fr)
     {
         var actorPath = pathRenderer.GetPathToActor(fr.To);
-
+        
         if (await followRepo.FindFollowRequestById(fr.Id) is not null)
             await followRepo.TransformIntoFollow(fr);
         else
             await CreateFollow(fr.From, fr.To);
-
+            
         await notificationService.DispatchFollow(
             fr.To,
             fr.From);
-        
+
         if (!fr.From.IsRemote)
             return;
         
@@ -188,6 +195,10 @@ public class UserRelationService(
         User to,
         string? remoteId = null)
     {
+        var request = await followRepo.FindFollowRequestByRemoteId(remoteId!);
+        if (request is not null)
+            return request;
+        
         logger.LogDebug($"Created a follow request from {from.DisplayName} to {to.DisplayName}");
         
         var id = Ulid.NewUlid();

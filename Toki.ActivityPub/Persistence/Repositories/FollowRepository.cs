@@ -127,6 +127,20 @@ public class FollowRepository(
             .Include(fr => fr.To)
             .FirstOrDefaultAsync();
     }
+    
+    /// <summary>
+    /// Finds a follow request by a remote id.
+    /// </summary>
+    /// <param name="remoteId">The remote id of the request.</param>
+    /// <returns>The follow request.</returns>
+    public async Task<FollowRequest?> FindFollowRequestByRemoteId(string remoteId)
+    {
+        return await db.FollowRequests
+            .Where(fr => fr.RemoteId == remoteId)
+            .Include(fr => fr.From)
+            .Include(fr => fr.To)
+            .FirstOrDefaultAsync();
+    }
 
     /// <summary>
     /// Transforms a follow request into a follow.
