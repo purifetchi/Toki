@@ -161,7 +161,7 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
                     DigestMessage());
             }
             
-            _requestMessage.Content = new StringContent(_body, Encoding.UTF8, "application/json");
+            _requestMessage.Content = new StringContent(_body, Encoding.UTF8, "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
         
         _requestMessage.RequestUri = new(url);
