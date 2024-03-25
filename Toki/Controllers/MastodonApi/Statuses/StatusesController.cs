@@ -43,7 +43,12 @@ public class StatusesController(
         var user = HttpContext.GetOAuthToken()!
             .User;
 
-        if (request.Status is null)
+        // Check if we have anything in this post. (Do not post without any content)
+        // TODO: Polls should also count.
+        var hasMedia = request.MediaIds is not null &&
+                       request.MediaIds.Count > 0;
+        
+        if (string.IsNullOrWhiteSpace(request.Status) && !hasMedia)
             return BadRequest(new MastodonApiError("Validation error: Post cannot be empty."));
 
         var replyingTo = Ulid.TryParse(request.InReplyTo, out var replyingGuid)
@@ -61,7 +66,7 @@ public class StatusesController(
         var post = await postManagementService.Create(new PostCreationRequest
         {
             Author = user,
-            Content = request.Status,
+            Content = request.Status ?? string.Empty,
             Visibility = request.GetVisibility(),
             
             IsSensitive = request.Sensitive,
