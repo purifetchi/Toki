@@ -238,4 +238,41 @@ public class PostRenderer(
 
         return undo;
     }
+    
+    /// <summary>
+    /// Renders an <see cref="ASUndo"/> for a <see cref="ASAnnounce"/> related to a post.
+    /// </summary>
+    /// <param name="boostingUser">The boosting user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>The like activity.</returns>
+    public ASUndo RenderUndoAnnounceForNote(
+        User boostingUser,
+        Post post)
+    {
+        var (to, cc) = GetToAndCcFor(post);
+        var actorPath = pathRenderer.GetPathToActor(boostingUser);
+        var actorLink = userRenderer.RenderLinkedActorFrom(boostingUser);
+        
+        var undo = new ASUndo()
+        {
+            // This ID doesn't really matter, as long as it's random lol
+            Id = $"{actorPath}#undos/{Ulid.NewUlid()}",
+            Actor = actorLink,
+
+            Object = new ASAnnounce()
+            {
+                Id = $"{actorPath}#boosts/{post.Id}",
+                Actor = actorLink,
+
+                Object = RenderLinkedNoteFrom(post),
+            
+                PublishedAt = DateTimeOffset.UtcNow,
+            
+                To = to.Concat(cc)
+                    .ToList()
+            }
+        };
+
+        return undo;
+    }
 }

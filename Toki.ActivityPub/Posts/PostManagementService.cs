@@ -209,6 +209,28 @@ public class PostManagementService(
             actor,
             undoLike);
     }
+    
+    /// <summary>
+    /// Undoes a boost on a post done by an actor.
+    /// </summary>
+    /// <param name="actor">The actor which did the like.</param>
+    /// <param name="boost">The post.</param>
+    public async Task UndoBoost(
+        User actor,
+        Post boost)
+    {
+        await repo.RemoveBoost(boost);
+        if (actor.IsRemote)
+            return;
+
+        var undoBoost = postRenderer.RenderUndoAnnounceForNote(
+            actor,
+            boost.Boosting!);
+        
+        await federationService.SendToFollowers(
+            actor,
+            undoBoost);
+    }
 
     /// <summary>
     /// Checks whether a user has already liked a post.

@@ -76,6 +76,23 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Finds a boost by its id and author.
+    /// </summary>
+    /// <param name="author">The author.</param>
+    /// <param name="id">The id of the boosted post.</param>
+    /// <returns>The boost, if it exists.</returns>
+    public async Task<Post?> FindBoostByIdAndAuthor(
+        User author,
+        Ulid id)
+    {
+        return await db.Posts
+            .Include(post => post.Boosting)
+            .Include(post => post.Boosting!.Author)
+            .Include(post => post.Boosting!.Attachments)
+            .FirstOrDefaultAsync(post => post.BoostingId == id && post.AuthorId == author.Id);
+    }
+
+    /// <summary>
     /// Adds a post to the database.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -119,6 +136,24 @@ public class PostRepository(
         db.Posts.Update(post);
         
         db.PostLikes.Remove(like);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Removes a boost from a post.
+    /// </summary>
+    /// <param name="boost">The boost.</param>
+    public async Task RemoveBoost(
+        Post boost)
+    {
+        if (boost.Boosting is null)
+            return;
+        
+        var post = boost.Boosting!;
+        post.BoostCount--;
+        db.Posts.Update(post);
+        
+        db.Posts.Remove(boost);
         await db.SaveChangesAsync();
     }
     

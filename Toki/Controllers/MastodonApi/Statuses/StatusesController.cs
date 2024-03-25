@@ -266,4 +266,36 @@ public class StatusesController(
         
         return Ok(status);
     }
+    
+    /// <summary>
+    /// Undo a reshare of a status.
+    /// </summary>
+    /// <param name="id">The ID of the Status in the database.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id}/unreblog")]
+    public async Task<IActionResult> Unreblog(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var boost = await repo.FindBoostByIdAndAuthor(
+            user,
+            id);
+        
+        if (boost is null || !boost.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        await postManagementService.UndoBoost(
+            user,
+            boost);
+
+        var status = statusRenderer.RenderForPost(boost.Boosting!);
+        status.Boosted = false;
+        
+        return Ok(status);
+    }
 }
