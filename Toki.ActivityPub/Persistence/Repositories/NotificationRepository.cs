@@ -32,6 +32,7 @@ public class NotificationRepository(
             .Include(n => n.Actor)
             .Include(n => n.Target)
             .Include(n => n.RelevantPost)
+            .Include(n => n.RelevantPost!.Attachments)
             .Where(n => n.TargetId == user.Id)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
