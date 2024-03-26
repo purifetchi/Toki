@@ -20,7 +20,6 @@ namespace Toki.Controllers.MastodonApi.Timelines;
 [EnableCors("MastodonAPI")]
 public class TimelinesController(
     StatusRenderer statusRenderer,
-    PostRepository repo,
     TimelineBuilder timelineBuilder) : ControllerBase 
 {
     /// <summary>

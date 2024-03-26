@@ -26,7 +26,7 @@ public class InstanceController(
     /// <returns>The instance information data.</returns>
     [HttpGet]
     [Route("v1/instance")]
-    public async Task<IActionResult> InstanceV1()
+    public IActionResult InstanceV1()
     {
         var config = opts.Value;
         var uploadConfig = uploadOpts.Value;

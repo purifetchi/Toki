@@ -11,11 +11,11 @@ public class ASMention : ASLink
     /// The name of the actor we're mentioning.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     
     /// <summary>
     /// The link to the actor.
     /// </summary>
     [JsonPropertyName("href")]
-    public string Href { get; set; }
+    public string? Href { get; set; }
 }
