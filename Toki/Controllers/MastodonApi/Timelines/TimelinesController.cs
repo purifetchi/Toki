@@ -31,14 +31,27 @@ public class TimelinesController(
     [Produces("application/json")]
     [OAuth(manualScopeValidation: true)]
     public async Task<IEnumerable<Status>> PublicTimeline(
-        [FromQuery] PaginationParams paginationParams)
+        [FromQuery] PaginationParams paginationParams,
+        [FromQuery(Name = "only_media")] bool onlyMedia = false,
+        [FromQuery] bool local = false,
+        [FromQuery] bool remote = false)
     {
         var user = HttpContext.GetOAuthToken()?
             .User;
-        // TODO: Give a heck about the query parameters.
+
+        var query = timelineBuilder
+            .Filter(post => post.Visibility == PostVisibility.Public);
+
+        if (onlyMedia)
+            query = query.Filter(post => post.Attachments != null && post.Attachments.Count != 0);
+
+        if (local)
+            query = query.Filter(post => !post.Author.IsRemote);
         
-        var list = await timelineBuilder
-            .Filter(post => post.Visibility == PostVisibility.Public)
+        if (remote)
+            query = query.Filter(post => post.Author.IsRemote);
+        
+        var list = await query
             .Paginate(paginationParams)
             .GetTimeline();
 
