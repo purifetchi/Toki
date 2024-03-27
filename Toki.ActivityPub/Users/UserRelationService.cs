@@ -153,7 +153,7 @@ public class UserRelationService(
     /// Accepts a follow request.
     /// </summary>
     /// <param name="fr">The follow request.</param>
-    private async Task AcceptFollowRequest(
+    public async Task AcceptFollowRequest(
         FollowRequest fr)
     {
         var actorPath = pathRenderer.GetPathToActor(fr.To);
@@ -181,6 +181,34 @@ public class UserRelationService(
             fr.To,
             fr.From,
             accept);
+    }
+
+    /// <summary>
+    /// Rejects a follow request.
+    /// </summary>
+    /// <param name="fr">The follow request.</param>
+    public async Task RejectFollowRequest(
+        FollowRequest fr)
+    {
+        await followRepo.RemoveFollowRequest(fr);
+        
+        if (!fr.From.IsRemote)
+            return;
+        
+        var actorPath = pathRenderer.GetPathToActor(fr.To);
+        
+        // TODO: Is this proper?
+        var reject = new ASReject
+        {
+            Id = $"{actorPath}#rejects/follows/{fr.Id}",
+            Actor = ASObject.Link(actorPath),
+            Object = ASObject.Link(fr.RemoteId!)
+        };
+        
+        messageFederation.SendTo(
+            fr.To,
+            fr.From,
+            reject);
     }
     
     /// <summary>
@@ -231,7 +259,7 @@ public class UserRelationService(
         User target)
     {
         var relations = await followRepo.GetFollowRelationsFor(source, target);
-        var requests = await followRepo.GetFollowRequestsFor(source, target);
+        var requests = await followRepo.GetFollowRequestRelationsFor(source, target);
 
         return new RelationshipInformation(
             relations.Any(f => f.Follower == source),
