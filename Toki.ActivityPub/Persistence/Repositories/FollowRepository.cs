@@ -25,6 +25,21 @@ public class FollowRepository(
     }
 
     /// <summary>
+    /// Gets the pending follow requests for a given user, in reverse chronological order.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>Their pending follow requests.</returns>
+    public async Task<IEnumerable<User>> GetFollowRequestsFor(User user)
+    {
+        return await db.FollowRequests
+            .Where(fr => fr.To == user)
+            .Include(fr => fr.From)
+            .OrderByDescending(fr => fr.Id)
+            .Select(fr => fr.From)
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Gets the follower's inboxes (either direct or shared) for a given user.
     /// </summary>
     /// <param name="user">The user.</param>
@@ -77,7 +92,7 @@ public class FollowRepository(
     /// <param name="user1">The first user.</param>
     /// <param name="user2">The second user.</param>
     /// <returns>The follow requests.</returns>
-    public async Task<IList<FollowRequest>> GetFollowRequestsFor(
+    public async Task<IList<FollowRequest>> GetFollowRequestRelationsFor(
         User user1,
         User user2)
     {
@@ -113,6 +128,16 @@ public class FollowRepository(
         db.FollowRequests.Add(fr);
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Removes a follow request.
+    /// </summary>
+    /// <param name="fr">The follower request.</param>
+    public async Task RemoveFollowRequest(FollowRequest fr)
+    {
+        db.FollowRequests.Remove(fr);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Finds a follow request by an id.
@@ -140,6 +165,20 @@ public class FollowRepository(
             .Include(fr => fr.From)
             .Include(fr => fr.To)
             .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Finds a follow request originating from some user and directed at another user.
+    /// </summary>
+    /// <param name="to">The user the request is directed at.</param>
+    /// <param name="from">The user the request is originating from.</param>
+    /// <returns>A <see cref="FollowRequest"/> if one exists.</returns>
+    public async Task<FollowRequest?> FindFollowRequestByToAndFrom(
+        User from,
+        User to)
+    {
+        return await db.FollowRequests
+            .FirstOrDefaultAsync(fr => fr.ToId == to.Id && fr.FromId == from.Id);
     }
 
     /// <summary>
