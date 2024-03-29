@@ -178,4 +178,29 @@ public class NotificationService(
         
         return notifs;
     }
+
+    /// <summary>
+    /// Dispatches a follow request notification.
+    /// </summary>
+    /// <param name="target">The target user.</param>
+    /// <param name="follower">The follower.</param>
+    /// <returns>The dispatched notification.</returns>
+    public async Task<Notification?> DispatchFollowRequest(
+        User target,
+        User follower)
+    {
+        var notif = new Notification
+        {
+            Id = Ulid.NewUlid(),
+            Type = NotificationType.FollowRequest,
+            
+            Target = target,
+            TargetId = target.Id,
+
+            Actor = follower,
+            ActorId = follower.Id
+        };
+        
+        return await MaybeAddNotification(notif);
+    }
 }

@@ -245,6 +245,14 @@ public class UserRelationService(
         };
 
         await followRepo.AddFollowRequest(fr);
+
+        if (!to.IsRemote)
+        {
+            await notificationService.DispatchFollowRequest(
+                to,
+                from);
+        }
+        
         return fr;
     }
 
