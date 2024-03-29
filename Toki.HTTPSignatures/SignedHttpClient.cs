@@ -161,7 +161,12 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
                     DigestMessage());
             }
             
-            _requestMessage.Content = new StringContent(_body, Encoding.UTF8, "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
+            _requestMessage.Content = new StringContent(_body, Encoding.UTF8);
+            
+            // NOTE: Dirty hack as setting it directly in the StringContent doesn't seem to be properly working.
+            _requestMessage.Content.Headers.Remove("Content-Type");
+            _requestMessage.Content.Headers.TryAddWithoutValidation("Content-Type",
+                "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
         
         _requestMessage.RequestUri = new(url);
