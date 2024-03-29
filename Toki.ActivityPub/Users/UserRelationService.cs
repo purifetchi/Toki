@@ -30,19 +30,23 @@ public class UserRelationService(
         User from,
         User to)
     {
+        // If the user we're pointing at is a local user that doesn't require follow approval
+        // we can already take care of them.
+        if (to is { IsRemote: false, RequiresFollowApproval: false })
+        {
+            await CreateFollow(
+                from,
+                to);
+            
+            return;
+        }
+        
         var request = await CreateFollowRequest(
             from,
             to);
 
         if (!to.IsRemote)
-        {
-            // TODO: We should avoid the extra db write caused by CreateFollowRequest
-            //       but for now this is alright.
-            if (!to.RequiresFollowApproval)
-                await AcceptFollowRequest(request);
-            
             return;
-        }
         
         var activity = new ASFollow()
         {
