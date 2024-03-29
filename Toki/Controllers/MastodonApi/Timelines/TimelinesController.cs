@@ -74,6 +74,9 @@ public class TimelinesController(
             .User;
 
         var list = await timelineBuilder
+            .Filter(post => post.Author == user ||
+                            (post.Parent != null && post.Parent.Author == user) ||
+                            post.Author.FollowerRelations!.Any(fr => fr.Follower.Id == user.Id))
             .ViewAs(user)
             .Paginate(paginationParams)
             .GetTimeline();
