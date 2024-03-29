@@ -52,7 +52,7 @@ public class FollowRepository(
             .Where(fr => fr.FolloweeId == user.Id)
             .Select(fr => fr.Follower)
             .Where(f => f.IsRemote)
-            .Select(f => f.ParentInstance != null ? f.ParentInstance.SharedInbox! : f.Inbox! )
+            .Select(f => f.ParentInstance != null && f.ParentInstance.SharedInbox != null ? f.ParentInstance.SharedInbox! : f.Inbox! )
             .Distinct()
             .ToListAsync();
     }
