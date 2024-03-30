@@ -78,10 +78,42 @@ public class UserRelationService(
             return false;
 
         var fr = await followRepo.FindFollowRequestById(guid);
+        
         if (fr is null)
             return false;
 
-        await followRepo.TransformIntoFollow(fr);
+        if (fr.To.RemoteId != accept.Actor.Id)
+            return false;
+
+        await AcceptFollowRequest(fr);
+        return true;
+    }
+    
+    /// <summary>
+    /// Tries to handle a remote <see cref="ASReject"/> for a follow.
+    /// </summary>
+    /// <param name="reject">The reject.</param>
+    /// <returns>Whether it was handled or not.</returns>
+    public async Task<bool> TryHandleRemoteFollowReject(
+        ASReject reject)
+    {
+        var id = reject.Object!
+            .Id
+            .Split('/')
+            .Last();
+
+        if (!Ulid.TryParse(id, out var guid))
+            return false;
+
+        var fr = await followRepo.FindFollowRequestById(guid);
+        
+        if (fr is null)
+            return false;
+
+        if (fr.To.RemoteId != reject.Actor.Id)
+            return false;
+
+        await RejectFollowRequest(fr);
         return true;
     }
 

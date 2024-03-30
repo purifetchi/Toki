@@ -60,6 +60,7 @@ public class InboxHandlerJob(
             ASUndo undo => HandleUndo(undo, actor),
             ASUpdate update => HandleUpdate(update, actor),
             ASDelete delete => HandleDelete(delete, actor),
+            ASReject reject => HandleReject(reject),
             
             _ => Task.Run(() =>
             {
@@ -178,6 +179,20 @@ public class InboxHandlerJob(
             return;
         
         logger.LogWarning($"Accept for unknown object {accept.Object.Id}.");
+    }
+    
+    /// <summary>
+    /// Handles the Reject activity.
+    /// </summary>
+    private async Task HandleReject(ASReject reject)
+    {
+        if (reject.Object is null)
+            return;
+
+        if (await userRelationService.TryHandleRemoteFollowReject(reject))
+            return;
+        
+        logger.LogWarning($"Reject for unknown object {reject.Object.Id}.");
     }
 
     /// <summary>
