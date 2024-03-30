@@ -106,6 +106,21 @@ public class PostRepository(
         
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Deletes a post from the database.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Delete(Post post)
+    {
+        db.Posts.Remove(post);
+
+        // Update the post count.
+        post.Author.PostCount--;
+        db.Users.Update(post.Author);
+        
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Adds a like to the post likes collection.

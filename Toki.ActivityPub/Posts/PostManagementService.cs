@@ -84,6 +84,27 @@ public class PostManagementService(
     }
 
     /// <summary>
+    /// Deletes a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Delete(Post post)
+    {
+        await repo.Delete(post);
+        
+        // TODO: Subtract from the like and boost counts of the users that have boosted
+        //       and liked this post.
+        
+        // Dispatch a removal if this is a local post.
+        if (post.RemoteId is not null)
+            return;
+
+        // TODO: Send this to every person that's interested in the post.
+        await federationService.SendToFollowers(
+            post.Author,
+            postRenderer.RenderDeletionForNote(post));
+    }
+
+    /// <summary>
     /// Boosts a post.
     /// </summary>
     /// <param name="user">The user who's boosting.</param>

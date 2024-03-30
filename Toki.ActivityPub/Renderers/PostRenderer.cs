@@ -145,6 +145,28 @@ public class PostRenderer(
 
         return create;
     }
+    
+    /// <summary>
+    /// Renders an <see cref="ASDelete"/> for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The create activity.</returns>
+    public ASDelete RenderDeletionForNote(Post post)
+    {
+        var linkedAuthor = userRenderer.RenderLinkedActorFrom(post.Author);
+        var note = RenderLinkedNoteFrom(post);
+        
+        var delete = new ASDelete()
+        {
+            Id = $"{note.Id}/activity#delete",
+            Actor = linkedAuthor,
+            Object = note,
+            
+            PublishedAt = DateTimeOffset.UtcNow
+        };
+
+        return delete;
+    }
 
     /// <summary>
     /// Renders an <see cref="ASAnnounce"/> for boosting a post.
