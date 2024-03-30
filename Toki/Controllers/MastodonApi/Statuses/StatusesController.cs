@@ -107,6 +107,32 @@ public class StatusesController(
     }
     
     /// <summary>
+    /// Deletes a status.
+    /// </summary>
+    /// <param name="id">The id of the status.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpDelete]
+    [Route("{id}")]
+    [OAuth("write:statuses")]
+    [Produces("application/json")]
+    public async Task<IActionResult> DeleteStatus(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()?
+            .User;
+        
+        var post = await repo.FindById(id);
+        if (post is null || post.Author != user)
+            return NotFound(new MastodonApiError("Record not found."));
+
+        // TODO: Collect and delete the local attachments
+        await postManagementService.Delete(post);
+        
+        return Ok(
+            await statusRenderer.RenderStatusForUser(user, post));
+    }
+    
+    /// <summary>
     /// Fetches a status.
     /// </summary>
     /// <param name="id">The id of the status.</param>
