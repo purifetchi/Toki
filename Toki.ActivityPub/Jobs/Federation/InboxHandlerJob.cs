@@ -59,6 +59,7 @@ public class InboxHandlerJob(
             ASLike like => HandleLike(like, actor),
             ASUndo undo => HandleUndo(undo, actor),
             ASUpdate update => HandleUpdate(update, actor),
+            ASDelete delete => HandleDelete(delete, actor),
             
             _ => Task.Run(() =>
             {
@@ -115,6 +116,35 @@ public class InboxHandlerJob(
         }
         
         // TODO: Undo the activity  here.
+    }
+    
+    /// <summary>
+    /// Handles the Delete activity.
+    /// </summary>
+    /// <param name="delete">The delete.</param>
+    /// <param name="actor">The actor doing it.</param>
+    private async Task HandleDelete(ASDelete delete, User actor)
+    {
+        if (delete.Object is null)
+            return;
+        
+        // We won't be fetching the object here, for it might just not exist.
+        // Let's try to walk and see what is there for us to delete...
+
+        var post = await postRepo.FindByRemoteId(delete.Object.Id);
+        if (post is not null)
+        {
+            if (post.Author != actor)
+            {
+                logger.LogWarning($"{actor.RemoteId} attempted to delete a post made by {post.Author.Id}.");
+                return;
+            }
+            
+            await postManagementService.Delete(post);
+            return;
+        }
+        
+        // TODO: Handle ASDelete for Actors too.
     }
 
     /// <summary>
