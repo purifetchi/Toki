@@ -26,7 +26,8 @@ namespace Toki.Controllers.MastodonApi.Statuses;
 public class StatusesController(
     PostManagementService postManagementService,
     PostRepository repo,
-    StatusRenderer statusRenderer) : ControllerBase
+    StatusRenderer statusRenderer,
+    AccountRenderer accountRenderer) : ControllerBase
 {
     /// <summary>
     /// Posts a request.
@@ -323,5 +324,37 @@ public class StatusesController(
         status.Boosted = false;
         
         return Ok(status);
+    }
+
+    /// <summary>
+    /// View who favourited a given status.
+    /// </summary>
+    /// <param name="id">The ID of the Status in the database.</param>
+    /// <returns>An array of <see cref="Account"/> on success.</returns>
+    [HttpGet]
+    [Route("{id}/favourited_by")]
+    [OAuth(manualScopeValidation: true)]
+    [Produces("application/json")]
+    public async Task<ActionResult<IEnumerable<Account>>> GetLikes(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()?
+            .User;
+
+        // TODO: I'd love if we could do it in one query.
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+        
+        // TODO: Link based pagination.
+        var users = await repo.CreateCustomLikeQuery()
+            .OrderByDescending(like => like.Id)
+            .Where(like => like.PostId == id)
+            .Include(like => like.LikingUser)
+            .Select(like => like.LikingUser)
+            .ToListAsync();
+
+        return Ok(users.Select(
+            u => accountRenderer.RenderAccountFrom(u)));
     }
 }
