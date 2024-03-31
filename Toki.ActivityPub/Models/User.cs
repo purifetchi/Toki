@@ -1,3 +1,4 @@
+using Toki.ActivityPub.Models.Users;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Models;
@@ -81,4 +82,9 @@ public class User : RemoteableModel
     /// The amount of posts this user has made. (DENORMALIZED)
     /// </summary>
     public int PostCount { get; set; }
+    
+    /// <summary>
+    /// The profile fields. (DENORMALIZED, jsonb)
+    /// </summary>
+    public IList<UserProfileField>? Fields { get; set; }
 }

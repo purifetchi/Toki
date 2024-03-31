@@ -4,6 +4,7 @@ using Toki.ActivityPub.Converters.Ulid;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.OAuth;
 using Toki.ActivityPub.Models.Posts;
+using Toki.ActivityPub.Models.Users;
 
 namespace Toki.ActivityPub.Persistence.DatabaseContexts;
 
@@ -93,6 +94,12 @@ public class TokiDatabaseContext : DbContext
             .IsRequired()
             .HasForeignKey<Keypair>(k => k.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<User>()
+            .Property(p => p.Fields)
+            .HasColumnType("jsonb")
+            .HasConversion(a => JsonConvert.SerializeObject(a),
+                a => JsonConvert.DeserializeObject<IList<UserProfileField>?>(a));
 
         modelBuilder.Entity<Post>()
             .HasIndex(p => p.Id)
