@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
 using Toki.Binding;
@@ -273,6 +274,20 @@ public class AccountsController(
         {
             var url = await drive.Store(request.Header);
             user.BannerUrl = url;
+        }
+
+        var fields = request.GetFields();
+        if (fields is not null)
+        {
+            // TODO: Care about the text limits.
+            // TODO: Dispatch verification.
+            // TODO: Pass this through the content formatting facility.
+            user.Fields = fields.Select(f =>
+                new UserProfileField()
+                {
+                    Name = f.Name,
+                    Value = f.Value
+                }).ToList();
         }
         
         await managementService.Update(user);
