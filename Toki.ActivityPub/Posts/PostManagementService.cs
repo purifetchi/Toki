@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Formatters;
@@ -23,7 +25,8 @@ public class PostManagementService(
     MessageFederationService federationService,
     NotificationService notificationService,
     ContentFormatter formatter,
-    InstancePathRenderer pathRenderer)
+    InstancePathRenderer pathRenderer,
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// Creates a new post.
@@ -34,6 +37,12 @@ public class PostManagementService(
         PostCreationRequest creationRequest)
     {
         if (creationRequest.Author.IsRemote)
+            return null;
+
+        if (creationRequest.Content.Length > opts.Value.Limits.MaxPostCharacterLimit)
+            return null;
+        
+        if (creationRequest.Media?.Count > opts.Value.Limits.MaxAttachmentCount)
             return null;
 
         var formattingResult = await formatter.Format(
