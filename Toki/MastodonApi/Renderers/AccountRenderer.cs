@@ -57,7 +57,16 @@ public class AccountRenderer(
             
             FollowingCount = user.FollowingCount,
             FollowersCount = user.FollowerCount,
-            StatusesCount = user.PostCount
+            StatusesCount = user.PostCount,
+            
+            // TODO: These have the same layout, should we really do this whole select charade?
+            Fields = user.Fields?
+                .Select(f => new Field() 
+                {
+                    Name = f.Name,
+                    Value = f.Value,
+                    VerifiedAt = f.VerifiedAt
+                }).ToList() ?? []
         };
     }
 

@@ -11,13 +11,13 @@ public record Field
     /// The key of a given field’s key-value pair.
     /// </summary>
     [JsonPropertyName("name")]
-    public required string Name { get; set; }
+    public string? Name { get; set; }
     
     /// <summary>
     /// The value associated with the name key.
     /// </summary>
     [JsonPropertyName("value")]
-    public required string Value { get; set; }
+    public string? Value { get; set; }
     
     /// <summary>
     /// Timestamp of when the server verified a URL value for a rel=“me” link.
