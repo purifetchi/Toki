@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Cryptography;
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
@@ -140,7 +142,9 @@ public class UserRepository(
                 PublicKey = actor.PublicKey!.PublicKeyPem!
             },
             
-            Handle = $"{actor.PreferredUsername!}@{instance.Domain}"
+            Handle = $"{actor.PreferredUsername!}@{instance.Domain}",
+            
+            Fields = actor.GetUserProfileFields()
         };
 
         user.Keypair.Owner = user;
@@ -151,9 +155,10 @@ public class UserRepository(
     }
     
     /// <summary>
-    /// Imports a user from the ActivityStreams actor definition.
+    /// Updates a user from the ActivityStreams actor definition.
     /// </summary>
-    /// <param name="actor">The actor.</param>
+    /// <param name="actor">The already existing user.</param>
+    /// <param name="data">The new update data.</param>
     public async Task UpdateFromActivityStreams(User actor, ASActor data)
     {
         logger.LogInformation($"Updating remote user {actor.RemoteId} ({actor.DisplayName})");
@@ -163,6 +168,7 @@ public class UserRepository(
         actor.BannerUrl = data.Banner?.Url;
         actor.RequiresFollowApproval = data.ManuallyApprovesFollowers;
         actor.Bio = data.Bio;
+        actor.Fields = data.GetUserProfileFields();
 
         await Update(actor);
     }

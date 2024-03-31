@@ -69,7 +69,15 @@ public class UserRenderer(
             Endpoints = new ASEndpoints
             {
                 SharedInbox = ASObject.Link($"https://{domain}/inbox")
-            }
+            },
+            
+            Attachments = user.Fields is not null && user.Fields.Count > 0 ?
+                user.Fields.Select(field => new ASPropertyValue
+                {
+                    Type = "PropertyValue",
+                    Name = field.Name,
+                    Value = field.Value
+                }).ToList() : null
         };
     }
 
