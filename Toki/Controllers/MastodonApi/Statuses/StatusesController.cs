@@ -357,4 +357,36 @@ public class StatusesController(
         return Ok(users.Select(
             u => accountRenderer.RenderAccountFrom(u)));
     }
+    
+    /// <summary>
+    /// View who boosted a given status.
+    /// </summary>
+    /// <param name="id">The ID of the Status in the database.</param>
+    /// <returns>An array of <see cref="Account"/> on success.</returns>
+    [HttpGet]
+    [Route("{id}/reblogged_by")]
+    [OAuth(manualScopeValidation: true)]
+    [Produces("application/json")]
+    public async Task<ActionResult<IEnumerable<Account>>> GetBoosts(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()?
+            .User;
+
+        // TODO: I'd love if we could do it in one query.
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+        
+        // TODO: Link based pagination.
+        var users = await repo.CreateCustomQuery()
+            .AddMastodonRenderNecessities()
+            .Where(p => p.BoostingId == id)
+            .OrderByDescending(p => p.Id)
+            .Select(p => p.Author)
+            .ToListAsync();
+
+        return Ok(users.Select(
+            u => accountRenderer.RenderAccountFrom(u)));
+    }
 }
