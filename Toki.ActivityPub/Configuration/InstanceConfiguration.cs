@@ -14,6 +14,11 @@ public class InstanceConfiguration
     /// The software configuration.
     /// </summary>
     public SoftwareConfiguration Software { get; set; } = new SoftwareConfiguration();
+    
+    /// <summary>
+    /// The limits configuration.
+    /// </summary>
+    public LimitsConfiguration Limits { get; set; } = new LimitsConfiguration();
 
     /// <summary>
     /// Does this instance have open registrations?
