@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Web;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -78,11 +79,11 @@ public class ContentFormatter(
     public async Task<ContentFormattingResult?> Format(string content)
     {
         // TODO: I'd love a kind of middleware type of pipeline here...
-        var output = content;
+        var output = HttpUtility.HtmlEncode(content);
         
         var mentions = await ExtractMentions(output);
         output = ReplaceMentions(
-            content,
+            output,
             mentions);
         
         return new ContentFormattingResult(
