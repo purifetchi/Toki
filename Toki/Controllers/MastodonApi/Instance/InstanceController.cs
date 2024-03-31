@@ -43,7 +43,11 @@ public class InstanceController(
             
             Configuration = new InstanceInformationV1Configuration()
             {
-                Statuses = new InstanceInformationStatuses(),
+                Statuses = new InstanceInformationStatuses()
+                {
+                    MaxCharacters = config.Limits.MaxPostCharacterLimit.ToString(),
+                    MaxMediaAttachments = config.Limits.MaxAttachmentCount.ToString()
+                },
                 MediaAttachments = new InstanceInformationMediaAttachments
                 {
                     SupportedMimeTypes = DriveService.AcceptedMIMEs,
