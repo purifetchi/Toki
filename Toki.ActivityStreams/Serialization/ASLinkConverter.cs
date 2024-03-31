@@ -24,6 +24,7 @@ public class ASLinkConverter : JsonConverter<ASLink>
             "Image" => obj.Deserialize<ASImage>(),
             "Document" => obj.Deserialize<ASDocument>(),
             "Mention" => obj.Deserialize<ASMention>(),
+            "PropertyValue" => obj.Deserialize<ASPropertyValue>(),
             
             _ => new ASLink()
             {

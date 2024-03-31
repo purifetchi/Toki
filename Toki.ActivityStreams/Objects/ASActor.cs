@@ -99,4 +99,11 @@ public class ASActor : ASObject
     /// </summary>
     [JsonPropertyName("endpoints")]
     public ASEndpoints? Endpoints { get; set; }
+    
+    /// <summary>
+    /// The list of attachments this user has.
+    /// </summary>
+    [JsonPropertyName("attachment")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<ASLink>? Attachments { get; set; }
 }
