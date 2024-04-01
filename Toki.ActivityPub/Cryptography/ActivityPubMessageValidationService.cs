@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -21,7 +22,8 @@ public class ActivityPubMessageValidationService(
     TokiDatabaseContext db,
     ActivityPubResolver resolver,
     HttpSignatureValidator validator,
-    UserRepository repo)
+    UserRepository repo,
+    ILogger<ActivityPubMessageValidationService> logger)
 {
     /// <summary>
     /// Validates a message.
@@ -34,7 +36,11 @@ public class ActivityPubMessageValidationService(
         ASObject? asObject)
     {
         if (asObject is not ASActivity activity)
+        {
+            logger.LogWarning(
+                $"Tried to validate an ASObject, but it's not an activity! Is it some type we don't support yet? {asObject?.Type}");
             return false;
+        }
 
         var signature = Signature.FromHttpRequest(request);
 
