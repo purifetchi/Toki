@@ -73,6 +73,11 @@ public class TokiDatabaseContext : DbContext
     /// </summary>
     public DbSet<Notification> Notifications { get; private set; } = null!;
 
+    /// <summary>
+    /// The pinned posts set.
+    /// </summary>
+    public DbSet<PinnedPost> PinnedPosts { get; private set; } = null!;
+
     /// <inheritdoc/>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -221,6 +226,20 @@ public class TokiDatabaseContext : DbContext
             .HasOne<Post>(n => n.RelevantPost)
             .WithMany()
             .HasForeignKey(n => n.RelevantPostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PinnedPost>()
+            .HasOne<Post>(pp => pp.Post)
+            .WithOne()
+            .HasForeignKey<PinnedPost>(pp => pp.PostId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<PinnedPost>()
+            .HasOne<User>(pp => pp.User)
+            .WithOne()
+            .HasForeignKey<PinnedPost>(pp => pp.UserId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
 
