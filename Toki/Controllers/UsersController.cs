@@ -20,6 +20,7 @@ namespace Toki.Controllers;
 public class UsersController(
     UserRepository repo,
     FollowRepository followRepo,
+    PostRepository postRepo,
     UserRenderer renderer,
     PostRenderer postRenderer,
     InstancePathRenderer pathRenderer,
@@ -101,6 +102,39 @@ public class UsersController(
 
             OrderedItems = following,
             TotalItems = following.Count
+        };
+    }
+
+    /// <summary>
+    /// Gets the featured notes for an actor.
+    /// </summary>
+    /// <param name="handle">The handle of the actor.</param>
+    /// <returns>The collection.</returns>
+    [HttpGet]
+    [Route("collections/featured")]
+    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json",
+        "application/activity+json")]
+    public async Task<ActionResult<ASOrderedCollection<ASObject>>> Featured(
+        [FromRoute] string handle)
+    {
+        // TODO: Implement pagination.
+        var user = await repo.FindByHandle(handle);
+        if (user is null)
+            return NotFound();
+
+        var pinned = await postRepo.FindPinnedPostsForUser(user);
+
+        var notes = pinned
+            .Select(pp => postRenderer.RenderFullNoteFrom(pp.Post))
+            .Cast<ASObject>()
+            .ToList();
+        
+        return new ASOrderedCollection<ASObject>()
+        {
+            Id = $"{pathRenderer.GetPathToActor(user)}/collections/featured",
+
+            OrderedItems = notes,
+            TotalItems = notes.Count
         };
     }
     

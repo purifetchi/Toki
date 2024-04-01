@@ -77,6 +77,12 @@ public class ASActor : ASObject
     public ASObject? Following { get; set; }
     
     /// <summary>
+    /// The pinned (featured) notes collection.
+    /// </summary>
+    [JsonPropertyName("featured")]
+    public ASObject? Featured { get; set; }
+    
+    /// <summary>
     /// The url of the actor.
     /// </summary>
     [JsonPropertyName("url")]

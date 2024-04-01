@@ -49,6 +49,8 @@ public class UserRenderer(
             Followers = ASObject.Link($"{user.RemoteId ?? uri}/followers"),
             Following = ASObject.Link($"{user.RemoteId ?? uri}/following"),
             
+            Featured = ASObject.Link($"{user.RemoteId ?? uri}/collections/featured"),
+            
             PublicKey = new ASPublicKey
             {
                 Id = key!.RemoteId ?? $"{user.RemoteId ?? uri}#key",

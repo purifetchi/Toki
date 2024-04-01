@@ -105,6 +105,25 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Finds the pinned posts for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>Their pinned posts.</returns>
+    public async Task<IReadOnlyList<PinnedPost>> FindPinnedPostsForUser(
+        User user)
+    {
+        return await db.PinnedPosts
+            .OrderByDescending(pp => pp.Id)
+            .Where(pp => pp.UserId == user.Id)
+            .Include(pp => pp.Post)
+            .Include(pp => pp.Post.Attachments)
+            .Include(pp => pp.Post.Author)
+            .Include(pp => pp.Post.Parent)
+            .ThenInclude(parent => parent!.Author)
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Adds a post to the database.
     /// </summary>
     /// <param name="post">The post.</param>
