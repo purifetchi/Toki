@@ -61,12 +61,73 @@ public class InboxHandlerJob(
             ASUpdate update => HandleUpdate(update, actor),
             ASDelete delete => HandleDelete(delete, actor),
             ASReject reject => HandleReject(reject),
+            ASAdd add => HandleAdd(add, actor),
+            ASRemove remove => HandleRemove(remove, actor),
             
             _ => Task.Run(() =>
             {
                 logger.LogWarning($"Dropped {activity.Id}, due to no handler present for {activity.Type}");
             })
         });
+    }
+
+    /// <summary>
+    /// Handles the Add activity.
+    /// </summary>
+    /// <param name="add">The add.</param>
+    /// <param name="actor">The actor doing it.</param>
+    private async Task HandleAdd(ASAdd add, User actor)
+    {
+        if (add.Object is null)
+            return;
+        
+        var obj = await resolver.Fetch<ASObject>(add.Object);
+        
+        // NOTE: ActivityPub specifies that the sending server needs to specify a 'target' for the Add and Remove
+        //       activities... but Pleroma just sends them without it. The target then just implicitly becomes
+        //       the user's featured collection. Is there any other software that actually uses Add/Remove outside
+        //       of pinned posts?
+        if (obj is ASNote note)
+        {
+            if (note.AttributedTo?.Id != actor.RemoteId)
+                return;
+
+            var post = await postRepo.FindByRemoteId(note.Id);
+            
+            // TODO: Fetch the post if it doesn't exist.
+            if (post is null)
+                return;
+            
+            await postManagementService.Pin(post);
+        }
+    }
+    
+    /// <summary>
+    /// Handles the Remove activity.
+    /// </summary>
+    /// <param name="remove">The remove.</param>
+    /// <param name="actor">The actor doing it.</param>
+    private async Task HandleRemove(ASRemove remove, User actor)
+    {
+        if (remove.Object is null)
+            return;
+        
+        var obj = await resolver.Fetch<ASObject>(remove.Object);
+        
+        // NOTE: See note above.
+        if (obj is ASNote note)
+        {
+            if (note.AttributedTo?.Id != actor.RemoteId)
+                return;
+
+            var post = await postRepo.FindByRemoteId(note.Id);
+            
+            // TODO: Fetch the post if it doesn't exist.
+            if (post is null)
+                return;
+            
+            await postManagementService.Unpin(post);
+        }
     }
 
     /// <summary>
