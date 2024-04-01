@@ -236,8 +236,14 @@ public class PostManagementService(
 
         if (post.Author.IsRemote)
             return;
+
+        var add = postRenderer.RenderAddForPost(
+            post.Author,
+            post);
         
-        // TODO: Federate.
+        await federationService.SendToFollowers(
+            post.Author,
+            add);
     }
     
     /// <summary>
@@ -256,7 +262,13 @@ public class PostManagementService(
         if (post.Author.IsRemote)
             return;
         
-        // TODO: Federate.
+        var remove = postRenderer.RenderRemoveForPost(
+            post.Author,
+            post);
+        
+        await federationService.SendToFollowers(
+            post.Author,
+            remove);
     }
 
     /// <summary>

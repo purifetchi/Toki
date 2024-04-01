@@ -297,4 +297,66 @@ public class PostRenderer(
 
         return undo;
     }
+
+    /// <summary>
+    /// Renders an <see cref="ASAdd"/> for a post.
+    /// </summary>
+    /// <param name="actor">The actor performing the add.</param>
+    /// <param name="post">The added post.</param>
+    /// <param name="target">The target collection (the featured posts by default).</param>
+    /// <returns>The activity.</returns>
+    public ASAdd RenderAddForPost(
+        User actor,
+        Post post,
+        string? target = null)
+    {
+        var (to, cc) = GetToAndCcFor(post);
+        var actorPath = pathRenderer.GetPathToActor(actor);
+        var actorLink = userRenderer.RenderLinkedActorFrom(actor);
+
+        var add = new ASAdd()
+        {
+            Id = $"{actorPath}#adds/{Ulid.NewUlid()}",
+            Actor = actorLink,
+            Object = RenderLinkedNoteFrom(post),
+            
+            Target = ASObject.Link(target ?? $"{actorPath}/collections/featured"),
+
+            To = to.Concat(cc)
+                .ToList()
+        };
+
+        return add;
+    }
+    
+    /// <summary>
+    /// Renders an <see cref="ASRemove"/> for a post.
+    /// </summary>
+    /// <param name="actor">The actor performing the remove.</param>
+    /// <param name="post">The removed post.</param>
+    /// <param name="target">The target collection (the featured posts by default).</param>
+    /// <returns>The activity.</returns>
+    public ASRemove RenderRemoveForPost(
+        User actor,
+        Post post,
+        string? target = null)
+    {
+        var (to, cc) = GetToAndCcFor(post);
+        var actorPath = pathRenderer.GetPathToActor(actor);
+        var actorLink = userRenderer.RenderLinkedActorFrom(actor);
+
+        var add = new ASRemove()
+        {
+            Id = $"{actorPath}#removes/{Ulid.NewUlid()}",
+            Actor = actorLink,
+            Object = RenderLinkedNoteFrom(post),
+            
+            Target = ASObject.Link(target ?? $"{actorPath}/collections/featured"),
+
+            To = to.Concat(cc)
+                .ToList()
+        };
+
+        return add;
+    }
 }

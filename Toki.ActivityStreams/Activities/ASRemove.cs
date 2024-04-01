@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Objects;
+
 namespace Toki.ActivityStreams.Activities;
 
 /// <summary>
@@ -13,4 +16,10 @@ public class ASRemove : ASActivity
     {
         
     }
+    
+    /// <summary>
+    /// The target collection.
+    /// </summary>
+    [JsonPropertyName("target")]
+    public ASObject? Target { get; set; }
 }
