@@ -230,17 +230,22 @@ public class TokiDatabaseContext : DbContext
 
         modelBuilder.Entity<PinnedPost>()
             .HasOne<Post>(pp => pp.Post)
-            .WithOne()
-            .HasForeignKey<PinnedPost>(pp => pp.PostId)
+            .WithMany()
+            .HasForeignKey(pp => pp.PostId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<PinnedPost>()
             .HasOne<User>(pp => pp.User)
-            .WithOne()
-            .HasForeignKey<PinnedPost>(pp => pp.UserId)
+            .WithMany(u => u.PinnedPosts)
+            .HasForeignKey(pp => pp.UserId)
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PinnedPost>()
+            .HasIndex(pp => new { pp.PostId, pp.UserId })
+            .HasDatabaseName("IX_PostUser_Unique")
+            .IsUnique();
     }
 
     /// <inheritdoc/>

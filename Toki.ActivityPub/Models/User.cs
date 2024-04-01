@@ -69,6 +69,11 @@ public class User : RemoteableModel
     public ICollection<FollowerRelation>? FollowerRelations { get; set; }
     
     /// <summary>
+    /// The pinned posts of this user.
+    /// </summary>
+    public ICollection<PinnedPost>? PinnedPosts { get; set; }
+    
+    /// <summary>
     /// The follower count of this user. (DENORMALIZED)
     /// </summary>
     public int FollowerCount { get; set; }
