@@ -93,6 +93,18 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Finds the pinned post given the post itself.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The pinned post, if one exists.</returns>
+    public async Task<PinnedPost?> FindPinnedPost(
+        Post post)
+    {
+        return await db.PinnedPosts
+            .FirstOrDefaultAsync(pp => pp.PostId == post.Id && pp.UserId == post.AuthorId);
+    }
+
+    /// <summary>
     /// Adds a post to the database.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -108,6 +120,16 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Adds a pinned post to the database.
+    /// </summary>
+    /// <param name="post">The pinned post.</param>
+    public async Task AddPinnedPost(PinnedPost post)
+    {
+        db.PinnedPosts.Add(post);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Deletes a post from the database.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -119,6 +141,16 @@ public class PostRepository(
         post.Author.PostCount--;
         db.Users.Update(post.Author);
         
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Deletes a pinned post from the database.
+    /// </summary>
+    /// <param name="post">The pinned post.</param>
+    public async Task DeletePinnedPost(PinnedPost post)
+    {
+        db.PinnedPosts.Remove(post);
         await db.SaveChangesAsync();
     }
 

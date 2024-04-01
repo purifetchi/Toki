@@ -212,6 +212,54 @@ public class PostManagementService(
     }
 
     /// <summary>
+    /// Pins a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Pin(
+        Post post)
+    {
+        if (await repo.FindPinnedPost(post) is not null)
+            return;
+        
+        var pinnedPost = new PinnedPost
+        {
+            Id = Ulid.NewUlid(),
+            
+            User = post.Author,
+            UserId = post.AuthorId,
+
+            Post = post,
+            PostId = post.Id
+        };
+
+        await repo.AddPinnedPost(pinnedPost);
+
+        if (post.Author.IsRemote)
+            return;
+        
+        // TODO: Federate.
+    }
+    
+    /// <summary>
+    /// Unpins a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Unpin(
+        Post post)
+    {
+        var pinned = await repo.FindPinnedPost(post);
+        if (pinned is null)
+            return;
+        
+        await repo.DeletePinnedPost(pinned);
+
+        if (post.Author.IsRemote)
+            return;
+        
+        // TODO: Federate.
+    }
+
+    /// <summary>
     /// Undoes a like on a post done by an actor.
     /// </summary>
     /// <param name="actor">The actor which did the like.</param>
