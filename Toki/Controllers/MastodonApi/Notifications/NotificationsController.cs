@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
+using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
@@ -26,6 +27,7 @@ public class NotificationsController(
     /// <returns>A list of the notifications, or an error.</returns>
     [HttpGet]
     [OAuth("read:notifications")]
+    [Produces("application/json")]
     public async Task<IEnumerable<Notification>> GetNotifications()
     {
         var user = HttpContext.GetOAuthToken()!
@@ -44,5 +46,74 @@ public class NotificationsController(
                 statusRenderer.RenderForPost(n.RelevantPost) :
                 null
         });
+    }
+
+    /// <summary>
+    /// View information about a notification with a given ID.
+    /// </summary>
+    /// <param name="id">The ID of the Notification in the database.</param>
+    /// <returns>A <see cref="Notification"/> on success.</returns>
+    [HttpGet]
+    [OAuth("read:notifications")]
+    [Produces("application/json")]
+    [Route("{id}")]
+    public async Task<ActionResult<Notification>> GetNotification(
+        [FromRoute] Ulid id)
+    {
+        var notif = await repo.FindById(id);
+        if (notif is null)
+            return NotFound(new MastodonApiError("Record not found."));
+
+        return Ok(new Notification
+        {
+            Id = notif.Id.ToString(),
+            Type = notif.Type.ToMastodonNotificationType(),
+            CreatedAt = notif.CreatedAt,
+            
+            Account = accountRenderer.RenderAccountFrom(notif.Actor),
+            Status = notif.RelevantPost is not null ?
+                statusRenderer.RenderForPost(notif.RelevantPost) :
+                null
+        });
+    }
+
+    /// <summary>
+    /// Clear all notifications from the server.
+    /// </summary>
+    /// <returns>Empty.</returns>
+    [HttpPost]
+    [OAuth("write:notifications")]
+    [Produces("application/json")]
+    [Route("clear")]
+    public async Task<IActionResult> ClearNotifications()
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        await repo.DeleteAllForUser(user);
+        return Ok("{}");
+    }
+    
+    /// <summary>
+    /// Dismiss a single notification from the server.
+    /// </summary>
+    /// <param name="id">The ID of the Notification in the database.</param>
+    /// <returns>Empty.</returns>
+    [HttpPost]
+    [OAuth("write:notifications")]
+    [Produces("application/json")]
+    [Route("{id}/dismiss")]
+    public async Task<IActionResult> DismissNotification(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var notif = await repo.FindById(id);
+        if (notif is null)
+            return NotFound(new MastodonApiError("Record not found."));
+        
+        await repo.Delete(notif);
+        return Ok("{}");
     }
 }
