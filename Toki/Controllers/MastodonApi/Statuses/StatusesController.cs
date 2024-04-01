@@ -389,4 +389,64 @@ public class StatusesController(
         return Ok(users.Select(
             u => accountRenderer.RenderAccountFrom(u)));
     }
+
+    /// <summary>
+    /// Feature one of your own public statuses at the top of your profile.
+    /// </summary>
+    /// <param name="id">The local ID of the Status in the database.</param>
+    /// <returns>A <see cref="Status"/> on success.</returns>
+    [HttpPost]
+    [Route("{id}/pin")]
+    [OAuth("write:accounts")]
+    [Produces("application/json")]
+    public async Task<ActionResult<Status>> PinStatus(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        if (post.Author != user)
+            return UnprocessableEntity(new MastodonApiError("Validation failed: You cannot pin someone else's post."));
+
+        await postManagementService.Pin(post);
+
+        var status = await statusRenderer.RenderStatusForUser(user, post);
+        status.Pinned = true;
+
+        return Ok(status);
+    }
+    
+    /// <summary>
+    /// Unfeature a status from the top of your profile.
+    /// </summary>
+    /// <param name="id">The local ID of the Status in the database.</param>
+    /// <returns>A <see cref="Status"/> on success.</returns>
+    [HttpPost]
+    [Route("{id}/unpin")]
+    [OAuth("write:accounts")]
+    [Produces("application/json")]
+    public async Task<ActionResult<Status>> UnpinStatus(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !post.VisibleByUser(user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        if (post.Author != user)
+            return UnprocessableEntity(new MastodonApiError("Validation failed: You cannot pin someone else's post."));
+
+        await postManagementService.Unpin(post);
+
+        var status = await statusRenderer.RenderStatusForUser(user, post);
+        status.Pinned = false;
+
+        return Ok(status);
+    }
 }

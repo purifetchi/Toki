@@ -132,6 +132,12 @@ public record Status
     /// </summary>
     [JsonPropertyName("reblogged")]
     public bool? Boosted { get; set; }
+    
+    /// <summary>
+    /// Have you pinned this status?
+    /// </summary>
+    [JsonPropertyName("pinned")]
+    public bool? Pinned { get; set; }
 
     // TODO: The rest of the status.
 }

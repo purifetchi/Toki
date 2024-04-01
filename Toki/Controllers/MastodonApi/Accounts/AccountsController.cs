@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Models.Users;
+using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
 using Toki.Binding;
@@ -30,7 +31,8 @@ public class AccountsController(
     UserRelationService relationService,
     TimelineBuilder timelineBuilder,
     DriveService drive,
-    UserManagementService managementService) : ControllerBase
+    UserManagementService managementService,
+    TokiDatabaseContext db) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -85,21 +87,21 @@ public class AccountsController(
         [FromQuery] StatusesFilters filters,
         [FromQuery] PaginationParams paginationParams)
     {
-        // TODO: Support pinned posts.
-        if (filters.Pinned)
-            return Ok(Array.Empty<Status>());
-        
         var us = HttpContext.GetOAuthToken()?
             .User;
         
         var user = await repo.FindById(id);
         if (user is null)
             return NotFound();
-
+        
         var query = timelineBuilder
             .ViewAs(us)
             .Paginate(paginationParams)
             .Filter(post => post.AuthorId == id);
+
+        // TODO: We should not include the database right in here, but w/e.
+        if (filters.Pinned)
+            query = query.Filter(post => db.PinnedPosts.Any(p => p.Post == post));
 
         if (filters.OnlyMedia)
             query = query.Filter(post => post.Attachments != null && post.Attachments.Count > 0);
