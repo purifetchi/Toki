@@ -30,11 +30,25 @@ public record FetchTokenRequest
     public required string ClientSecret { get; init; }
     
     /// <summary>
-    /// The client secret.
+    /// The redirect URI.
     /// </summary>
     [BindProperty(Name = "redirect_uri")]
     [JsonPropertyName("redirect_uri")]
-    public required string RedirectUri { get; init; }
+    public string? RedirectUri { get; init; }
+    
+    /// <summary>
+    /// The username.
+    /// </summary>
+    [BindProperty(Name = "username")]
+    [JsonPropertyName("username")]
+    public string? Username { get; set; }
+    
+    /// <summary>
+    /// The password.
+    /// </summary>
+    [BindProperty(Name = "password")]
+    [JsonPropertyName("password")]
+    public string? Password { get; set; }
     
     /// <summary>
     /// The user authorization code.

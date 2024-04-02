@@ -46,6 +46,11 @@ public class InstanceConfiguration
     public bool SignedFetch { get; set; } = false;
 
     /// <summary>
+    /// Does this instance support OAuth2 password login?
+    /// </summary>
+    public bool SupportPasswordGrantType { get; set; } = true;
+
+    /// <summary>
     /// The UserAgent string of Toki.
     /// </summary>
     public string UserAgent =>

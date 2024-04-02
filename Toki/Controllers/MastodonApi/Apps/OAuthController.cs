@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Models.OAuth;
 using Toki.ActivityPub.OAuth2;
 using Toki.ActivityPub.Persistence.Repositories;
+using Toki.ActivityPub.Users;
 using Toki.Binding;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Requests.Apps;
@@ -17,7 +21,9 @@ namespace Toki.Controllers.MastodonApi.Apps;
 [EnableCors("MastodonAPI")]
 public class OAuthController(
     OAuthManagementService managementService,
-    OAuthRepository repo) : ControllerBase
+    OAuthRepository repo,
+    UserSessionService sessionService,
+    IOptions<InstanceConfiguration> opts) : ControllerBase
 {
     /// <summary>
     /// Sent by a client when they want to retrieve a token from an auth code.
@@ -34,15 +40,47 @@ public class OAuthController(
         if (app is null || app.ClientSecret != request.ClientSecret)
             return Unauthorized(new MastodonApiError("invalid_client"));
 
-        if (request.Code is null)
-            return Unauthorized(new MastodonApiError("invalid_code"));
+        OAuthToken? token;
+        switch (request.GrantType)
+        {
+            case "token":
+                if (request.Code is null)
+                    return Unauthorized(new MastodonApiError("invalid_code"));
         
-        var token = await repo.FindTokenByAuthCode(request.Code);
-        if (token is null)
-            return Unauthorized(new MastodonApiError("invalid_code"));
+                token = await repo.FindTokenByAuthCode(request.Code);
+                if (token is null)
+                    return Unauthorized(new MastodonApiError("invalid_code"));
 
-        if (token.Active)
-            return BadRequest(new MastodonApiError("Authorization grant is expired or malformed."));
+                if (token.Active)
+                    return BadRequest(new MastodonApiError("Authorization grant is expired or malformed."));
+                break;
+            
+            case "password" when opts.Value.SupportPasswordGrantType:
+                if (request.Username is null)
+                    return BadRequest(new MastodonApiError("Missing username."));
+                
+                if (request.Password is null)
+                    return BadRequest(new MastodonApiError("Missing password."));
+                
+                var user = await sessionService.ValidateCredentials(
+                    request.Username,
+                    request.Password);
+                
+                if (user is null)
+                    return Unauthorized(new MastodonApiError("Processing error: Invalid username or password."));
+
+                token = await managementService.CreateInactiveToken(
+                    user,
+                    app,
+                    app.Scopes);
+                
+                if (token is null)
+                    return BadRequest(new MastodonApiError("General error: Unable to create token."));
+                break;
+            
+            default:
+                return BadRequest(new MastodonApiError("Invalid grant type."));
+        }
 
         await managementService.ActivateToken(token);
             
