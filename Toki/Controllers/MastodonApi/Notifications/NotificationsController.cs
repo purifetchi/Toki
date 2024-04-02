@@ -91,7 +91,7 @@ public class NotificationsController(
             .User;
 
         await repo.DeleteAllForUser(user);
-        return Ok("{}");
+        return new JsonResult(new object());
     }
     
     /// <summary>
@@ -114,6 +114,6 @@ public class NotificationsController(
             return NotFound(new MastodonApiError("Record not found."));
         
         await repo.Delete(notif);
-        return Ok("{}");
+        return new JsonResult(new object());
     }
 }
