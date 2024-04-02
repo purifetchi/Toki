@@ -45,6 +45,59 @@ public class ActivityPubResolver(
     }
 
     /// <summary>
+    /// Fetches all of the objects from a collection.
+    /// </summary>
+    /// <param name="obj">The fetched collection.</param>
+    /// <typeparam name="TAsObject">The type of the object.</typeparam>
+    /// <returns>A list of the objects.</returns>
+    public async Task<IList<ASObject>?> FetchCollection(ASObject obj)
+    {
+        var maybeCollection = await Fetch<ASObject>(obj);
+        
+        switch (maybeCollection)
+        {
+            case ASOrderedCollection<ASObject> { First: null } orderedCollection:
+                return orderedCollection.OrderedItems;
+            case ASCollection<ASObject> { First: null } collection:
+                return collection.Items;
+            case ASOrderedCollection<ASObject> { First: { } first }:
+            {
+                var page = await Fetch<ASOrderedCollectionPage<ASObject>>(first);
+                var items = new List<ASObject>();
+                while (page is not null)
+                {
+                    items.AddRange(page.OrderedItems);
+                    if (page.Next is null)
+                        break;
+                    
+                    page = await Fetch<ASOrderedCollectionPage<ASObject>>(
+                        ASObject.Link(page.Next));
+                }
+
+                return items;
+            }
+            case ASCollection<ASObject> { First: { } first }:
+            {
+                var page = await Fetch<ASCollectionPage<ASObject>>(first);
+                var items = new List<ASObject>();
+                while (page is not null)
+                {
+                    items.AddRange(page.Items);
+                    if (page.Next is null)
+                        break;
+                    
+                    page = await Fetch<ASCollectionPage<ASObject>>(
+                        ASObject.Link(page.Next));
+                }
+
+                return items;
+            }
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>
     /// Fetches an URL without signing the request.
     /// </summary>
     /// <param name="url">The url.</param>
@@ -75,6 +128,7 @@ public class ActivityPubResolver(
     {
         var keypair = await instanceActorResolver.GetInstanceActorKeypair();
         return await signedHttpClient
+            .NewRequest()
             .WithKey($"https://{opts.Value.Domain}/actor#key", keypair.PrivateKey!)
             .WithHeader("User-Agent", 
                 $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
