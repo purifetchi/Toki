@@ -26,7 +26,7 @@ public class AppsController(
     /// <param name="request">The request.</param>
     /// <returns>Either an application, or an error.</returns>
     [HttpPost]
-    [Consumes("application/json", "application/x-www-form-urlencoded")]
+    [Consumes("application/json", "application/x-www-form-urlencoded", "multipart/form-data")]
     [Produces("application/json")]
     public async Task<IActionResult> CreateApp(
         [FromHybrid] CreateApplicationRequest request)

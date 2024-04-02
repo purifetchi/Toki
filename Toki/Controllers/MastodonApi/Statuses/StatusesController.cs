@@ -35,7 +35,7 @@ public class StatusesController(
     /// <param name="request">The request.</param>
     /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
     [HttpPost]
-    [Consumes("application/json", "application/x-www-form-urlencoded")]
+    [Consumes("application/json", "application/x-www-form-urlencoded", "multipart/form-data")]
     [Produces("application/json")]
     [OAuth("write:statuses")]
     public async Task<IActionResult> PostStatus(
