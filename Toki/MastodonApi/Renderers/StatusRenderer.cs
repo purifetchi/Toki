@@ -72,6 +72,7 @@ public class StatusRenderer(
         return new Status
         {
             Id = $"{post.Id}",
+            ConversationId = post.Context?.ToString(),
             
             Uri = url,
             Url = url,

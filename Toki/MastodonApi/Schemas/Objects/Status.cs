@@ -138,6 +138,12 @@ public record Status
     /// </summary>
     [JsonPropertyName("pinned")]
     public bool? Pinned { get; set; }
+    
+    /// <summary>
+    /// The ID of the conversation. (Used in akkoma-fe, PROBABLY not a Mastodon thing).
+    /// </summary>
+    [JsonPropertyName("conversation_id")]
+    public string? ConversationId { get; set; }
 
     // TODO: The rest of the status.
 }
