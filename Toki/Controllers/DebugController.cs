@@ -18,7 +18,8 @@ namespace Toki.Controllers;
 [Route("/debug")]
 public class DebugController(
     UserRepository repo,
-    DriveService drive) : ControllerBase
+    DriveService drive,
+    ActivityPubResolver resolver) : ControllerBase
 {
     [HttpPost]
     [Route("test_upload_file")]
@@ -43,5 +44,17 @@ public class DebugController(
             return BadRequest();
 
         return Ok(u.Id);
+    }
+
+    [HttpGet]
+    [Route("test_fetch_collection")]
+    public async Task<IActionResult> FetchCollection(
+        [FromQuery] string url)
+    {
+        var coll = await resolver.FetchCollection(ASObject.Link(url));
+        if (coll is null)
+            return NotFound();
+        
+        return Ok(coll);
     }
 }
