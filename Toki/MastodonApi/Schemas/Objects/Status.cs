@@ -24,6 +24,12 @@ public record Status
     /// </summary>
     [JsonPropertyName("created_at")]
     public DateTimeOffset CreatedAt { get; init; }
+
+    /// <summary>
+    /// Timestamp of when the status was last edited.
+    /// </summary>
+    [JsonPropertyName("edited_at")]
+    public DateTimeOffset? EditedAt { get; init; } = null;
     
     /// <summary>
     /// The account that authored this status.
