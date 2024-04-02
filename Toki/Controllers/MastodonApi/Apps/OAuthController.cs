@@ -92,4 +92,32 @@ public class OAuthController(
             CreatedAt = token.CreatedAt.ToUnixTimeSeconds()
         });
     }
+
+    /// <summary>
+    /// Revoke an access token to make it no longer valid for use.
+    /// </summary>
+    /// <param name="request">The parameters for the request.</param>
+    /// <returns>Empty on success.</returns>
+    [HttpPost]
+    [Route("revoke")]
+    [Produces("application/json")]
+    public async Task<IActionResult> RevokeToken(
+        [FromHybrid] RevokeTokenRequest request)
+    {
+        var app = await repo.FindByClientId(request.ClientId);
+        if (app is null || app.ClientSecret != request.ClientSecret)
+            return Unauthorized(new MastodonApiError("invalid_client"));
+        
+        var token = await repo.FindTokenByCode(request.Token);
+        if (token is null)
+            return Unauthorized(new MastodonApiError("invalid_code"));
+
+        if (token.ParentAppId != app.Id)
+            return StatusCode(
+                StatusCodes.Status403Forbidden, 
+                new MastodonApiError("unauthorized_client"));
+
+        await repo.DeleteToken(token);
+        return new JsonResult(new object());
+    }
 }

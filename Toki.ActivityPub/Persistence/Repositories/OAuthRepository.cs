@@ -39,6 +39,16 @@ public class OAuthRepository(
         db.OAuthTokens.Update(token);
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Deletes an OAuth2 token.
+    /// </summary>
+    /// <param name="token">The token.</param>
+    public async Task DeleteToken(OAuthToken token)
+    {
+        db.OAuthTokens.Remove(token);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Finds an app by its client id.
