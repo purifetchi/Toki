@@ -36,6 +36,16 @@ public class ASLinkConverter : JsonConverter<ASLink>
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, ASLink value, JsonSerializerOptions options)
     {
+        // Skip writing values we don't know about.
+        if (value.GetType() == typeof(ASLink))
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("type");
+            writer.WriteStringValue(value.Type);
+            writer.WriteEndObject();
+            return;
+        }
+        
         var obj = JsonSerializer.SerializeToElement(value, value.GetType());
         obj.WriteTo(writer);
     }
