@@ -53,6 +53,12 @@ builder.Services.AddHangfire(
 
 var app = builder.Build();
 
+// Set the version, if the config didn't override it.
+app.Services.GetRequiredService<IOptions<InstanceConfiguration>>()
+    .Value
+    .Software
+    .SoftwareVersion ??= $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}";
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

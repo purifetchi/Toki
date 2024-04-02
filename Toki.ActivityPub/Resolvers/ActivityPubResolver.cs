@@ -111,7 +111,7 @@ public class ActivityPubResolver(
             Headers =
             {
                 { "Accept", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" },
-                { "User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)" }
+                { "User-Agent", opts.Value.UserAgent }
             }
         };
 
@@ -130,8 +130,7 @@ public class ActivityPubResolver(
         return await signedHttpClient
             .NewRequest()
             .WithKey($"https://{opts.Value.Domain}/actor#key", keypair.PrivateKey!)
-            .WithHeader("User-Agent", 
-                $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
+            .WithHeader("User-Agent", opts.Value.UserAgent)
             .AddHeaderToSign("Host")
             .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
             .WithHeader("Accept",

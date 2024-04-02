@@ -44,4 +44,10 @@ public class InstanceConfiguration
     /// Is signed fetching enabled?
     /// </summary>
     public bool SignedFetch { get; set; } = false;
+
+    /// <summary>
+    /// The UserAgent string of Toki.
+    /// </summary>
+    public string UserAgent =>
+        $"{Software.SoftwareName}/{Software.SoftwareVersion} ({Domain}; <{ContactEmail}>)";
 }

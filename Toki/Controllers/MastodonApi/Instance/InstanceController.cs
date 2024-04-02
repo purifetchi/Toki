@@ -31,7 +31,7 @@ public class InstanceController(
         var config = opts.Value;
         var uploadConfig = uploadOpts.Value;
 
-        var version = $"{opts.Value.Software.SoftwareName} {config.Software.SoftwareVersion ?? $"{ThisAssembly.Git.Branch}-{ThisAssembly.Git.Commit}"}";
+        var version = $"{opts.Value.Software.SoftwareName}/{config.Software.SoftwareVersion!}";
         
         var info = new InstanceInformationV1Response()
         {

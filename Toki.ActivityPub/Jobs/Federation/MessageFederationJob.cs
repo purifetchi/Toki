@@ -58,7 +58,7 @@ public class MessageFederationJob(
                     keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
                     keypair.PrivateKey!)
                 .WithBody(message)
-                .WithHeader("User-Agent", $"Toki ({opts.Value.Domain}; <{opts.Value.ContactEmail}>)")
+                .WithHeader("User-Agent", opts.Value.UserAgent)
                 .AddHeaderToSign("Host")
                 .AddHeaderToSign("Digest")
                 .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
