@@ -43,7 +43,7 @@ public class OAuthController(
         OAuthToken? token;
         switch (request.GrantType)
         {
-            case "token":
+            case "authorization_code":
                 if (request.Code is null)
                     return Unauthorized(new MastodonApiError("invalid_code"));
         
