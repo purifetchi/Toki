@@ -6,6 +6,7 @@ using Toki.ActivityPub.Persistence.Repositories;
 using Toki.Configuration;
 using Toki.MastodonApi.Schemas.Responses.Instance;
 using Toki.Services.Drive;
+using Toki.Services.Usage;
 
 namespace Toki.Controllers.MastodonApi.Instance;
 
@@ -17,6 +18,7 @@ namespace Toki.Controllers.MastodonApi.Instance;
 [EnableCors("MastodonAPI")]
 public class InstanceController(
     InstanceRepository repo,
+    UsageService usageService,
     IOptions<InstanceConfiguration> opts,
     IOptions<UploadConfiguration> uploadOpts) : ControllerBase
 {
@@ -26,12 +28,14 @@ public class InstanceController(
     /// <returns>The instance information data.</returns>
     [HttpGet]
     [Route("v1/instance")]
-    public IActionResult InstanceV1()
+    public async Task<IActionResult> InstanceV1()
     {
         var config = opts.Value;
         var uploadConfig = uploadOpts.Value;
 
         var version = $"{opts.Value.Software.SoftwareName}/{config.Software.SoftwareVersion!}";
+
+        var stats = await usageService.GetStatistics();
         
         var info = new InstanceInformationV1Response()
         {
@@ -55,6 +59,13 @@ public class InstanceController(
                     VideoSizeLimit = uploadConfig.MaxFileSize
                 },
                 Polls = new InstanceInformationPolls()
+            },
+            
+            Statistics = new InstanceInformationStatistics()
+            {
+                UserCount = stats.UserCount,
+                StatusCount = stats.LocalPosts,
+                DomainCount = stats.PeerCount
             }
         };
         

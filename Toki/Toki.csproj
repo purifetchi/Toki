@@ -15,6 +15,7 @@
         <PackageReference Include="Hangfire.AspNetCore" Version="1.8.10" />
         <PackageReference Include="Hangfire.Redis.StackExchange" Version="1.9.4-beta.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-preview.2.24128.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 

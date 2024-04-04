@@ -50,6 +50,12 @@ public record InstanceInformationV1Response
     public InstanceInformationV1Configuration? Configuration { get; init; }
     
     /// <summary>
+    /// Statistics about how much information the instance contains.
+    /// </summary>
+    [JsonPropertyName("stats")]
+    public InstanceInformationStatistics? Statistics { get; init; }
+    
+    /// <summary>
     /// Are the registrations open?
     /// </summary>
     [JsonPropertyName("registrations")]

@@ -12,6 +12,7 @@ using Toki.MastodonApi;
 using Toki.Middleware.OAuth2;
 using Toki.Services.Drive;
 using Toki.Services.Timelines;
+using Toki.Services.Usage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +30,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddActivityPubServices();
 builder.Services.AddHttpSignatures();
 builder.Services.AddControllers( o => o.ModelBinderProviders.AddHybridBindingProvider());
+builder.Services.AddStackExchangeRedisCache(o => { o.Configuration = "localhost"; });
 builder.Services.AddTransient<OAuthMiddleware>();
 builder.Services.AddTransient<TimelineBuilder>();
 builder.Services.AddTransient<DriveService>();
+builder.Services.AddTransient<UsageService>();
 
 builder.Services.AddMastodonApiHelpers();
 

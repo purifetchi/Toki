@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.NodeInfo;
+using Toki.Services.Usage;
 
 namespace Toki.Controllers;
 
@@ -12,6 +13,7 @@ namespace Toki.Controllers;
 [ApiController]
 [Route("nodeinfo")]
 public class NodeInfoController(
+    UsageService usageService,
     IOptions<InstanceConfiguration> opts) : ControllerBase
 {
     /// <summary>
@@ -21,7 +23,7 @@ public class NodeInfoController(
     [HttpGet]
     [Route("2.1")]
     [EnableCors("MastodonAPI")]
-    public NodeInfoResponse NodeInfo21()
+    public async Task<NodeInfoResponse> NodeInfo21()
     {
         var config = opts.Value;
         
@@ -39,6 +41,18 @@ public class NodeInfoController(
             Name = config.Name,
             Description = config.Info
         };
+
+        var stats = await usageService.GetStatistics();
+        var usage = new NodeInfoUsage()
+        {
+            Users = new NodeInfoUsageUsers()
+            {
+                Total = stats.UserCount,
+                ActiveHalfYear = stats.ActiveThisHalfYear,
+                ActiveMonth = stats.ActiveThisMonth
+            },
+            LocalPosts = stats.LocalPosts
+        };
         
         return new NodeInfoResponse
         {
@@ -47,6 +61,7 @@ public class NodeInfoController(
             Metadata = metadata,
             
             OpenRegistrations = config.OpenRegistrations,
+            Usage = usage,
             Protocols =
             [
                 "activitypub"

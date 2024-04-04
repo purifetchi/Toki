@@ -33,7 +33,11 @@ public class NodeInfoResponse
     [JsonPropertyName("openRegistrations")]
     public bool OpenRegistrations { get; init; } = false;
     
-    // TODO: Usage
+    /// <summary>
+    /// The usage statistics.
+    /// </summary>
+    [JsonPropertyName("usage")]
+    public NodeInfoUsage? Usage { get; init; }
     
     /// <summary>
     /// The metadata of this instance.
