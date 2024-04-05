@@ -1,0 +1,26 @@
+@page "/"
+@model Toki.Pages.Landing.Index
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@Model.Configuration.Name</title>
+</head>
+<body>
+<div>
+    <h1>toki!</h1>
+    <h3>@Model.Configuration.Info</h3>
+    <p>
+        <b>@Model.Configuration.Name</b> is a Fediverse instance running <a href="@Model.Configuration.Software.SoftwareRepository">@Model.Configuration.Software.SoftwareName/@Model.Configuration.Software.SoftwareVersion</a>.
+        It is currently home to <b>@Model.Statistics?.UserCount</b> users, who've posted <b>@Model.Statistics?.LocalPosts</b> statuses.
+    </p>
+    <p>Toki is a federated open-source server implementing the ActivityPub suite of protocols, allowing it to talk with other servers globally.</p>
+    <p>While it <em>currently</em> does not have a front-end of its own, various clients supporting the Mastodon API can connect to it to interact with the Fediverse.</p>
+</div>
+</body>
+</html>
