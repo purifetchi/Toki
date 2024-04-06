@@ -12,6 +12,7 @@ using Toki.ActivityPub.Renderers;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
 using Toki.ActivityPub.WebFinger;
+using Toki.ActivityStreams.Context;
 
 namespace Toki.ActivityPub;
 
@@ -21,11 +22,36 @@ namespace Toki.ActivityPub;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Sets the default JSON-LD context for ActivityPub messages.
+    /// </summary>
+    private static void SetDefaultLdContext()
+    {
+        LdContext.Default
+            .AddLink("https://w3id.org/security/v1")
+            .AddKeyValue("Bite", "https://ns.mia.jetzt/as#Bite")
+            .AddKeyValue("Emoji", "toot:Emoji")
+            .AddKeyValue("EmojiReact", "litepub:EmojiReact")
+            .AddKeyValue("Hashtag", "as:Hashtag")
+            .AddKeyValue("PropertyValue", "schema:PropertyValue")
+            .AddKeyValue("fedibird", "http://fedibird.com/ns#")
+            .AddKeyValue("sensitive", "as:sensitive")
+            .AddKeyValue("toot", "http://joinmastodon.org/ns#")
+            .AddKeyValue("value", "schema:value")
+            .AddKeyValue("isCat", "https://misskey-hub.net/ns#isCat")
+            .AddKeyValue("litepub", "http://litepub.social/ns#")
+            .AddKeyValue("manuallyApprovesFollowers", "as:manuallyApprovesFollowers")
+            .AddKeyValue("quoteUri", "fedibird:quoteUri")
+            .AddKeyValue("schema", "http://schema.org#");
+    }
+    
+    /// <summary>
     /// Adds the ActivityPub services.
     /// </summary>
     /// <param name="collection">The collection to add them to.</param>
     public static IServiceCollection AddActivityPubServices(this IServiceCollection collection)
     {
+        SetDefaultLdContext();
+        
         collection.AddDbContext<TokiDatabaseContext>();
         collection.AddScoped<InstanceActorResolver>();
         collection.AddTransient<ContentFormatter>();
