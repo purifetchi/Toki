@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Context;
 using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityStreams.Objects;
@@ -31,7 +32,8 @@ public class ASObject
     /// </summary>
     [JsonPropertyName("@context")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Context { get; set; } = "https://www.w3.org/ns/activitystreams";
+    [JsonPropertyOrder(-999)]
+    public LdContext? Context { get; set; } = LdContext.Default;
     
     /// <summary>
     /// The ID of the object.
