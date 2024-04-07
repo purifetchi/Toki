@@ -79,6 +79,11 @@ public class Post : RemoteableModel
     public List<PostMention>? UserMentions { get; set; }
     
     /// <summary>
+    /// The tags in this post (DENORMALIZED).
+    /// </summary>
+    public List<string>? Tags { get; set; }
+    
+    /// <summary>
     /// The attachments this post has.
     /// </summary>
     public ICollection<PostAttachment>? Attachments { get; set; }
