@@ -1,6 +1,7 @@
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityStreams.Activities;
+using Toki.ActivityStreams.Context;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Renderers;
@@ -77,19 +78,46 @@ public class PostRenderer(
             })
             .ToList();
     }
+
+    /// <summary>
+    /// Renders the hashtags.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The hashtags.</returns>
+    private IReadOnlyList<ASLink>? RenderHashtagsFrom(
+        Post post)
+    {
+        return post.Tags?
+            .Select(tag => new ASHashtag
+            {
+                Type = "Hashtag",
+                Name = tag,
+                Href = pathRenderer.GetPathToHashtag(tag)
+            })
+            .ToList();
+    }
     
     /// <summary>
     /// Renders an <see cref="ASNote"/> from a <see cref="Post"/>
     /// </summary>
     /// <param name="post">The post to render.</param>
+    /// <param name="includeContext">Whether to include the context.</param>
     /// <returns>The ASNote.</returns>
-    public ASNote RenderFullNoteFrom(Post post)
+    public ASNote RenderFullNoteFrom(
+        Post post,
+        bool includeContext = false)
     {
-        var (to, cc) = GetToAndCcFor(post);        
+        var (to, cc) = GetToAndCcFor(post);
+
+        var tags = RenderMentionsFrom(post)?
+            .Concat(RenderHashtagsFrom(post) ?? [])
+            .ToList();
         
         return new ASNote()
         {
-            Context = null,
+            Context = includeContext ? 
+                LdContext.Default :
+                null,
             
             Id = RenderLinkedNoteFrom(post).Id,
             AttributedTo = userRenderer.RenderLinkedActorFrom(post.Author),
@@ -106,7 +134,7 @@ public class PostRenderer(
             Cc = cc,
             
             Attachments = RenderAttachmentsFrom(post),
-            Tags = RenderMentionsFrom(post),
+            Tags = tags,
             PublishedAt = post.CreatedAt
         };
     }

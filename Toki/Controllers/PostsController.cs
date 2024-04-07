@@ -29,6 +29,8 @@ public class PostsController(
         if (post is null)
             return NotFound();
 
-        return renderer.RenderFullNoteFrom(post);
+        return renderer.RenderFullNoteFrom(
+            post, 
+            includeContext: true);
     }
 }
