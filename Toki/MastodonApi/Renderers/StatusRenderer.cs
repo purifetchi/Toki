@@ -45,6 +45,22 @@ public class StatusRenderer(
     }
 
     /// <summary>
+    /// Renders the tags for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The tags.</returns>
+    private IReadOnlyList<StatusTag>? RenderTagsFor(Post post)
+    {
+        return post.Tags?
+            .Select(hashtag => new StatusTag
+            {
+                Name = hashtag[1..],
+                Url = pathRenderer.GetPathToHashtag(hashtag)
+            })
+            .ToList();
+    }
+
+    /// <summary>
     /// Renders a media attachment from the Toki <see cref="PostAttachment"/>.
     /// </summary>
     /// <param name="postAttachment">The post attachment.</param>
@@ -100,7 +116,8 @@ public class StatusRenderer(
             InReplyToAccountId = post.Parent?.AuthorId.ToString(),
 
             Attachments = RenderAttachmentsFor(post) ?? [],
-            Mentions = RenderMentionsFor(post) ?? []
+            Mentions = RenderMentionsFor(post) ?? [],
+            Tags = RenderTagsFor(post) ?? []
         };
     }
 
