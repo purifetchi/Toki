@@ -25,6 +25,7 @@ public class ASLinkConverter : JsonConverter<ASLink>
             "Document" => obj.Deserialize<ASDocument>(),
             "Mention" => obj.Deserialize<ASMention>(),
             "PropertyValue" => obj.Deserialize<ASPropertyValue>(),
+            "Hashtag" => obj.Deserialize<ASHashtag>(),
             
             _ => new ASLink()
             {

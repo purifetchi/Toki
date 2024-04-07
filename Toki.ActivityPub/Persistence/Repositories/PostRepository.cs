@@ -382,6 +382,24 @@ public class PostRepository(
 
         return mentions;
     }
+
+    /// <summary>
+    /// Collects the hashtags for a note.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <returns>The hashtags.</returns>
+    private List<string>? CollectHashtags(
+        ASNote note)
+    {
+        if (note.Tags is null)
+            return null;
+
+        return note.Tags
+            .OfType<ASHashtag>()
+            .Where(h => h.Name is not null)
+            .Select(h => h.Name!)
+            .ToList();
+    }
     
     /// <summary>
     /// Imports an ActivityStreams note as a post.
@@ -412,7 +430,8 @@ public class PostRepository(
             
             Visibility = note.GetPostVisibility(author),
             
-            UserMentions = await CollectMentions(note)
+            UserMentions = await CollectMentions(note),
+            Tags = CollectHashtags(note)
         };
         
         if (note.InReplyTo is not null)

@@ -79,7 +79,9 @@ public class PostManagementService(
                     Handle = u.Handle,
                     Url = u.RemoteId ?? pathRenderer.GetPathToActor(u)
                 })
-                .ToList()
+                .ToList(),
+            
+            Tags = formattingResult.Hashtags
         };
 
         await repo.Add(post);

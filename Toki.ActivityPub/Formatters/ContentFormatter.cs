@@ -12,12 +12,17 @@ namespace Toki.ActivityPub.Formatters;
 /// </summary>
 public class ContentFormatter(
     UserRepository repo,
-    InstancePathRenderer pathRenderer)
+    MicroformatsRenderer microformats)
 {
     /// <summary>
     /// The regex for mentions.
     /// </summary>
     private readonly Regex _mentionRegex = new(@"[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?){1,500}", RegexOptions.Compiled);
+
+    /// <summary>
+    /// The regex for hashtags.
+    /// </summary>
+    private readonly Regex _hashtagRegex = new(@"\W(\#[a-zA-Z]+\b)");
     
     /// <summary>
     /// Extracts the mentions from the content.
@@ -54,19 +59,54 @@ public class ContentFormatter(
         string content,
         IEnumerable<User> mentions)
     {
-        // NOTE: The format of the <a> tag has been taken from Pleroma and seems to be working
-        //       across multiple frontends.
-        const string format = """<a href="{0}" class="u-url mention" data-user="{1}">@{2}</a>""";
-
         var output = mentions.Aggregate(content, 
             (current, mention) => 
                 current.Replace(
                     $"@{mention.Handle}", 
-                    string.Format(
-                        format, 
-                        mention.RemoteId ?? pathRenderer.GetPathToActor(mention), 
-                        mention.Id,
-                        mention.Handle)));
+                    microformats.Mention(mention)));
+
+        return output;
+    }
+
+    /// <summary>
+    /// Extracts the hashtags from a post.
+    /// </summary>
+    /// <param name="content">The content of the post.</param>
+    /// <returns>The hashtags.</returns>
+    private List<string> ExtractHashtags(
+        string content)
+    {
+        var matches = _hashtagRegex.Matches(content);
+        var hashtags = new List<string>();
+        
+        foreach (Match match in matches)
+        {
+            if (!match.Success || match.Groups.Count < 2)
+                continue;
+
+            hashtags.Add(match.Groups[1].Value);
+        }
+        
+        return hashtags;
+    }
+    
+    /// <summary>
+    /// Replaces all the hashtags with the links.
+    /// </summary>
+    /// <param name="content">The content.</param>
+    /// <param name="hashtags">The hashtags.</param>
+    /// <returns>The resulting new string.</returns>
+    private string ReplaceHashtags(
+        string content,
+        IEnumerable<string> hashtags)
+    {
+        const string format = """<a href="{0}" class="u-url hashtag">{1}</a>""";
+
+        var output = hashtags.Aggregate(content, 
+            (current, tag) => 
+                current.Replace(
+                    tag, 
+                    microformats.Hashtag(tag)));
 
         return output;
     }
@@ -85,9 +125,15 @@ public class ContentFormatter(
         output = ReplaceMentions(
             output,
             mentions);
+
+        var tags = ExtractHashtags(output);
+        output = ReplaceHashtags(
+            output,
+            tags);
         
         return new ContentFormattingResult(
             output,
-            mentions);
+            mentions,
+            tags);
     }
 }

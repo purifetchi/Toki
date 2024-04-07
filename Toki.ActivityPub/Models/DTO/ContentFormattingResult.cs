@@ -1,5 +1,3 @@
-using Toki.ActivityStreams.Objects;
-
 namespace Toki.ActivityPub.Models.DTO;
 
 /// <summary>
@@ -7,7 +5,9 @@ namespace Toki.ActivityPub.Models.DTO;
 /// </summary>
 /// <param name="Formatted">The formatted content.</param>
 /// <param name="Mentions">The mentions inside.</param>
+/// <param name="Hashtags">The hashtags.</param>
 public record ContentFormattingResult(
     string Formatted,
-    IReadOnlyList<User> Mentions);
+    IReadOnlyList<User> Mentions,
+    List<string> Hashtags);
 // TODO: Emojis

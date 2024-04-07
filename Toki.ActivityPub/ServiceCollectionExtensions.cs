@@ -79,7 +79,8 @@ public static class ServiceCollectionExtensions
             .AddTransient<ActivityPubMessageValidationService>()
             .AddTransient<NodeInfoResolver>()
             .AddTransient<InstancePathRenderer>()
-            .AddTransient<MessageFederationService>();
+            .AddTransient<MessageFederationService>()
+            .AddTransient<MicroformatsRenderer>();
         
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()

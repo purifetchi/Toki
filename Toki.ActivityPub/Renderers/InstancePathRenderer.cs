@@ -41,4 +41,12 @@ public class InstancePathRenderer(
     /// <returns>The default avatar.</returns>
     public string GetPathToDefaultAvatar() =>
         $"https://{opts.Value.Domain}/images/avatar.png";
+    
+    /// <summary>
+    /// Gets the path to the hashtag.
+    /// </summary>
+    /// <param name="hashtag">The hashtag.</param>
+    /// <returns>The path to it.</returns>
+    public string GetPathToHashtag(string hashtag) =>
+        $"https://{opts.Value.Domain}/tags/{hashtag[1..]}";
 }
