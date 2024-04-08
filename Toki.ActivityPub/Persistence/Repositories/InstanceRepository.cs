@@ -70,8 +70,6 @@ public class InstanceRepository(
     {
         var domain = new Uri(actor.Id)
             .Host;
-        
-        logger.LogInformation($"Starting instance information fetch for {domain}");
 
         var nodeInfo = await resolver.Get(domain);
         var instance = new RemoteInstance()
@@ -86,6 +84,8 @@ public class InstanceRepository(
             
             Software = $"{nodeInfo?.Software?.Name} {nodeInfo?.Software?.Version}"
         };
+        
+        logger.LogInformation($"Met new instance! {instance.Domain} [{instance.Software}]");
 
         await Add(instance);
 
