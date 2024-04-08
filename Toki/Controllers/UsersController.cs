@@ -124,10 +124,12 @@ public class UsersController(
 
         var pinned = await postRepo.FindPinnedPostsForUser(user);
 
-        var notes = pinned
-            .Select(pp => postRenderer.RenderFullNoteFrom(pp.Post))
-            .Cast<ASObject>()
-            .ToList();
+        var notes = new List<ASObject>();
+        foreach (var note in pinned)
+        {
+            notes.Add(
+                await postRenderer.RenderFullNoteFrom(note.Post));
+        }
         
         return new ASOrderedCollection<ASObject>()
         {
@@ -182,10 +184,12 @@ public class UsersController(
             .Filter(post => post.AuthorId == user.Id)
             .GetTimeline();
 
-        var items = posts
-            .Select(postRenderer.RenderCreationForNote)
-            .Cast<ASObject>()
-            .ToList();
+        var items = new List<ASObject>();
+        foreach (var post in posts)
+        {
+            items.Add(
+                await postRenderer.RenderCreationForNote(post));
+        }
         
         return new ASOrderedCollection<ASObject>()
         {

@@ -88,7 +88,7 @@ public class PostManagementService(
         await repo.Add(post);
         await federationService.SendToFollowers(
             creationRequest.Author,
-            postRenderer.RenderCreationForNote(post));
+            await postRenderer.RenderCreationForNote(post));
 
         await notificationService.DispatchAllNotificationsForPost(post);
         

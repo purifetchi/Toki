@@ -1,5 +1,6 @@
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Context;
 using Toki.ActivityStreams.Objects;
@@ -12,6 +13,7 @@ namespace Toki.ActivityPub.Renderers;
 /// <param name="pathRenderer">The instance path renderer.</param>
 public class PostRenderer(
     InstancePathRenderer pathRenderer,
+    EmojiRepository emojiRepo,
     UserRenderer userRenderer)
 {
     /// <summary>
@@ -96,6 +98,38 @@ public class PostRenderer(
             })
             .ToList();
     }
+
+    /// <summary>
+    /// Renders the emojis.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The emojis.</returns>
+    private async Task<IReadOnlyList<ASEmoji>?> RenderEmojiFrom(
+        Post post)
+    {
+        if (post.Emojis is null || post.Emojis.Count < 1)
+            return null;
+
+        var emoji = await emojiRepo.FindManyByIds(
+            post.Emojis
+                .Select(Ulid.Parse)
+                .ToList()
+            );
+
+        return emoji.Select(
+                e => new ASEmoji
+                {
+                    Type = "Emoji",
+                    Id = e.RemoteUrl,
+                    Icon = new ASImage
+                    {
+                        Type = "Image",
+                        Url = e.RemoteUrl
+                    },
+                    Name = e.Shortcode
+                })
+            .ToList();
+    }
     
     /// <summary>
     /// Renders an <see cref="ASNote"/> from a <see cref="Post"/>
@@ -103,7 +137,7 @@ public class PostRenderer(
     /// <param name="post">The post to render.</param>
     /// <param name="includeContext">Whether to include the context.</param>
     /// <returns>The ASNote.</returns>
-    public ASNote RenderFullNoteFrom(
+    public async Task<ASNote> RenderFullNoteFrom(
         Post post,
         bool includeContext = false)
     {
@@ -111,6 +145,7 @@ public class PostRenderer(
 
         var tags = RenderMentionsFrom(post)?
             .Concat(RenderHashtagsFrom(post) ?? [])
+            .Concat(await RenderEmojiFrom(post) ?? [])
             .ToList();
         
         return new ASNote()
@@ -155,10 +190,10 @@ public class PostRenderer(
     /// </summary>
     /// <param name="post">The post.</param>
     /// <returns>The create activity.</returns>
-    public ASCreate RenderCreationForNote(Post post)
+    public async Task<ASCreate> RenderCreationForNote(Post post)
     {
         var linkedAuthor = userRenderer.RenderLinkedActorFrom(post.Author);
-        var note = RenderFullNoteFrom(post);
+        var note = await RenderFullNoteFrom(post);
         var create = new ASCreate()
         {
             Id = $"{note.Id}/activity",
