@@ -65,8 +65,8 @@ public static class MastodonOAuthHelper
                 if (!uriObject.IsAbsoluteUri)
                     return new MastodonApiError("Validation error: URI must be absolute.");
 
-                if (uriObject.Scheme != "http" && uriObject.Scheme != "https")
-                    return new MastodonApiError("Validation error: URI must begin with http(s).");
+                if (uriObject.Scheme is "javascript" or "file")
+                    return new MastodonApiError("Validation error: Invalid scheme for redirect URI.");
             }
             catch (UriFormatException)
             {
