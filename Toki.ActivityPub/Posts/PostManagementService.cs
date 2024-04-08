@@ -81,7 +81,8 @@ public class PostManagementService(
                 })
                 .ToList(),
             
-            Tags = formattingResult.Hashtags
+            Tags = formattingResult.Hashtags,
+            Emojis = formattingResult.Emojis
         };
 
         await repo.Add(post);

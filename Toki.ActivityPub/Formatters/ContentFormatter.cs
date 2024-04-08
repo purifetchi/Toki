@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Web;
+using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -12,6 +13,7 @@ namespace Toki.ActivityPub.Formatters;
 /// </summary>
 public class ContentFormatter(
     UserRepository repo,
+    EmojiRepository emojiRepo,
     MicroformatsRenderer microformats)
 {
     /// <summary>
@@ -23,6 +25,11 @@ public class ContentFormatter(
     /// The regex for hashtags.
     /// </summary>
     private readonly Regex _hashtagRegex = new(@"\W(\#[a-zA-Z]+\b)");
+
+    /// <summary>
+    /// The regex for emojis.
+    /// </summary>
+    private readonly Regex _emojiRegex = new(@":([a-zA-Z0-9_\-]+):");
     
     /// <summary>
     /// Extracts the mentions from the content.
@@ -110,6 +117,35 @@ public class ContentFormatter(
 
         return output;
     }
+
+    /// <summary>
+    /// Collects all of the emojis for this post.
+    /// </summary>
+    /// <param name="content"></param>
+    /// <returns></returns>
+    private async Task<List<string>> ExtractEmojis(
+        string content)
+    {
+        var matches = _emojiRegex.Matches(content);
+
+        var shortcodes = new List<string>();
+        foreach (Match match in matches)
+        {
+            if (!match.Success)
+                continue;
+
+            shortcodes.Add(match.Value);
+        }
+
+        var emoji = await emojiRepo
+            .FindManyByNameAndInstance(
+                shortcodes,
+                null);
+
+        return emoji
+            .Select(e => e.Id.ToString())
+            .ToList();
+    }
     
     /// <summary>
     /// Formats the content.
@@ -130,10 +166,13 @@ public class ContentFormatter(
         output = ReplaceHashtags(
             output,
             tags);
+
+        var emojis = await ExtractEmojis(output);
         
         return new ContentFormattingResult(
             output,
             mentions,
-            tags);
+            tags,
+            emojis);
     }
 }
