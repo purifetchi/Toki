@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Cryptography;
+using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.NodeInfo;
@@ -81,6 +82,9 @@ public static class ServiceCollectionExtensions
             .AddTransient<InstancePathRenderer>()
             .AddTransient<MessageFederationService>()
             .AddTransient<MicroformatsRenderer>();
+
+        collection.AddTransient<EmojiRepository>()
+            .AddTransient<EmojiService>();
         
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()
