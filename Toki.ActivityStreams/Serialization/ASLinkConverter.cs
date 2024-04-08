@@ -26,6 +26,7 @@ public class ASLinkConverter : JsonConverter<ASLink>
             "Mention" => obj.Deserialize<ASMention>(),
             "PropertyValue" => obj.Deserialize<ASPropertyValue>(),
             "Hashtag" => obj.Deserialize<ASHashtag>(),
+            "Emoji" => obj.Deserialize<ASEmoji>(),
             
             _ => new ASLink()
             {
