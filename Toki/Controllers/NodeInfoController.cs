@@ -17,13 +17,12 @@ public class NodeInfoController(
     IOptions<InstanceConfiguration> opts) : ControllerBase
 {
     /// <summary>
-    /// Returns the 2.1 version of the nodeinfo data.
+    /// Creates a node info response for a given version.
     /// </summary>
-    /// <returns>The node info response.</returns>
-    [HttpGet]
-    [Route("2.1")]
-    [EnableCors("MastodonAPI")]
-    public async Task<NodeInfoResponse> NodeInfo21()
+    /// <param name="version">The version.</param>
+    /// <returns>The resulting node info response.</returns>
+    private async Task<NodeInfoResponse> GetNodeInfoResponse(
+        string version)
     {
         var config = opts.Value;
         
@@ -56,7 +55,7 @@ public class NodeInfoController(
         
         return new NodeInfoResponse
         {
-            Version = "2.1",
+            Version = version,
             Software = software,
             Metadata = metadata,
             
@@ -67,5 +66,29 @@ public class NodeInfoController(
                 "activitypub"
             ]
         };
+    }
+    
+    /// <summary>
+    /// Returns the 2.1 version of the nodeinfo data.
+    /// </summary>
+    /// <returns>The node info response.</returns>
+    [HttpGet]
+    [Route("2.1")]
+    [EnableCors("MastodonAPI")]
+    public async Task<NodeInfoResponse> NodeInfo21()
+    {
+        return await GetNodeInfoResponse("2.1");
+    }
+    
+    /// <summary>
+    /// Returns the 2.0 version of the nodeinfo data.
+    /// </summary>
+    /// <returns>The node info response.</returns>
+    [HttpGet]
+    [Route("2.0")]
+    [EnableCors("MastodonAPI")]
+    public async Task<NodeInfoResponse> NodeInfo20()
+    {
+        return await GetNodeInfoResponse("2.0");
     }
 }
