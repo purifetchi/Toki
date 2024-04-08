@@ -84,6 +84,11 @@ public class Post : RemoteableModel
     public List<string>? Tags { get; set; }
     
     /// <summary>
+    /// The emojis in this post (DENORMALIZED).
+    /// </summary>
+    public List<string>? Emojis { get; set; }
+    
+    /// <summary>
     /// The attachments this post has.
     /// </summary>
     public ICollection<PostAttachment>? Attachments { get; set; }

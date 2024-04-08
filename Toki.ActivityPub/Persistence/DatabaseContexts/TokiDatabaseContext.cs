@@ -78,6 +78,11 @@ public class TokiDatabaseContext : DbContext
     /// </summary>
     public DbSet<PinnedPost> PinnedPosts { get; private set; } = null!;
 
+    /// <summary>
+    /// The emoji set.
+    /// </summary>
+    public DbSet<Emoji> Emojis { get; private set; } = null!;
+
     /// <inheritdoc/>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -246,6 +251,12 @@ public class TokiDatabaseContext : DbContext
             .HasIndex(pp => new { pp.PostId, pp.UserId })
             .HasDatabaseName("IX_PostUser_Unique")
             .IsUnique();
+
+        modelBuilder.Entity<Emoji>()
+            .HasOne<RemoteInstance>(e => e.ParentInstance)
+            .WithMany()
+            .HasForeignKey(e => e.ParentInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     /// <inheritdoc/>
