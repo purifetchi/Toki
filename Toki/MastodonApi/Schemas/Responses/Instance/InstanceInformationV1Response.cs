@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.MastodonApi.Schemas.Objects;
 
 namespace Toki.MastodonApi.Schemas.Responses.Instance;
 
@@ -26,6 +27,12 @@ public record InstanceInformationV1Response
     public string? ShortDescription { get; init; }
     
     /// <summary>
+    /// The description of the server.
+    /// </summary>
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+    
+    /// <summary>
     /// The version of the software.
     /// </summary>
     [JsonPropertyName("version")]
@@ -42,6 +49,18 @@ public record InstanceInformationV1Response
     /// </summary>
     [JsonPropertyName("languages")]
     public IReadOnlyList<string> Languages { get; init; } = ["en"];
+
+    /// <summary>
+    /// An itemized list of rules for this website.
+    /// </summary>
+    [JsonPropertyName("rules")]
+    public IReadOnlyList<OrderedTextItem> Rules { get; init; } = [];
+    
+    /// <summary>
+    /// URLs of interest for clients apps.
+    /// </summary>
+    [JsonPropertyName("urls")]
+    public InstanceInformationUrls Urls { get; init; } = new();
 
     /// <summary>
     /// The instance configuration.

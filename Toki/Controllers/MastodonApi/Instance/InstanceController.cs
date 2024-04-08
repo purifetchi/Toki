@@ -44,6 +44,7 @@ public class InstanceController(
             Title = config.Name,
             Version = $"4.0.0 (compatible; {version})",
             ShortDescription = config.Info,
+            Description = config.Info,
             
             Configuration = new InstanceInformationV1Configuration()
             {
