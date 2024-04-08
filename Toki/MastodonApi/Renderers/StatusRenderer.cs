@@ -90,7 +90,7 @@ public class StatusRenderer(
     public MediaAttachment RenderAttachmentFrom(PostAttachment postAttachment) => new MediaAttachment
     {
         Id = $"{postAttachment.Id}",
-        Type = "image", // TODO: Deduce this based on the MIME
+        Type = postAttachment.Mime?[..postAttachment.Mime.IndexOf('/')],
 
         Url = postAttachment.Url,
         PreviewUrl = postAttachment.Url,
