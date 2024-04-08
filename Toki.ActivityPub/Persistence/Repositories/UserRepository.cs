@@ -30,6 +30,7 @@ public class UserRepository(
     {
         var result = await db.Users.Where(u => u.Id == id)
             .Include(u => u.Keypair)
+            .Include(u => u.ParentInstance)
             .FirstOrDefaultAsync();
 
         return result;
@@ -44,6 +45,7 @@ public class UserRepository(
     {
         var result = await db.Users.Where(u => u.RemoteId == id)
             .Include(u => u.Keypair)
+            .Include(u => u.ParentInstance)
             .FirstOrDefaultAsync();
         
         // TODO: I honestly don't know whether this is the best idea but whatever.
@@ -68,6 +70,7 @@ public class UserRepository(
     {
         var result = await db.Users.Where(u => u.Handle == handle)
             .Include(u => u.Keypair)
+            .Include(u => u.ParentInstance)
             .FirstOrDefaultAsync();
 
         return result;

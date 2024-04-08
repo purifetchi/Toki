@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Posts;
@@ -17,6 +18,7 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 public class PostRepository(
     TokiDatabaseContext db,
     UserRepository userRepo,
+    EmojiService emojiService,
     IOptions<InstanceConfiguration> opts,
     InstancePathRenderer pathRenderer)
 {
@@ -384,6 +386,31 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Collects the emojis for a note.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <param name="instance">The remote instance.</param>
+    /// <returns>The emojis, if any exist.</returns>
+    private async Task<IReadOnlyList<Emoji>?> CollectEmojis(
+        ASNote note,
+        RemoteInstance? instance)
+    {
+        if (note.Tags is null)
+            return null;
+        
+        var asEmojis = note.Tags
+            .OfType<ASEmoji>()
+            .ToList();
+
+        if (asEmojis.Count < 1)
+            return null;
+
+        return await emojiService.FetchFromActivityStreams(
+            asEmojis,
+            instance);
+    }
+
+    /// <summary>
     /// Collects the hashtags for a note.
     /// </summary>
     /// <param name="note">The note.</param>
@@ -411,6 +438,10 @@ public class PostRepository(
         ASNote note,
         User author)
     {
+        var emojis = await CollectEmojis(
+            note,
+            author.ParentInstance);
+        
         var post = new Post()
         {
             Id = Ulid.NewUlid(),
@@ -431,7 +462,11 @@ public class PostRepository(
             Visibility = note.GetPostVisibility(author),
             
             UserMentions = await CollectMentions(note),
-            Tags = CollectHashtags(note)
+            Tags = CollectHashtags(note),
+            
+            Emojis = emojis?
+                .Select(e => e.Id.ToString())
+                .ToList()
         };
         
         if (note.InReplyTo is not null)
