@@ -60,4 +60,21 @@ public class WellKnownController(
             ]
         };
     }
+
+    /// <summary>
+    /// Fetches the host meta for this instance.
+    /// </summary>
+    /// <returns>The host meta response.</returns>
+    [HttpGet]
+    [Route("host-meta")]
+    [EnableCors("MastodonAPI")]
+    public IResult HostMeta()
+    {
+        return Results.Content($$"""
+<?xml version="1.0" encoding="UTF-8"?>
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
+   <Link type="application/xrd+xml" template="https://{{opts.Value.Domain}}/.well-known/webfinger?resource={uri}" rel="lrdd" />
+</XRD>
+""", "application/xrd+xml");
+    }
 }
