@@ -1,4 +1,5 @@
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Renderers;
 using Toki.Extensions;
@@ -12,6 +13,7 @@ namespace Toki.MastodonApi.Renderers;
 public class StatusRenderer(
     AccountRenderer accountRenderer,
     InstancePathRenderer pathRenderer,
+    EmojiRepository emojiRepo,
     PostManagementService postManagementService)
 {
     /// <summary>
@@ -61,6 +63,26 @@ public class StatusRenderer(
     }
 
     /// <summary>
+    /// Gets the emoji for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The emoji.</returns>
+    private async Task<IReadOnlyList<CustomEmoji>> GetEmojiFor(Post post)
+    {
+        if (post.Emojis is null || post.Emojis.Count < 1)
+            return [];
+        
+        var emojis = await emojiRepo.FindManyByIds(
+            post.Emojis
+                .Select(Ulid.Parse)
+                .ToList());
+
+        return emojis
+            .Select(RenderEmojiFrom)
+            .ToList();
+    }
+
+    /// <summary>
     /// Renders a media attachment from the Toki <see cref="PostAttachment"/>.
     /// </summary>
     /// <param name="postAttachment">The post attachment.</param>
@@ -73,6 +95,19 @@ public class StatusRenderer(
         Url = postAttachment.Url,
         PreviewUrl = postAttachment.Url,
         Description = postAttachment.Description,
+    };
+
+    /// <summary>
+    /// Renders an emoji from the Toki <see cref="Emoji"/>.
+    /// </summary>
+    /// <param name="emoji">The emoji.</param>
+    /// <returns>The mastodon <see cref="CustomEmoji"/></returns>
+    public CustomEmoji RenderEmojiFrom(Emoji emoji) => new CustomEmoji
+    {
+        Shortcode = emoji.Shortcode.Trim(':'),
+        Url = emoji.RemoteUrl,
+        StaticUrl = emoji.RemoteUrl,
+        Category = emoji.Category
     };
     
     /// <summary>
@@ -137,10 +172,11 @@ public class StatusRenderer(
         var status = RenderForPost(post);
         var liked = await postManagementService.HasLiked(user, post);
         var boosted = await postManagementService.HasBoosted(user, post);
-
+        
         status.Liked = liked;
         status.Boosted = boosted;
-
+        status.Emojis = await GetEmojiFor(post);
+        
         return status;
     }
 
@@ -174,15 +210,19 @@ public class StatusRenderer(
         foreach (var post in posts)
         {
             var status = RenderForPost(post);
+            
+            // TODO: Preload all of the emojis at once.
             if (status.Boost != null)
             {
                 status.Boost.Liked = likes.Contains(post.Boosting!.Id);
                 status.Boost.Boosted = boosts.Contains(post.Boosting!.Id);
+                status.Boost.Emojis = await GetEmojiFor(post.Boosting!);
             }
             else
             {
                 status.Liked = likes.Contains(post.Id);
                 status.Boosted = boosts.Contains(post.Id);
+                status.Emojis = await GetEmojiFor(post);
             }
             
             results.Add(status);

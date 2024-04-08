@@ -81,7 +81,7 @@ public class StatusesController(
             return BadRequest(new MastodonApiError("Posting error: Cannot post status."));
 
         return Ok(
-            statusRenderer.RenderForPost(post));
+            await statusRenderer.RenderStatusForUser(user, post));
     }
 
     /// <summary>

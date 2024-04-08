@@ -107,7 +107,7 @@ public record Status
     /// The emojis in this post.
     /// </summary>
     [JsonPropertyName("emojis")]
-    public IReadOnlyList<CustomEmoji> Emojis { get; init; } = [];
+    public IReadOnlyList<CustomEmoji> Emojis { get; set; } = [];
     
     /// <summary>
     /// The emojis in this post.
