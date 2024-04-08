@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -19,18 +20,24 @@ namespace Toki.Controllers;
 public class DebugController(
     UserRepository repo,
     DriveService drive,
+    EmojiService emoji,
     ActivityPubResolver resolver) : ControllerBase
 {
     [HttpPost]
-    [Route("test_upload_file")]
-    public async Task<IActionResult> UploadFile(
+    [Route("test_create_emoji")]
+    public async Task<IActionResult> CreateEmoji(
+        [FromQuery] string shortcode,
         [FromForm] IFormFile file)
     {
         var link = await drive.Store(file);
         if (link is null)
             return BadRequest();
 
-        return Ok(link);
+        var emo = await emoji.CreateLocalEmoji(
+            shortcode,
+            link);
+        
+        return Ok(emo?.Id);
     }
 
     [HttpGet]
