@@ -94,6 +94,11 @@ public class TokiDatabaseContext : DbContext
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<RemoteInstance>()
+            .HasIndex(p => p.Domain)
+            .HasDatabaseName("IX_RemoteInstance_Domain_Unique")
+            .IsUnique();
+        
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Id)
             .HasDatabaseName("IX_User_Id_Descending");
@@ -111,6 +116,11 @@ public class TokiDatabaseContext : DbContext
             .HasConversion(a => JsonConvert.SerializeObject(a),
                 a => JsonConvert.DeserializeObject<IList<UserProfileField>?>(a));
 
+        modelBuilder.Entity<User>()
+            .HasIndex(p => p.Handle)
+            .HasDatabaseName("IX_User_Handle_Unique")
+            .IsUnique();
+        
         modelBuilder.Entity<Post>()
             .HasIndex(p => p.Id)
             .HasDatabaseName("IX_Post_Id_Descending")
