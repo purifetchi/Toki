@@ -1,3 +1,4 @@
+using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
@@ -20,6 +21,7 @@ public class PostRepository(
     UserRepository userRepo,
     EmojiService emojiService,
     IOptions<InstanceConfiguration> opts,
+    IHtmlSanitizer htmlSanitizer,
     InstancePathRenderer pathRenderer)
 {
     /// <summary>
@@ -452,7 +454,7 @@ public class PostRepository(
             Author = author,
             AuthorId = author.Id,
 
-            Content = note.Content!,
+            Content = htmlSanitizer.Sanitize(note.Content!),
             
             Sensitive = note.Sensitive ?? false,
             

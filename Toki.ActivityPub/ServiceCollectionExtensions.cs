@@ -1,3 +1,4 @@
+using Ganss.Xss;
 using Microsoft.Extensions.DependencyInjection;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Emojis;
@@ -89,6 +90,29 @@ public static class ServiceCollectionExtensions
         collection.AddHttpClient()
             .AddTransient<WebFingerResolver>()
             .AddTransient<WebFingerRenderer>();
+
+        collection.AddSingleton<IHtmlSanitizer>(_ =>
+        {
+            var sanitizer = new HtmlSanitizer(new HtmlSanitizerOptions()
+            {
+                AllowedTags = new HashSet<string>([
+                    "span", "br", "a", "p", "del", "pre", "code", "em", "strong", "b", "i", "u", "ul", "ol", "li",
+                    "blockquote"
+                ]),
+                
+                AllowedAttributes = HtmlSanitizerDefaults.AllowedAttributes,
+                AllowedAtRules = HtmlSanitizerDefaults.AllowedAtRules,
+                AllowedSchemes = HtmlSanitizerDefaults.AllowedSchemes,
+                AllowedCssClasses = HtmlSanitizerDefaults.AllowedClasses,
+                AllowedCssProperties = HtmlSanitizerDefaults.AllowedCssProperties,
+                UriAttributes = HtmlSanitizerDefaults.UriAttributes
+            });
+
+            // TODO: Reduce the set of allowed tags.
+            sanitizer.AllowedAttributes.Add("class");
+            
+            return sanitizer;
+        });
         
         return collection;
     }
