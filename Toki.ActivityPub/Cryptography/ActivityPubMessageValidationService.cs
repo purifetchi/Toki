@@ -45,14 +45,20 @@ public class ActivityPubMessageValidationService(
         var signature = Signature.FromHttpRequest(request);
 
         if (signature is null)
+        {
+            logger.LogWarning("Couldn't parse signature from HTTP headers!");
             return false;
+        }
         
         var keypair = await FetchKeypair(
             signature,
             activity.Actor);
-        
+
         if (keypair is null)
+        {
+            logger.LogWarning("Couldn't fetch the keypair!");
             return false;
+        }
         
         return validator.Validate(
             signature,
@@ -76,17 +82,25 @@ public class ActivityPubMessageValidationService(
         if (keypair is not null)
         {
             // Verify that the owner is actually the owner we want.
+            if (keypair.Owner?.RemoteId != actor.Id)
+                logger.LogWarning($"Actor {actor.Id} wanted to sign their request with a key for {keypair.Owner?.RemoteId}.");
             return keypair.Owner?.RemoteId != actor.Id ? null : keypair;
         }
         
         // Fetch the actor, if we don't have them.
         var resolvedActor = await resolver.Fetch<ASActor>(actor);
         if (resolvedActor?.PublicKey is null)
+        {
+            logger.LogWarning($"Actor {actor.Id} doesn't have a public key.");
             return null;
+        }
         
         // Ensure the key id isn't fake.
         if (resolvedActor.PublicKey?.Id != sig.KeyId)
+        {
+            logger.LogWarning($"Key {resolvedActor.PublicKey?.Id} doesn't match the key from the signature! {sig.KeyId}.");
             return null;
+        }
         
         var user = await repo.ImportFromActivityStreams(resolvedActor);
         return user?.Keypair;
