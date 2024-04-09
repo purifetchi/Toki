@@ -60,11 +60,13 @@ public class UserRenderer(
             
             Icon = user.AvatarUrl is not null ? new ASImage()
             {
+                Type = "Image",
                 Url = user.AvatarUrl!
             } : null,
             
             Banner = user.BannerUrl is not null ? new ASImage()
             {
+                Type = "Image",
                 Url = user.BannerUrl!
             } : null,
             
