@@ -11,17 +11,17 @@ public record NodeInfoUsageUsers
     /// The total amount of users.
     /// </summary>
     [JsonPropertyName("total")]
-    public int Total { get; init; }
+    public int? Total { get; init; }
     
     /// <summary>
     /// The amount of users active this past half a year.
     /// </summary>
     [JsonPropertyName("activeHalfyear")]
-    public int ActiveHalfYear { get; init; }
+    public int? ActiveHalfYear { get; init; }
     
     /// <summary>
     /// The amount of users active this past month.
     /// </summary>
     [JsonPropertyName("activeMonth")]
-    public int ActiveMonth { get; init; }
+    public int? ActiveMonth { get; init; }
 }
