@@ -1,6 +1,9 @@
+using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Formatters;
@@ -10,6 +13,9 @@ using Toki.ActivityPub.Models.Posts;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
+using Toki.ActivityPub.Resolvers;
+using Toki.ActivityPub.Users;
+using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Posts;
 
@@ -26,7 +32,12 @@ public class PostManagementService(
     NotificationService notificationService,
     ContentFormatter formatter,
     InstancePathRenderer pathRenderer,
-    IOptions<InstanceConfiguration> opts)
+    UserManagementService userManagementService,
+    EmojiService emojiService,
+    ActivityPubResolver resolver,
+    IHtmlSanitizer htmlSanitizer,
+    IOptions<InstanceConfiguration> opts,
+    ILogger<PostManagementService> logger)
 {
     /// <summary>
     /// Creates a new post.
@@ -396,5 +407,190 @@ public class PostManagementService(
             .ToListAsync();
 
         return likedPosts ?? [];
+    }
+    
+    /// <summary>
+    /// Collects the mentions for a note.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <returns>The mentions, if any exist.</returns>
+    private async Task<List<PostMention>?> CollectMentions(
+        ASNote note)
+    {
+        if (note.Tags is null)
+            return null;
+        
+        var asMentions = note.Tags
+            .OfType<ASMention>()
+            .ToList();
+
+        var mentions = new List<PostMention>();
+        foreach (var mention in asMentions)
+        {
+            if (mention.Href is null)
+                return null;
+            
+            var user = await userManagementService.FetchFromRemoteId(mention.Href);
+            if (user is null)
+                continue;
+            
+            mentions.Add(new PostMention
+            {
+                Id = user.Id.ToString(),
+                Handle = user.Handle,
+                Url = user.RemoteId ?? pathRenderer.GetPathToActor(user)
+            });
+        }
+
+        return mentions;
+    }
+
+    /// <summary>
+    /// Collects the emojis for a note.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <param name="instance">The remote instance.</param>
+    /// <returns>The emojis, if any exist.</returns>
+    private async Task<IReadOnlyList<Emoji>?> CollectEmojis(
+        ASNote note,
+        RemoteInstance? instance)
+    {
+        if (note.Tags is null)
+            return null;
+        
+        var asEmojis = note.Tags
+            .OfType<ASEmoji>()
+            .ToList();
+
+        if (asEmojis.Count < 1)
+            return null;
+
+        return await emojiService.FetchFromActivityStreams(
+            asEmojis,
+            instance);
+    }
+
+    /// <summary>
+    /// Collects the hashtags for a note.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <returns>The hashtags.</returns>
+    private List<string>? CollectHashtags(
+        ASNote note)
+    {
+        return note.Tags?.OfType<ASHashtag>()
+            .Where(h => h.Name is not null)
+            .Select(h => h.Name!)
+            .ToList();
+    }
+    
+    /// <summary>
+    /// Imports an ActivityStreams note as a post.
+    /// </summary>
+    /// <param name="note">The note.</param>
+    /// <param name="author">The actor who was the author.</param>
+    /// <param name="threadDepth">The current thread depth.</param>
+    /// <returns>The post, if the import was successful.</returns>
+    public async Task<Post?> ImportFromActivityStreams(
+        ASNote note,
+        User author,
+        int threadDepth = 0)
+    {
+        var emojis = await CollectEmojis(
+            note,
+            author.ParentInstance);
+        
+        var post = new Post()
+        {
+            Id = Ulid.NewUlid(),
+            RemoteId = note.Id,
+            
+            Context = Guid.NewGuid(),
+            
+            Author = author,
+            AuthorId = author.Id,
+
+            Content = htmlSanitizer.Sanitize(note.Content!),
+            
+            Sensitive = note.Sensitive ?? false,
+            
+            CreatedAt = note.PublishedAt?
+                .ToUniversalTime() ?? DateTimeOffset.UtcNow,
+            
+            Visibility = note.GetPostVisibility(author),
+            
+            UserMentions = await CollectMentions(note),
+            Tags = CollectHashtags(note),
+            
+            Emojis = emojis?
+                .Select(e => e.Id.ToString())
+                .ToList()
+        };
+        
+        if (note.InReplyTo is not null)
+        {
+            // TODO: This should probably be offloaded to a background job...
+            var parent = await FetchFromRemoteId(
+                note.InReplyTo.Id,
+                threadDepth + 1);
+            
+            if (parent is not null)
+            {
+                post.Parent = parent;
+                post.Context = parent.Context;    
+            }
+        }
+        
+        // TODO: Resolve quote posts.
+        await repo.Add(post);
+
+        if (note.Attachments is not null &&
+            note.Attachments.Count > 0)
+        {
+            await repo.ImportAttachmentsForNote(
+                post,
+                note.Attachments);
+        }
+
+        return post;
+    }
+
+    /// <summary>
+    /// Fetches a post given its remote id.
+    /// </summary>
+    /// <param name="remoteId">The remote id of the post.</param>
+    /// <param name="threadDepth">The current thread depth.</param>
+    /// <returns>The post.</returns>
+    public async Task<Post?> FetchFromRemoteId(
+        string remoteId,
+        int threadDepth = 0)
+    {
+        const int maxThreadRecursionDepth = 10;
+        
+        logger.LogInformation($"Fetching post {remoteId} with current depth of {threadDepth}.");
+        
+        var maybePost = await repo.FindByRemoteId(remoteId);
+        if (maybePost is not null)
+            return maybePost;
+
+        if (threadDepth > maxThreadRecursionDepth)
+            return null;
+
+        var note = await resolver.Fetch<ASNote>(
+            ASObject.Link(remoteId));
+
+        if (note?.AttributedTo is null)
+            return null;
+
+        var author = await userManagementService.FetchFromRemoteId(
+            note.AttributedTo.Id);
+        
+        if (author is null)
+            return null;
+
+        return await ImportFromActivityStreams(
+            note,
+            author,
+            threadDepth);
     }
 }

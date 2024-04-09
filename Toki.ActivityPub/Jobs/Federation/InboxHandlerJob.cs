@@ -21,6 +21,7 @@ public class InboxHandlerJob(
     UserRepository repo,
     PostRepository postRepo,
     PostManagementService postManagementService,
+    UserManagementService userManagementService,
     ILogger<InboxHandlerJob> logger,
     NotificationService notificationService)
 {
@@ -34,19 +35,11 @@ public class InboxHandlerJob(
         logger.LogInformation($"Received activity of type {activity?.Type} from {activity?.Actor.Id}");
 
         // Ensure we have the actual actor that is performing this task.
-        var actor = await repo.FindByRemoteId(activity!.Actor.Id);
+        var actor = await userManagementService.FetchFromRemoteId(activity!.Actor.Id);
         if (actor is null)
         {
-            var actorData = await resolver.Fetch<ASActor>(activity!.Actor);
-            if (actorData is null)
-                return;
-
-            actor = await repo.ImportFromActivityStreams(actorData);
-            if (actor is null)
-            {
-                logger.LogError($"Failed to retrieve actor {actorData.Id} for activity. Aborting.");
-                return;
-            }
+            logger.LogError($"Failed to retrieve actor {activity!.Actor.Id} for activity. Aborting.");
+            return;
         }
         
         // TODO: Handle every activity.
@@ -92,9 +85,7 @@ public class InboxHandlerJob(
             if (note.AttributedTo?.Id != actor.RemoteId)
                 return;
 
-            var post = await postRepo.FindByRemoteId(note.Id);
-            
-            // TODO: Fetch the post if it doesn't exist.
+            var post = await postManagementService.FetchFromRemoteId(note.Id);
             if (post is null)
                 return;
             
@@ -120,9 +111,7 @@ public class InboxHandlerJob(
             if (note.AttributedTo?.Id != actor.RemoteId)
                 return;
 
-            var post = await postRepo.FindByRemoteId(note.Id);
-            
-            // TODO: Fetch the post if it doesn't exist.
+            var post = await postManagementService.FetchFromRemoteId(note.Id);
             if (post is null)
                 return;
             
@@ -220,7 +209,7 @@ public class InboxHandlerJob(
         var obj = await resolver.Fetch<ASObject>(create.Object);
         if (obj is ASNote note)
         {
-            var post = await postRepo.ImportFromActivityStreams(note, actor);
+            var post = await postManagementService.ImportFromActivityStreams(note, actor);
             if (post is null)
                 return;
             
@@ -266,7 +255,7 @@ public class InboxHandlerJob(
         
         // TODO: Lemmy does announces for any activity related to posts in a group...
         //       We're currently only expecting it to mean boosts.
-        var post = await postRepo.FindByRemoteId(announce.Object.Id);
+        var post = await postManagementService.FetchFromRemoteId(announce.Object.Id);
         if (post is null)
         {
             logger.LogWarning($"Received an announce for an either non-existent post, or a completely different object: {announce.Object.Id}");
@@ -286,10 +275,9 @@ public class InboxHandlerJob(
         if (like.Object is null)
             return;
 
-        var post = await postRepo.FindByRemoteId(like.Object.Id);
+        var post = await postManagementService.FetchFromRemoteId(like.Object.Id);
         if (post is null)
         {
-            // TODO: Fetch the post here.
             logger.LogWarning($"Received a like for a non-existent post. {like.Object.Id}");
             return;
         }

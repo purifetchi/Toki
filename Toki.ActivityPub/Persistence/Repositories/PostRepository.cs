@@ -1,13 +1,8 @@
-using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
-using Toki.ActivityPub.Emojis;
-using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
-using Toki.ActivityPub.Models.Posts;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
-using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
@@ -18,11 +13,7 @@ namespace Toki.ActivityPub.Persistence.Repositories;
 /// <param name="db">The database.</param>
 public class PostRepository(
     TokiDatabaseContext db,
-    UserRepository userRepo,
-    EmojiService emojiService,
-    IOptions<InstanceConfiguration> opts,
-    IHtmlSanitizer htmlSanitizer,
-    InstancePathRenderer pathRenderer)
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// Finds a post by its remote id.
@@ -349,154 +340,5 @@ public class PostRepository(
         }
 
         await db.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Collects the mentions for a note.
-    /// </summary>
-    /// <param name="note">The note.</param>
-    /// <returns>The mentions, if any exist.</returns>
-    private async Task<List<PostMention>?> CollectMentions(
-        ASNote note)
-    {
-        if (note.Tags is null)
-            return null;
-        
-        var asMentions = note.Tags
-            .OfType<ASMention>()
-            .ToList();
-
-        var mentions = new List<PostMention>();
-        foreach (var mention in asMentions)
-        {
-            var user = await userRepo.FindByRemoteId(mention.Href);
-            if (user is null)
-            {
-                // TODO: Fetch this user.
-                continue;
-            }
-            
-            mentions.Add(new PostMention
-            {
-                Id = user.Id.ToString(),
-                Handle = user.Handle,
-                Url = user.RemoteId ?? pathRenderer.GetPathToActor(user)
-            });
-        }
-
-        return mentions;
-    }
-
-    /// <summary>
-    /// Collects the emojis for a note.
-    /// </summary>
-    /// <param name="note">The note.</param>
-    /// <param name="instance">The remote instance.</param>
-    /// <returns>The emojis, if any exist.</returns>
-    private async Task<IReadOnlyList<Emoji>?> CollectEmojis(
-        ASNote note,
-        RemoteInstance? instance)
-    {
-        if (note.Tags is null)
-            return null;
-        
-        var asEmojis = note.Tags
-            .OfType<ASEmoji>()
-            .ToList();
-
-        if (asEmojis.Count < 1)
-            return null;
-
-        return await emojiService.FetchFromActivityStreams(
-            asEmojis,
-            instance);
-    }
-
-    /// <summary>
-    /// Collects the hashtags for a note.
-    /// </summary>
-    /// <param name="note">The note.</param>
-    /// <returns>The hashtags.</returns>
-    private List<string>? CollectHashtags(
-        ASNote note)
-    {
-        if (note.Tags is null)
-            return null;
-
-        return note.Tags
-            .OfType<ASHashtag>()
-            .Where(h => h.Name is not null)
-            .Select(h => h.Name!)
-            .ToList();
-    }
-    
-    /// <summary>
-    /// Imports an ActivityStreams note as a post.
-    /// </summary>
-    /// <param name="note">The note.</param>
-    /// <param name="author">The actor who was the author.</param>
-    /// <returns>The post, if the import was successful.</returns>
-    public async Task<Post?> ImportFromActivityStreams(
-        ASNote note,
-        User author)
-    {
-        var emojis = await CollectEmojis(
-            note,
-            author.ParentInstance);
-        
-        var post = new Post()
-        {
-            Id = Ulid.NewUlid(),
-            RemoteId = note.Id,
-            
-            Context = Guid.NewGuid(),
-            
-            Author = author,
-            AuthorId = author.Id,
-
-            Content = htmlSanitizer.Sanitize(note.Content!),
-            
-            Sensitive = note.Sensitive ?? false,
-            
-            CreatedAt = note.PublishedAt?
-                .ToUniversalTime() ?? DateTimeOffset.UtcNow,
-            
-            Visibility = note.GetPostVisibility(author),
-            
-            UserMentions = await CollectMentions(note),
-            Tags = CollectHashtags(note),
-            
-            Emojis = emojis?
-                .Select(e => e.Id.ToString())
-                .ToList()
-        };
-        
-        if (note.InReplyTo is not null)
-        {
-            var parent = await FindByRemoteId(note.InReplyTo.Id);
-            if (parent is not null)
-            {
-                post.Parent = parent;
-                post.Context = parent.Context;    
-            }
-        }
-        
-        // TODO: Resolve quote posts.
-        if (note.Quoting is not null)
-        {
-            var quoting = await FindByRemoteId(note.Quoting.Id);
-        }
-
-        await Add(post);
-
-        if (note.Attachments is not null &&
-            note.Attachments.Count > 0)
-        {
-            await ImportAttachmentsForNote(
-                post,
-                note.Attachments);
-        }
-
-        return post;
     }
 }
