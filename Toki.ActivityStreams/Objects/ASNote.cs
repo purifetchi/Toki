@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityStreams.Objects;
 
@@ -53,12 +54,14 @@ public class ASNote : ASObject
     /// The primary recipients of this note.
     /// </summary>
     [JsonPropertyName("to")]
+    [JsonConverter(typeof(ListOrObjectConverter<string>))]
     public IReadOnlyList<string>? To { get; set; }
     
     /// <summary>
     /// The secondary recipients of this note.
     /// </summary>
     [JsonPropertyName("cc")]
+    [JsonConverter(typeof(ListOrObjectConverter<string>))]
     public IReadOnlyList<string>? Cc { get; set; }
     
     /// <summary>
