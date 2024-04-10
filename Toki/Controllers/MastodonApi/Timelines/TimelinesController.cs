@@ -40,7 +40,8 @@ public class TimelinesController(
             .User;
 
         var query = timelineBuilder
-            .Filter(post => post.Visibility == PostVisibility.Public);
+            .Filter(post => post.Visibility == PostVisibility.Public)
+            .Filter(post => post.BoostingId == null);
 
         if (onlyMedia)
             query = query.Filter(post => post.Attachments != null && post.Attachments.Count != 0);
