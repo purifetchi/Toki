@@ -117,6 +117,28 @@ public class PostRepository(
             .ThenInclude(parent => parent!.Author)
             .ToListAsync();
     }
+    
+    /// <summary>
+    /// Gets the inboxes for all of the people a post is relevant to.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The inboxes.</returns>
+    public async Task<IEnumerable<string>> GetInboxesForRelevantPostUsers(Post post)
+    {
+        List<Ulid> ids =
+        [
+            post.AuthorId, 
+            ..post.UserMentions?.Select(m => Ulid.Parse(m.Id))
+        ];
+        
+        return await db.Users
+            .Include(u => u.ParentInstance)
+            .Where(f => f.IsRemote)
+            .Where(u => ids.Contains(u.Id))
+            .Select(f => f.ParentInstance != null && f.ParentInstance.SharedInbox != null ? f.ParentInstance.SharedInbox! : f.Inbox! )
+            .Distinct()
+            .ToListAsync();
+    }
 
     /// <summary>
     /// Adds a post to the database.
