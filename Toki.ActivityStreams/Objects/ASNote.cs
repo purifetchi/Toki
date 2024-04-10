@@ -74,6 +74,7 @@ public class ASNote : ASObject
     /// The list of tags this note has.
     /// </summary>
     [JsonPropertyName("tag")]
+    [JsonConverter(typeof(ListOrObjectConverter<ASLink>))]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<ASLink>? Tags { get; set; }
     
