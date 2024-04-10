@@ -11,8 +11,10 @@ namespace Toki.ActivityPub.Federation;
 /// A helper class for message federation.
 /// </summary>
 /// <param name="followRepo">The user service.</param>
+/// <param name="postRepo">The post repository.</param>
 public class MessageFederationService(
-    FollowRepository followRepo)
+    FollowRepository followRepo,
+    PostRepository postRepo)
 {
     /// <summary>
     /// Sends a message to the followers of an actor.
@@ -29,6 +31,27 @@ public class MessageFederationService(
         
         BackgroundJob.Enqueue<MessageFederationJob>(job =>
             job.FederateMessage(data, followers, actor.Id, 0));
+    }
+
+    /// <summary>
+    /// Sends an update to all of the relevant users for a post (mentioned, author and followers).
+    /// </summary>
+    /// <param name="actor">The actor.</param>
+    /// <param name="post">The post.</param>
+    /// <param name="message">The message.</param>
+    public async Task SendToRelevantPostUsers<TActivity>(
+        User actor,
+        Post post,
+        TActivity message)
+        where TActivity : ASActivity
+    {
+        var data = JsonSerializer.Serialize(message);
+        var inboxes = (await followRepo.GetFollowerInboxesFor(actor))
+            .Concat(await postRepo.GetInboxesForRelevantPostUsers(post))
+            .Distinct();
+        
+        BackgroundJob.Enqueue<MessageFederationJob>(job =>
+            job.FederateMessage(data, inboxes, actor.Id, 0));
     }
 
     /// <summary>

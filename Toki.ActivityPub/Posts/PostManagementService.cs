@@ -97,9 +97,21 @@ public class PostManagementService(
         };
 
         await repo.Add(post);
-        await federationService.SendToFollowers(
-            creationRequest.Author,
-            await postRenderer.RenderCreationForNote(post));
+
+        var creation = await postRenderer.RenderCreationForNote(post);
+        if (creationRequest.InReplyTo is null)
+        {
+            await federationService.SendToFollowers(
+                creationRequest.Author,
+                creation);
+        }
+        else
+        {
+            await federationService.SendToRelevantPostUsers(
+                creationRequest.Author,
+                creationRequest.InReplyTo,
+                creation);
+        }
 
         await notificationService.DispatchAllNotificationsForPost(post);
         
@@ -170,9 +182,9 @@ public class PostManagementService(
         
         var announce = postRenderer.RenderBoostForNote(user, post);
         
-        // TODO: This is plainly wrong... but for testing I guess it's fine
-        await federationService.SendToFollowers(
+        await federationService.SendToRelevantPostUsers(
             user,
+            post,
             announce);
 
         return boost;
@@ -219,9 +231,9 @@ public class PostManagementService(
             actor,
             post);
         
-        // TODO: This is plainly wrong... but for testing I guess it's fine
-        await federationService.SendToFollowers(
+        await federationService.SendToRelevantPostUsers(
             actor,
+            post,
             likeActivity);
     }
 
@@ -309,8 +321,9 @@ public class PostManagementService(
             actor,
             post);
         
-        await federationService.SendToFollowers(
+        await federationService.SendToRelevantPostUsers(
             actor,
+            post,
             undoLike);
     }
     
@@ -331,8 +344,9 @@ public class PostManagementService(
             actor,
             boost.Boosting!);
         
-        await federationService.SendToFollowers(
+        await federationService.SendToRelevantPostUsers(
             actor,
+            boost.Boosting!,
             undoBoost);
     }
 
