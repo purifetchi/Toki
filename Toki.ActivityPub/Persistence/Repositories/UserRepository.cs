@@ -113,6 +113,11 @@ public class UserRepository(
 
         var instance = await instanceRepo.GetForActor(actor)
                        ?? await instanceRepo.FetchInstanceForActor(actor);
+
+        // TODO: We need proper validation here.
+        // NOTE: If an actor doesn't have a name, use their handle name.
+        if (actor.Name is null && actor.PreferredUsername is null)
+            return null;
         
         var user = new User
         {
@@ -121,7 +126,7 @@ public class UserRepository(
             ParentInstance = instance,
             ParentInstanceId = instance.Id,
             
-            DisplayName = actor.Name!,
+            DisplayName = actor.Name ?? actor.PreferredUsername!,
             RemoteId = actor.Id!,
             
             CreatedAt = actor.PublishedAt?
@@ -166,7 +171,12 @@ public class UserRepository(
     {
         logger.LogInformation($"Updating remote user {actor.RemoteId} ({actor.DisplayName})");
 
-        actor.DisplayName = data.Name!;
+        // TODO: We need proper validation here.
+        // NOTE: If an actor doesn't have a name, use their handle name.
+        if (data.Name is null && data.PreferredUsername is null)
+            return;
+        
+        actor.DisplayName = data.Name ?? data.PreferredUsername!;
         actor.AvatarUrl = data.Icon?.Url;
         actor.BannerUrl = data.Banner?.Url;
         actor.RequiresFollowApproval = data.ManuallyApprovesFollowers;
