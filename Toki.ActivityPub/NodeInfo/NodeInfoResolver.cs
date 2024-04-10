@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 
 namespace Toki.ActivityPub.NodeInfo;
 
@@ -42,6 +44,8 @@ public class NodeInfoResolver(
         string preferredVersion = "2.1")
     {
         const string endpoint = "/.well-known/nodeinfo";
+        const string diasporaPrefix = "http://nodeinfo.diaspora.software/ns/schema";
+
         var nodeInfoUrl = $"https://{instance}{endpoint}";
         var client = clientFactory.CreateClient();
 
@@ -56,7 +60,8 @@ public class NodeInfoResolver(
             return preferred.Hyperlink;
 
         return versionSelector.Links?
-            .FirstOrDefault()?
+            .Where(link => link.Relative.StartsWith(diasporaPrefix))
+            .MaxBy(link => link.Hyperlink)?
             .Hyperlink;
     }
 }
