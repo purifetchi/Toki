@@ -11,8 +11,36 @@ namespace Toki.ActivityPub.NodeInfo;
 /// <param name="clientFactory">The http client factory.</param>
 public class NodeInfoResolver(
     IHttpClientFactory clientFactory,
+    IOptions<InstanceConfiguration> opts,
     ILogger<NodeInfoResolver> logger)
 {
+    /// <summary>
+    /// Creates a GET request that additionally adds the Toki user agent.
+    /// </summary>
+    /// <param name="url">The url.</param>
+    /// <typeparam name="T">The type we're getting.</typeparam>
+    /// <returns>The deserialized value if the request didn't fail.</returns>
+    private async Task<T?> HttpGet<T>(string url)
+        where T : class
+    {
+        var client = clientFactory.CreateClient();
+        var message = new HttpRequestMessage()
+        {
+            RequestUri = new Uri(url),
+            Headers =
+            {
+                { "User-Agent", opts.Value.UserAgent },
+                { "Accept", "application/json" }
+            }
+        };
+
+        var resp = await client.SendAsync(message);
+        if (!resp.IsSuccessStatusCode)
+            return null;
+
+        return await resp.Content.ReadFromJsonAsync<T>();
+    }
+    
     /// <summary>
     /// Gets the node info data for an instance.
     /// </summary>
@@ -29,8 +57,7 @@ public class NodeInfoResolver(
         
         logger.LogInformation($"Found nodeinfo link for instance {instance}: {url}");
 
-        var client = clientFactory.CreateClient();
-        return await client.GetFromJsonAsync<NodeInfoResponse>(url);
+        return await HttpGet<NodeInfoResponse>(url);
     }
 
     /// <summary>
@@ -49,7 +76,7 @@ public class NodeInfoResolver(
         var nodeInfoUrl = $"https://{instance}{endpoint}";
         var client = clientFactory.CreateClient();
 
-        var versionSelector = await client.GetFromJsonAsync<NodeInfoVersionSelectorResponse>(nodeInfoUrl);
+        var versionSelector = await HttpGet<NodeInfoVersionSelectorResponse>(nodeInfoUrl);
         if (versionSelector is null)
             return null;
 
