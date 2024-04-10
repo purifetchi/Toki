@@ -146,6 +146,18 @@ public class ContentFormatter(
             .Select(e => e.Id.ToString())
             .ToList();
     }
+
+    /// <summary>
+    /// Replaces newlines with br tags.
+    /// </summary>
+    /// <param name="content">The content.</param>
+    /// <returns>The replaced content.</returns>
+    private string ReplaceNewlines(
+        string content)
+    {
+        return content
+            .ReplaceLineEndings("<br>");
+    }
     
     /// <summary>
     /// Formats the content.
@@ -168,6 +180,7 @@ public class ContentFormatter(
             tags);
 
         var emojis = await ExtractEmojis(output);
+        output = ReplaceNewlines(output);
         
         return new ContentFormattingResult(
             output,
