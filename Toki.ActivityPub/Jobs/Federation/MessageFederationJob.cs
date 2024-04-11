@@ -1,8 +1,8 @@
+using System.Net.Sockets;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
-using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.HTTPSignatures;
@@ -52,17 +52,28 @@ public class MessageFederationJob(
             
             // TODO: We should probably precalculate the digest, so we don't have to calculate it
             //       every single time we send to a different endpoint.
-            var result = await httpClient
-                .NewRequest()
-                .WithKey(
-                    keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
-                    keypair.PrivateKey!)
-                .WithBody(message)
-                .WithHeader("User-Agent", opts.Value.UserAgent)
-                .AddHeaderToSign("Host")
-                .AddHeaderToSign("Digest")
-                .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
-                .Post(target);
+            HttpResponseMessage result;
+            try
+            {
+                result = await httpClient
+                    .NewRequest()
+                    .WithKey(
+                        keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
+                        keypair.PrivateKey!)
+                    .WithBody(message)
+                    .WithHeader("User-Agent", opts.Value.UserAgent)
+                    .AddHeaderToSign("Host")
+                    .AddHeaderToSign("Digest")
+                    .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
+                    .Post(target);
+            }
+            catch (SocketException e)
+            {
+                logger.LogWarning($"Delivering to {target} failed! Socket exception: {e}.");
+                failed.Add(target);
+
+                continue;
+            }
 
             if (result.IsSuccessStatusCode)
                 continue;
