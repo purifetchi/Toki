@@ -153,15 +153,33 @@ public class UsersController(
         [FromRoute] string handle,
         [FromBody] ASObject? asObject)
     {
-        if (!await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject))
-            return Unauthorized();
+        var validation = await validator.Validate(HttpContext.Request.ToTokiHttpRequest(), asObject);
+        switch (validation)
+        {
+            case MessageValidationResponse.Ok:
+                // TODO: This is really ugly.
+                var data = JsonSerializer.Serialize(asObject);
+                BackgroundJob.Enqueue<InboxHandlerJob>(job =>
+                    job.HandleActivity(data));
         
-        // TODO: This is really ugly.
-        var data = JsonSerializer.Serialize(asObject);
-        BackgroundJob.Enqueue<InboxHandlerJob>(job =>
-            job.HandleActivity(data));
-        
-        return Accepted();
+                return Accepted();
+            
+            // We will fake accepting this one regardless, just because Mastodon will keep spamming us those
+            // forever.
+            case MessageValidationResponse.MastodonDeleteForUnknownUser:
+                return Accepted();
+            
+            case MessageValidationResponse.InvalidActor:
+            case MessageValidationResponse.CannotParseSignature:
+            case MessageValidationResponse.NotActivity:
+                return BadRequest();
+
+            case MessageValidationResponse.KeyIdMismatch:
+            case MessageValidationResponse.ValidationFailed:
+            case MessageValidationResponse.GenericError:
+            default:
+                return Unauthorized();
+        }
     }
     
     /// <summary>
