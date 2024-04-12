@@ -6,6 +6,7 @@ using Toki.ActivityPub.Persistence.Repositories;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Objects;
 using Toki.MastodonApi.Schemas.Params;
+using Toki.MastodonApi.Schemas.Requests.Timelines;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
 using Toki.Services.Timelines;
@@ -32,9 +33,7 @@ public class TimelinesController(
     [OAuth(manualScopeValidation: true)]
     public async Task<IEnumerable<Status>> PublicTimeline(
         [FromQuery] PaginationParams paginationParams,
-        [FromQuery(Name = "only_media")] bool onlyMedia = false,
-        [FromQuery] bool local = false,
-        [FromQuery] bool remote = false)
+        [FromQuery] PublicTimelineFilters timelineFilters)
     {
         var user = HttpContext.GetOAuthToken()?
             .User;
@@ -43,13 +42,13 @@ public class TimelinesController(
             .Filter(post => post.Visibility == PostVisibility.Public)
             .Filter(post => post.BoostingId == null);
 
-        if (onlyMedia)
+        if (timelineFilters.OnlyMedia)
             query = query.Filter(post => post.Attachments != null && post.Attachments.Count != 0);
 
-        if (local)
+        if (timelineFilters.Local)
             query = query.Filter(post => !post.Author.IsRemote);
         
-        if (remote)
+        if (timelineFilters.Remote)
             query = query.Filter(post => post.Author.IsRemote);
         
         var list = await query
