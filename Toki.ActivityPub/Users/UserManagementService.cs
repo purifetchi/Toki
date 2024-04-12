@@ -1,4 +1,6 @@
+using Hangfire;
 using Toki.ActivityPub.Federation;
+using Toki.ActivityPub.Jobs.Fetching;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
@@ -48,9 +50,16 @@ public class UserManagementService(
 
         if (actor is null)
             return null;
-        
-        // TODO: Schedule fetching stuff like the pinned posts here.
-        return await repo.ImportFromActivityStreams(
+
+        var user = await repo.ImportFromActivityStreams(
             actor);
+        
+        if (user is null)
+            return null;
+        
+        BackgroundJob.Enqueue<FillRemoteUserProfileJob>(job =>
+            job.FillProfile(user.Id));
+        
+        return user;
     }
 }
