@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Resolvers;
 using Toki.Extensions;
 using Toki.Services.Usage.Models;
 
@@ -55,7 +56,8 @@ public class UsageService(
 
         var monthUsers = await db.Posts
             .Where(p => p.CreatedAt > lastMonth)
-            .Where(p => p.RemoteId == null)
+            .Include(p => p.Author)
+            .Where(p => !p.Author.IsRemote)
             .Select(p => p.AuthorId)
             .Distinct()
             .CountAsync();
@@ -65,17 +67,20 @@ public class UsageService(
 
         var halfYearUsers = await db.Posts
             .Where(p => p.CreatedAt > halfYear)
-            .Where(p => p.RemoteId == null)
+            .Include(p => p.Author)
+            .Where(p => !p.Author.IsRemote)
             .Select(p => p.AuthorId)
             .Distinct()
             .CountAsync();
 
         var localPostCount = await db.Posts
-            .Where(p => p.RemoteId == null)
+            .Include(p => p.Author)
+            .Where(p => !p.Author.IsRemote)
             .CountAsync();
 
         var userCount = await db.Users
             .Where(u => !u.IsRemote)
+            .Where(u => u.Handle != InstanceActorResolver.INSTANCE_ACTOR_NAME)
             .CountAsync();
 
         var peerCount = await db.Instances
