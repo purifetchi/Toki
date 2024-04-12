@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
@@ -14,7 +16,8 @@ public class FillRemoteUserProfileJob(
     ActivityPubResolver resolver,
     UserRepository userRepository,
     PostManagementService postManagementService,
-    ILogger<FillRemoteUserProfileJob> logger)
+    ILogger<FillRemoteUserProfileJob> logger,
+    IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
     /// Fills the profile of the remote user.
@@ -57,7 +60,8 @@ public class FillRemoteUserProfileJob(
         
         // TODO: Also already sync the relations between users we already have here.
 
-        if (actor.Featured is not null)
+        if (actor.Featured is not null &&
+            opts.Value.FetchPinnedPostsOnFirstRemoteProfileFetch)
         {
             var pinned = await resolver.FetchCollection(
                 actor.Featured);

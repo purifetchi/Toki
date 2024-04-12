@@ -51,6 +51,11 @@ public class InstanceConfiguration
     public bool SupportPasswordGrantType { get; set; } = true;
 
     /// <summary>
+    /// Should we fetch the pinned posts for an actor that we're fetching for the first time?
+    /// </summary>
+    public bool FetchPinnedPostsOnFirstRemoteProfileFetch { get; set; } = true;
+
+    /// <summary>
     /// The UserAgent string of Toki.
     /// </summary>
     public string UserAgent =>
