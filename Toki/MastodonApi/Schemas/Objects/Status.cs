@@ -151,12 +151,15 @@ public record Status
     [JsonPropertyName("conversation_id")]
     public string? ConversationId { get; set; }
 
+    [JsonPropertyName("card")]
     public object? card { get; set; } = null;
-
+    [JsonPropertyName("language")]
     public string? language { get; set; } = null;
-
+    [JsonPropertyName("text")]
+    public string? text { get; set; } = null;
+    [JsonPropertyName("poll")]
     public object? poll { get; set; } = null;
-    
+    [JsonPropertyName("bookmarked")]
     public bool bookmarked { get; set; } = false;
 
     // TODO: The rest of the status.
