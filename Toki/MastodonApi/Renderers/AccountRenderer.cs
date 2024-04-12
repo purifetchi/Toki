@@ -43,8 +43,8 @@ public class AccountRenderer(
             AvatarStatic = user.AvatarUrl ?? 
                            pathRenderer.GetPathToDefaultAvatar(),
             
-            Header = user.BannerUrl ?? "",
-            HeaderStatic = user.BannerUrl ?? "",
+            Header = user.BannerUrl ?? "https://placehold.co/600x400",
+            HeaderStatic = user.BannerUrl ?? "https://placehold.co/600x400",
             
             ManuallyApprovesRequests = user.RequiresFollowApproval,
             
