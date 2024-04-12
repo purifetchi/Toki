@@ -115,4 +115,14 @@ public record Account
     /// </summary>
     [JsonPropertyName("fields")]
     public IReadOnlyList<Field> Fields { get; init; } = [];
+
+    [JsonPropertyName("bot")] public bool bot { get; init; } = false;
+    [JsonPropertyName("group")] public bool group { get; init; } = false;
+    [JsonPropertyName("discoverable")] public bool discoverable { get; init; } = false;
+    [JsonPropertyName("noindex")] public bool noindex { get; init; } = false;
+    [JsonPropertyName("moved")] public Account? moved { get; init; } = null;
+    [JsonPropertyName("suspended")] public bool? suspended  { get; init; } = null;
+    [JsonPropertyName("last_status_at")] public DateTimeOffset? last_status_at  { get; init; } = null;
+
+
 }
