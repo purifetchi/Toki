@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using System.Web;
-using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -30,6 +29,11 @@ public class ContentFormatter(
     /// The regex for emojis.
     /// </summary>
     private readonly Regex _emojiRegex = new(@":([a-zA-Z0-9_\-]+):");
+
+    /// <summary>
+    /// The regex for URLs.
+    /// </summary>
+    private readonly Regex _urlRegex = new(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
     
     /// <summary>
     /// Extracts the mentions from the content.
@@ -156,6 +160,34 @@ public class ContentFormatter(
         return content
             .ReplaceLineEndings("<br>");
     }
+
+    /// <summary>
+    /// Replaces URLs with the linked version.
+    /// </summary>
+    /// <param name="content">The content.</param>
+    /// <returns>The replaced content.</returns>
+    private string ReplaceUrls(
+        string content)
+    {
+        const string format = """<a href="{0}" rel="ugc">{0}</a>""";
+
+        var matches = _urlRegex.Matches(content);
+
+        var output = content;
+        foreach (Match match in matches)
+        {
+            if (!match.Success)
+                continue;
+
+            output = output.Replace(
+                match.Value,
+                string.Format(
+                    format,
+                    match.Value));
+        }
+
+        return output;
+    }
     
     /// <summary>
     /// Formats the content.
@@ -166,7 +198,8 @@ public class ContentFormatter(
     {
         // TODO: I'd love a kind of middleware type of pipeline here...
         var output = HttpUtility.HtmlEncode(content);
-        
+        output = ReplaceUrls(output);
+
         var mentions = await ExtractMentions(output);
         output = ReplaceMentions(
             output,
