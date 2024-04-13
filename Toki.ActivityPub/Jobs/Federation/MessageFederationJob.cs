@@ -24,6 +24,23 @@ public class MessageFederationJob(
     /// The maximum amount of retries.
     /// </summary>
     private const int MAX_RETRIES_COUNT = 10;
+
+    /// <summary>
+    /// Calculates the delay for the next retry based on exponential falloff.
+    /// </summary>
+    /// <param name="retry">The retry number.</param>
+    /// <returns>The delay for the next call.</returns>
+    private TimeSpan CalculateExponentialBackoff(int retry)
+    {
+        const int interval = 5;
+        const float exponent = 2.5f;
+
+        var accum = 0f;
+        for (var i = 0; i < retry; i++)
+            accum += interval * MathF.Pow(exponent, i);
+        
+        return TimeSpan.FromSeconds(accum);
+    }
     
     /// <summary>
     /// Federates a message to the selected targets.
@@ -89,6 +106,6 @@ public class MessageFederationJob(
         
         BackgroundJob.Schedule<MessageFederationJob>(job =>
             job.FederateMessage(message, failed, actorId, retries), 
-            TimeSpan.FromSeconds(retries * secondsPerRetry));
+            CalculateExponentialBackoff(retries));
     }
 }
