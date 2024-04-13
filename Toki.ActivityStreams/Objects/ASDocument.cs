@@ -24,10 +24,4 @@ public class ASDocument : ASLink
     /// </summary>
     [JsonPropertyName("mediaType")]
     public string? MediaType { get; set; }
-    
-    /// <summary>
-    /// Is this media sensitive?
-    /// </summary>
-    [JsonPropertyName("sensitive")]
-    public bool? Sensitive { get; set; }
 }
