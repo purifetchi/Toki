@@ -70,6 +70,9 @@ public class FillRemoteUserProfileJob(
             {
                 foreach (var pinObject in pinned)
                 {
+                    if (string.IsNullOrEmpty(pinObject.Id))
+                        continue;
+                    
                     var post = await postManagementService.FetchFromRemoteId(pinObject.Id);
                     if (post is null)
                         continue;
