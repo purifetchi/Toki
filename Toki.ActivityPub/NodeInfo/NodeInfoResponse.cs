@@ -11,7 +11,7 @@ public class NodeInfoResponse
     /// The version of the node info response.
     /// </summary>
     [JsonPropertyName("version")]
-    public required string Version { get; init; } = "2.1";
+    public string? Version { get; init; } = "2.1";
     
     /// <summary>
     /// The software powering this node.
