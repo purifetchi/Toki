@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -32,7 +34,8 @@ public class AccountsController(
     TimelineBuilder timelineBuilder,
     DriveService drive,
     UserManagementService managementService,
-    TokiDatabaseContext db) : ControllerBase
+    TokiDatabaseContext db,
+    IOptions<InstanceConfiguration> opts) : ControllerBase
 {
     /// <summary>
     /// Verifies credentials for an app.
@@ -241,7 +244,11 @@ public class AccountsController(
         if (acct is null)
             return UnprocessableEntity(new MastodonApiError("Missing acct."));
 
-        var user = await repo.FindByHandle(acct);
+        var handle = acct;
+        if (handle.EndsWith($"@{opts.Value.Domain}"))
+            handle = handle.Replace($"@{opts.Value.Domain}", "");
+        
+        var user = await repo.FindByHandle(handle);
         if (user is null)
             return NotFound(new MastodonApiError("Record not found"));
 
