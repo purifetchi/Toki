@@ -18,22 +18,22 @@ public class ContentFormatter(
     /// <summary>
     /// The regex for mentions.
     /// </summary>
-    private readonly Regex _mentionRegex = new(@"[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?){1,500}", RegexOptions.Compiled);
+    private static readonly Regex _mentionRegex = new(@"[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?){1,500}", RegexOptions.Compiled);
 
     /// <summary>
     /// The regex for hashtags.
     /// </summary>
-    private readonly Regex _hashtagRegex = new(@"\W(\#[a-zA-Z]+\b)");
+    private static readonly Regex _hashtagRegex = new(@"\W(\#[a-zA-Z]+\b)", RegexOptions.Compiled);
 
     /// <summary>
     /// The regex for emojis.
     /// </summary>
-    private readonly Regex _emojiRegex = new(@":([a-zA-Z0-9_\-]+):");
+    private static readonly Regex _emojiRegex = new(@":([a-zA-Z0-9_\-]+):", RegexOptions.Compiled);
 
     /// <summary>
     /// The regex for URLs.
     /// </summary>
-    private readonly Regex _urlRegex = new(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
+    private static readonly Regex _urlRegex = new(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)", RegexOptions.Compiled);
     
     /// <summary>
     /// Extracts the mentions from the content.
