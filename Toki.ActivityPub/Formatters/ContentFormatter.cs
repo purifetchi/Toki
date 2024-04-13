@@ -107,8 +107,6 @@ public class ContentFormatter(
         string content,
         IEnumerable<string> hashtags)
     {
-        const string format = """<a href="{0}" class="u-url hashtag">{1}</a>""";
-
         var output = hashtags.Aggregate(content, 
             (current, tag) => 
                 current.Replace(
