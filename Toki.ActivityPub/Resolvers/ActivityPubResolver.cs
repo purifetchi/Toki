@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,10 +31,19 @@ public class ActivityPubResolver(
             return asObject;
 
         logger.LogInformation($"Fetching object {obj.Id}");
-        
-        var resp = opts.Value.SignedFetch ? 
-            await FetchWithSigning(obj.Id) : 
-            await FetchWithoutSigning(obj.Id);
+
+        HttpResponseMessage resp;
+        try
+        {
+            resp = opts.Value.SignedFetch ? 
+                await FetchWithSigning(obj.Id) : 
+                await FetchWithoutSigning(obj.Id);
+        }
+        catch (HttpRequestException e)
+        {
+            logger.LogWarning($"Request exception while fetching object {obj.Id}! {e.Message}");
+            return null;
+        }
 
         if (!resp.IsSuccessStatusCode)
             return null;
