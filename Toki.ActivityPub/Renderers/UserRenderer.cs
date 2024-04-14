@@ -79,8 +79,8 @@ public class UserRenderer(
                 user.Fields.Select(field => new ASPropertyValue
                 {
                     Type = "PropertyValue",
-                    Name = field.Name,
-                    Value = field.Value
+                    Name = field.Name ?? "",
+                    Value = field.Value ?? ""
                 }).ToList() : null
         };
     }

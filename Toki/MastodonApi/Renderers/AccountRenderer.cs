@@ -63,8 +63,8 @@ public class AccountRenderer(
             Fields = user.Fields?
                 .Select(f => new Field() 
                 {
-                    Name = f.Name,
-                    Value = f.Value,
+                    Name = f.Name ?? "",
+                    Value = f.Value ?? "",
                     VerifiedAt = f.VerifiedAt
                 }).ToList() ?? []
         };
