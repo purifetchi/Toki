@@ -21,7 +21,7 @@ public record Signature(
     /// <returns>The signature.</returns>
     public static Signature? FromHttpRequest(HttpRequest request)
     {
-        if (!request.Headers.TryGetValue("Signature", out var sigHeader))
+        if (!request.Headers.TryGetValue("signature", out var sigHeader))
             return null;
 
         var sigParts = sigHeader[0]!.Split(',')
@@ -35,7 +35,7 @@ public record Signature(
             .Aggregate(string.Empty, (acc, header) => header switch
             {
                 "(request-target)" => acc + $"(request-target): {request.Method.ToLowerInvariant()} {request.Route.ToLowerInvariant()}\n",
-                _ => acc + $"{header}: {request.Headers[CultureInfo.InvariantCulture.TextInfo.ToTitleCase(header)]}\n"
+                _ => acc + $"{header}: {request.Headers[header]}\n"
             }).TrimEnd();
         
         return new Signature(keyId, message, signedDigest);

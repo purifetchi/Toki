@@ -7,7 +7,9 @@ public static class HttpRequestExtensions
         return new HTTPSignatures.Models.HttpRequest(
             request.Method,
             request.Path,
-            request.Headers.ToDictionary(),
+            request.Headers.ToDictionary(
+                key => key.Key.ToLower(), 
+                value => value.Value),
             "");
     }
 }
