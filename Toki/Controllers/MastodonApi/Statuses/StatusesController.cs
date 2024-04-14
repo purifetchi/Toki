@@ -192,7 +192,6 @@ public class StatusesController(
         var repliesInContext = await timelineBuilder
             .NewWithoutOrdering()
             .Filter(p => p.Context == post.Context)
-            .ViewAs(user)
             .GetTimeline();
         
         // TODO: This sucks and it sucks horribly, I have no clue right now how to make it better...
@@ -205,7 +204,7 @@ public class StatusesController(
         while (temp?.ParentId is not null)
         {
             temp = repliesInContext.FirstOrDefault(p => p.Id == temp.ParentId);
-            if (temp is not null)
+            if (temp is not null && await PostVisibleByUser(temp, user))
                 parents.Insert(0, temp);
         }
 
@@ -216,13 +215,13 @@ public class StatusesController(
         // Traverse the tree downwards.
         while (queue.TryDequeue(out var postId))
         {
-            var replies = repliesInContext.Where(p => p.ParentId == postId)
-                .ToList();
-            
-            foreach (var reply in replies)
+            foreach (var reply in repliesInContext
+                         .Where(p => p.ParentId == postId))
+            {
                 queue.Enqueue(reply.Id);
-            
-            children.AddRange(replies);
+                if (await PostVisibleByUser(reply, user))
+                    children.Add(reply);
+            }
         }
         
         return Ok(new Context
