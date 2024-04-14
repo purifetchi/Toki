@@ -3,6 +3,7 @@ using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Renderers;
 using Toki.Extensions;
+using Toki.MastodonApi.Helpers;
 using Toki.MastodonApi.Schemas.Objects;
 
 namespace Toki.MastodonApi.Renderers;
@@ -90,7 +91,7 @@ public class StatusRenderer(
     public MediaAttachment RenderAttachmentFrom(PostAttachment postAttachment) => new MediaAttachment
     {
         Id = $"{postAttachment.Id}",
-        Type = postAttachment.Mime?[..postAttachment.Mime.IndexOf('/')],
+        Type = FileTypeDeduceHelper.GetFileType(postAttachment),
 
         Url = postAttachment.Url,
         PreviewUrl = postAttachment.Url,
