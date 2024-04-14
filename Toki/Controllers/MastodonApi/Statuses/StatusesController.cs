@@ -44,6 +44,9 @@ public class StatusesController(
         Post post,
         User? user)
     {
+        if (user?.Id == post.AuthorId)
+            return true;
+        
         return post.Visibility switch
         {
             PostVisibility.Public or PostVisibility.Unlisted => true,
