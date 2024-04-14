@@ -355,6 +355,7 @@ public class PostRepository(
                 ParentId = post.Id,
 
                 Description = document.Name,
+                Mime = document.MediaType,
                 Url = document.Url
             };
             
