@@ -29,6 +29,10 @@ public class ActivityPubResolver(
         // If this object is already resolved, no point in us inquiring about it again.
         if (obj.IsResolved && obj is TAsObject asObject)
             return asObject;
+        
+        // We've received a bogus object, no idea how it happens, but it does.
+        if (string.IsNullOrEmpty(obj.Id))
+            return null;
 
         logger.LogInformation($"Fetching object {obj.Id}");
 
