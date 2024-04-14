@@ -24,21 +24,4 @@ public static class PostExtensions
     public static bool CanBeBoosted(this Post post) =>
         (post.Boosting is null || (post.Boosting is null && post.Content is not null)) && 
         (post.Visibility is PostVisibility.Public or PostVisibility.Unlisted);
-
-    /// <summary>
-    /// Is this post visible by a user?
-    /// </summary>
-    /// <param name="post">The post.</param>
-    /// <param name="user">The user.</param>
-    /// <returns>Whether it is visible.</returns>
-    public static bool VisibleByUser(this Post post, User? user) => post.Visibility switch
-    {
-        PostVisibility.Public or PostVisibility.Unlisted => true,
-        PostVisibility.Followers when 
-            user != null && post.Author.FollowerRelations?.Any(fr => fr.FollowerId == user.Id) == true => true,
-        PostVisibility.Direct when
-            user != null && post.UserMentions?.Any(m => m.Id == user.Id.ToString()) == true => true,
-        
-        _ => false
-    };
 }

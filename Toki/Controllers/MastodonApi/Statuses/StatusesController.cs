@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
+using Toki.ActivityPub.Models.Enums;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
+using Toki.ActivityPub.Users;
 using Toki.Binding;
 using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
@@ -14,6 +16,7 @@ using Toki.MastodonApi.Schemas.Objects;
 using Toki.MastodonApi.Schemas.Requests.Statuses;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
+using Toki.Services.Timelines;
 
 namespace Toki.Controllers.MastodonApi.Statuses;
 
@@ -25,10 +28,34 @@ namespace Toki.Controllers.MastodonApi.Statuses;
 [EnableCors("MastodonAPI")]
 public class StatusesController(
     PostManagementService postManagementService,
+    FollowRepository followRepository,
+    TimelineBuilder timelineBuilder,
     PostRepository repo,
     StatusRenderer statusRenderer,
     AccountRenderer accountRenderer) : ControllerBase
 {
+    /// <summary>
+    /// Returns whether a post is visible by a user.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <param name="user">The user.</param>
+    /// <returns>Whether the post is visible by them.</returns>
+    private async Task<bool> PostVisibleByUser(
+        Post post,
+        User? user)
+    {
+        return post.Visibility switch
+        {
+            PostVisibility.Public or PostVisibility.Unlisted => true,
+            PostVisibility.Followers when 
+                user != null => await followRepository.FollowRelationExistsBetween(user, post.Author),
+            PostVisibility.Direct when
+                user != null && post.UserMentions?.Any(m => m.Id == user.Id.ToString()) == true => true,
+        
+            _ => false
+        };
+    }
+    
     /// <summary>
     /// Posts a request.
     /// </summary>
@@ -100,7 +127,7 @@ public class StatusesController(
             .User;
         
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         return Ok(
@@ -151,7 +178,7 @@ public class StatusesController(
             .User;
         
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         if (post.Context is null)
@@ -162,10 +189,11 @@ public class StatusesController(
             });
         }
         
-        var repliesInContext = await repo.CreateCustomQuery()
-            .AddMastodonRenderNecessities()
-            .Where(p => p.Context == post.Context)
-            .ToListAsync();
+        var repliesInContext = await timelineBuilder
+            .NewWithoutOrdering()
+            .Filter(p => p.Context == post.Context)
+            .ViewAs(user)
+            .GetTimeline();
         
         // TODO: This sucks and it sucks horribly, I have no clue right now how to make it better...
         //       Iceshrimp seems to make use of a database function, from what I can tell, although
@@ -220,7 +248,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         await postManagementService.Like(
@@ -249,7 +277,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         await postManagementService.UndoLike(
@@ -278,7 +306,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         var boost = await postManagementService.Boost(
@@ -313,7 +341,7 @@ public class StatusesController(
             user,
             id);
         
-        if (boost is null || !boost.VisibleByUser(user))
+        if (boost is null || !await PostVisibleByUser(boost, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         await postManagementService.UndoBoost(
@@ -343,7 +371,7 @@ public class StatusesController(
 
         // TODO: I'd love if we could do it in one query.
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
         
         // TODO: Link based pagination.
@@ -375,7 +403,7 @@ public class StatusesController(
 
         // TODO: I'd love if we could do it in one query.
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
         
         // TODO: Link based pagination.
@@ -406,7 +434,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         if (post.Author != user)
@@ -436,7 +464,7 @@ public class StatusesController(
             .User;
 
         var post = await repo.FindById(id);
-        if (post is null || !post.VisibleByUser(user))
+        if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
 
         if (post.Author != user)

@@ -32,6 +32,18 @@ public class TimelineBuilder(
     private int _count = 0;
 
     /// <summary>
+    /// Creates a new request without ordering.
+    /// </summary>
+    /// <returns>The timeline builder.</returns>
+    public TimelineBuilder NewWithoutOrdering()
+    {
+        _query = postRepo.CreateCustomQuery()
+            .AddMastodonRenderNecessities();
+
+        return this;
+    }
+    
+    /// <summary>
     /// Paginates this query.
     /// </summary>
     /// <param name="paginationParams">The pagination parameters.</param>

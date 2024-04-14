@@ -12,6 +12,20 @@ public class FollowRepository(
     TokiDatabaseContext db)
 {
     /// <summary>
+    /// Checks if a follower relation exists between two users.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <param name="target">The target.</param>
+    /// <returns>Whether the follower relation exists.</returns>
+    public async Task<bool> FollowRelationExistsBetween(
+        User source,
+        User target)
+    {
+        return await db.FollowerRelations
+            .AnyAsync(fr => fr.Followee == target && fr.Follower == source);
+    }
+    
+    /// <summary>
     /// Gets followers for a given user.
     /// </summary>
     /// <param name="user">The user.</param>
