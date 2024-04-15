@@ -1,7 +1,10 @@
 using Hangfire;
 using Toki.ActivityPub.Federation;
+using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.Jobs.Fetching;
 using Toki.ActivityPub.Models;
+using Toki.ActivityPub.Models.DTO;
+using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityPub.Resolvers;
@@ -16,14 +19,70 @@ public class UserManagementService(
     UserRepository repo,
     UserRenderer renderer,
     ActivityPubResolver resolver,
-    MessageFederationService federationService)
+    MessageFederationService federationService,
+    ContentFormatter contentFormatter)
 {
     /// <summary>
     /// Updates a user.
     /// </summary>
     /// <param name="user">The user.</param>
-    public async Task Update(User user)
+    /// <param name="updateRequest">The update request.</param>
+    public async Task Update(
+        User user,
+        UserUpdateRequest updateRequest)
     {
+        // TODO: Care about the limits.
+        // TODO: Store the emojis from the bio and fields somewhere.
+        
+        if (updateRequest.Bio is not null)
+        {
+            var formattingResult = await contentFormatter.Format(
+                updateRequest.Bio);
+
+            if (formattingResult is not null)
+                user.Bio = formattingResult.Formatted;
+        }
+
+        if (updateRequest.Fields is not null)
+        {
+            var fields = new List<UserProfileField>();
+            foreach (var field in updateRequest.Fields)
+            {
+                if (field.Name is null || field.Value is null)
+                    continue;
+                
+                var nameFormattingResult = await contentFormatter.Format(
+                    field.Name);
+
+                var valueFormattingResult = await contentFormatter.Format(
+                    field.Value);
+
+                if (nameFormattingResult is null || valueFormattingResult is null)
+                    continue;
+                
+                fields.Add(new UserProfileField
+                {
+                    Name = nameFormattingResult.Formatted,
+                    Value = valueFormattingResult.Formatted
+                });
+            }
+
+            user.Fields = fields;
+        }
+
+        user.DisplayName = updateRequest.DisplayName ?? user.DisplayName;
+        user.RequiresFollowApproval = updateRequest.RequiresFollowApproval ?? user.RequiresFollowApproval;
+
+        if (updateRequest.RemoveAvatar)
+            user.AvatarUrl = null;
+        else
+            user.AvatarUrl = updateRequest.AvatarUrl ?? user.AvatarUrl;
+        
+        if (updateRequest.RemoveHeader)
+            user.BannerUrl = null;
+        else
+            user.BannerUrl = updateRequest.HeaderUrl ?? user.BannerUrl;
+        
         await repo.Update(user);
         
         // Federate the message.

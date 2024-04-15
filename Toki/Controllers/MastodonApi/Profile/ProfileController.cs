@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
 using Toki.MastodonApi.Renderers;
@@ -34,8 +35,14 @@ public class ProfileController(
         var user = HttpContext.GetOAuthToken()!
             .User;
 
-        user.AvatarUrl = null;
-        await managementService.Update(user);
+        var updateRequest = new UserUpdateRequest
+        {
+            RemoveAvatar = true
+        };
+        
+        await managementService.Update(
+            user,
+            updateRequest);
 
         return accountRenderer.RenderAccountFrom(user, true);
     }
@@ -53,8 +60,14 @@ public class ProfileController(
         var user = HttpContext.GetOAuthToken()!
             .User;
 
-        user.BannerUrl = null;
-        await managementService.Update(user);
+        var updateRequest = new UserUpdateRequest
+        {
+            RemoveHeader = true
+        };
+        
+        await managementService.Update(
+            user,
+            updateRequest);
 
         return accountRenderer.RenderAccountFrom(user, true);
     }

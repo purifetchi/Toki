@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -269,37 +270,42 @@ public class AccountsController(
         var user = HttpContext.GetOAuthToken()!
             .User;
 
-        user.DisplayName = request.DisplayName ?? user.DisplayName;
-        user.Bio = request.Bio ?? user.Bio;
-        user.RequiresFollowApproval = request.RequiresFollowApproval ?? user.RequiresFollowApproval;
-
+        string? avatarUrl = null;
         if (request.Avatar is not null)
         {
             var url = await drive.Store(request.Avatar);
-            user.AvatarUrl = url;
+            avatarUrl = url;
         }
         
+        string? headerUrl = null;
         if (request.Header is not null)
         {
             var url = await drive.Store(request.Header);
-            user.BannerUrl = url;
+            headerUrl = url;
         }
 
-        var fields = request.GetFields();
-        if (fields is not null)
+        var updateRequest = new UserUpdateRequest()
         {
-            // TODO: Care about the text limits.
-            // TODO: Dispatch verification.
-            // TODO: Pass this through the content formatting facility.
-            user.Fields = fields.Select(f =>
-                new UserProfileField()
+            DisplayName = request.DisplayName,
+            Bio = request.Bio,
+
+            RequiresFollowApproval = request.RequiresFollowApproval,
+
+            AvatarUrl = avatarUrl,
+            HeaderUrl = headerUrl,
+
+            Fields = request.GetFields()?
+                .Select(f =>
+                new UserProfileField
                 {
                     Name = f.Name,
                     Value = f.Value
-                }).ToList();
-        }
+                }).ToList()
+        };
         
-        await managementService.Update(user);
+        await managementService.Update(
+            user,
+            updateRequest);
         
         return Ok(
             renderer.RenderAccountFrom(user));
