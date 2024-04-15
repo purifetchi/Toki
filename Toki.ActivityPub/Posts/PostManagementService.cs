@@ -144,10 +144,12 @@ public class PostManagementService(
     /// </summary>
     /// <param name="user">The user who's boosting.</param>
     /// <param name="post">The post.</param>
+    /// <param name="remoteActivityId">The remote id of the boost. (The ID of the activity that made it)</param>
     /// <returns>The boost.</returns>
     public async Task<Post?> Boost(
         User user,
-        Post post)
+        Post post,
+        string? remoteActivityId = null)
     {
         if (!post.CanBeBoosted())
             return null;
@@ -155,6 +157,8 @@ public class PostManagementService(
         var boost = new Post()
         {
             Id = Ulid.NewUlid(),
+            
+            RemoteId = remoteActivityId,
             
             Author = user,
             AuthorId = user.Id,

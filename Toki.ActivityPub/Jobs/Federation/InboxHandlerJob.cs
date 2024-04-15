@@ -264,7 +264,8 @@ public class InboxHandlerJob(
 
         await postManagementService.Boost(
             actor,
-            post);
+            post,
+            announce.Id);
     }
 
     /// <summary>
