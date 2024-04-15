@@ -24,6 +24,7 @@ public class PostRepository(
     {
         var post = await db.Posts
             .Include(post => post.Author)
+            .Include(post => post.Boosting)
             .FirstOrDefaultAsync(post => post.RemoteId == remoteId);
         
         // TODO: I honestly don't know whether this is the best idea but whatever.
@@ -39,7 +40,7 @@ public class PostRepository(
 
         return post;
     }
-
+    
     /// <summary>
     /// Finds a like by the id pair.
     /// </summary>

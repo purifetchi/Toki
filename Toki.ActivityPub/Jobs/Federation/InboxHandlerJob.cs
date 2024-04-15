@@ -153,20 +153,26 @@ public class InboxHandlerJob(
         if (undo.Object is null)
             return;
         
-        var asObject = await resolver.Fetch<ASObject>(undo.Object);
-        if (asObject is not ASActivity activity)
+        logger.LogInformation($"Undoing {undo.Object.Id}");
+        
+        // Check if this is a boost.
+        var maybeBoost = await postRepo.FindByRemoteId(undo.Object.Id);
+        if (maybeBoost?.BoostingId != null)
         {
-            logger.LogWarning($"Someone just attempted to undo an object that's not an activity? Id={asObject?.Id}");
-            return;
-        }
+            if (maybeBoost.AuthorId != actor.Id)
+            {
+                logger.LogWarning($"{actor.RemoteId} attempted to undo a boost performed by {maybeBoost.AuthorId}.");
+                return;
+            }
 
-        if (activity.Actor.Id != actor.RemoteId)
-        {
-            logger.LogWarning($"{actor.RemoteId} attempted to undo an activity performed by {activity.Actor.Id}.");
+            await postManagementService.UndoBoost(
+                actor,
+                maybeBoost);
+
             return;
         }
         
-        // TODO: Undo the activity  here.
+        // TODO: We need to make likes and follows also remoteable.
     }
     
     /// <summary>
