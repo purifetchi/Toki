@@ -18,5 +18,5 @@ public record NodeInfoUsage
     /// The amount of local posts.
     /// </summary>
     [JsonPropertyName("localPosts")]
-    public int LocalPosts { get; init; }
+    public int? LocalPosts { get; init; }
 }
