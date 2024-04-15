@@ -182,6 +182,17 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Updates a post
+    /// </summary>
+    /// <param name="post">The post.</param>
+    public async Task Update(
+        Post post)
+    {
+        db.Posts.Update(post);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Deletes a pinned post from the database.
     /// </summary>
     /// <param name="post">The pinned post.</param>

@@ -574,6 +574,48 @@ public class PostManagementService(
     }
 
     /// <summary>
+    /// Updates a post from its ActivityStreams representation.
+    /// </summary>
+    /// <param name="post">The post to be updated.</param>
+    /// <param name="author">The author of the post.</param>
+    /// <param name="note">The ASNote representation of the post.</param>
+    public async Task UpdateFromActivityStreams(
+        Post post,
+        User author,
+        ASNote note)
+    {
+        // TODO: ImportFromActivityStreams should probably call into this.
+        
+        var emojis = await CollectEmojis(
+            note,
+            author.ParentInstance);
+        
+        post.Content = htmlSanitizer.Sanitize(note.Content!);
+        post.Sensitive = note.Sensitive ?? false;
+
+        post.CreatedAt = note.PublishedAt?
+            .ToUniversalTime() ?? DateTimeOffset.UtcNow;
+
+        post.Visibility = note.GetPostVisibility(author);
+        post.UserMentions = await CollectMentions(note);
+        post.Tags = CollectHashtags(note);
+
+        post.Emojis = emojis?
+            .Select(e => e.Id.ToString())
+            .ToList();
+
+        await repo.Update(post);
+        
+        if (note.Attachments is not null &&
+            note.Attachments.Count > 0)
+        {
+            await repo.ImportAttachmentsForNote(
+                post,
+                note.Attachments);
+        }
+    }
+
+    /// <summary>
     /// Fetches a post given its remote id.
     /// </summary>
     /// <param name="remoteId">The remote id of the post.</param>

@@ -140,6 +140,38 @@ public class InboxHandlerJob(
             return;
         }
         
+        if (obj is ASNote noteData)
+        {
+            if (noteData.AttributedTo is not null &&
+                noteData.AttributedTo.Id != actor.RemoteId)
+            {
+                return;
+            }
+            
+            var originalPost = await postRepo.FindByRemoteId(
+                noteData.Id);
+
+            // If the original post is null, we can just import the updated data as a new post.
+            if (originalPost is null)
+            {
+                await postManagementService.ImportFromActivityStreams(
+                    noteData,
+                    actor);
+                
+                return;
+            }
+            
+            if (originalPost.Author.RemoteId != actor.RemoteId)
+                return;
+
+            await postManagementService.UpdateFromActivityStreams(
+                originalPost,
+                actor,
+                noteData);
+
+            return;
+        }
+        
         logger.LogWarning($"Dropped Update {update.Id}, due to no handler present for {obj.Type}");
     }
 
