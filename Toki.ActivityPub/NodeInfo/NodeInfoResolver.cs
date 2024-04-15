@@ -55,6 +55,11 @@ public class NodeInfoResolver(
         if (url is null)
             return null;
         
+        // NOTE: I've seen at least one instance in the wild that doesn't attach a schema.
+        //       Let's forcibly add one ourselves.
+        if (!url.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            url = $"https://{url}";
+        
         logger.LogInformation($"Found nodeinfo link for instance {instance}: {url}");
 
         return await HttpGet<NodeInfoResponse>(url);
