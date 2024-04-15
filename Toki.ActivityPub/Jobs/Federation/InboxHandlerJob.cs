@@ -128,6 +128,12 @@ public class InboxHandlerJob(
     {
         if (update.Object is null)
             return;
+
+        if (string.IsNullOrEmpty(update.Object.Id))
+        {
+            logger.LogWarning($"Received an Update for an object that doesn't point to anything.");
+            return;
+        }
         
         var obj = await resolver.Fetch<ASObject>(update.Object);
         
@@ -172,7 +178,7 @@ public class InboxHandlerJob(
             return;
         }
         
-        logger.LogWarning($"Dropped Update {update.Id}, due to no handler present for {obj.Type}");
+        logger.LogWarning($"Dropped Update {update.Id}, due to no handler present for {update.Object?.Type}");
     }
 
     /// <summary>
