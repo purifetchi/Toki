@@ -90,18 +90,18 @@ public class ActivityPubMessageValidationService(
                 (MessageValidationResponse.KeyIdMismatch, null) : 
                 (MessageValidationResponse.Ok, keypair);
         }
-
-        var resolvedActor = await resolver.Fetch<ASActor>(activity.Actor);
         
-        // If the actor for this is null and we've gotten a 'Delete', that means we've probably
-        // just gotten a bogus Mastodon mass-mailed response.
+        // If the activity is a Delete and the associated actor is null, it means that we can't have the object
+        // associated with it. Just ignore it (it's usually a Mastodon mass-mailed actor delete).
         if (activity is ASDelete)
         {
-            logger.LogWarning($"Actor {activity.Actor.Id} was probably removed by a Mastodon instance.");
+            logger.LogWarning($"Received a Delete activity from an actor we don't know about ({activity.Actor.Id}).");
             return (MessageValidationResponse.MastodonDeleteForUnknownUser, null);
         }
-        
+
         // Fetch the actor, if we don't have them.
+        var resolvedActor = await resolver.Fetch<ASActor>(activity.Actor);
+        
         if (resolvedActor?.PublicKey is null)
         {
             logger.LogWarning($"Actor {activity.Actor.Id} doesn't have a public key.");
