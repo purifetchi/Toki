@@ -20,6 +20,7 @@ public class InboxHandlerJob(
     UserRelationService userRelationService,
     UserRepository repo,
     PostRepository postRepo,
+    FollowRepository followRepo,
     PostManagementService postManagementService,
     UserManagementService userManagementService,
     ILogger<InboxHandlerJob> logger,
@@ -209,8 +210,25 @@ public class InboxHandlerJob(
 
             return;
         }
-        
-        // TODO: We need to make likes and follows also remoteable.
+
+        // Check if this is a follow.
+        var maybeFollow = await followRepo.FindFollowByRemoteId(undo.Object.Id);
+        if (maybeFollow is not null)
+        {
+            if (maybeFollow.FollowerId != actor.Id)
+            {
+                logger.LogWarning($"{actor.RemoteId} attempted to undo a follow performed by {maybeFollow.Follower.Handle}.");
+                return;
+            }
+
+            await userRelationService.Unfollow(
+                maybeFollow.Follower,
+                maybeFollow.Followee);
+
+            return;
+        }
+
+        // TODO: We need to make likes also remoteable.
     }
     
     /// <summary>

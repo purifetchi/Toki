@@ -153,6 +153,47 @@ public class UserRelationService(
     }
 
     /// <summary>
+    /// Undoes a follow from the source to the target.
+    /// </summary>
+    /// <param name="from">The user who's following the other user.</param>
+    /// <param name="to">The followed user.</param>
+    public async Task Unfollow(
+        User from,
+        User to)
+    {
+        var fr = await followRepo.FindRelationByFromAndTo(
+            from,
+            to);
+
+        if (fr is null)
+            return;
+
+        await followRepo.RemoveFollow(fr);
+
+        // TODO: Undo the notifications.
+
+        if (from.IsRemote || !to.IsRemote)
+            return;
+
+        var undo = new ASUndo()
+        {
+            Id = $"{fr.RemoteId!}/undo",
+            Actor = ASObject.Link(pathRenderer.GetPathToActor(from)),
+            Object = new ASFollow()
+            {
+                Id = fr.RemoteId!,
+                Actor = ASObject.Link(pathRenderer.GetPathToActor(from)),
+                Object = ASObject.Link(to.RemoteId!)
+            }
+        };
+
+        messageFederation.SendTo(
+            from,
+            to,
+            undo);
+    }
+
+    /// <summary>
     /// Creates a follow from one user to another.
     /// </summary>
     /// <param name="from"></param>
