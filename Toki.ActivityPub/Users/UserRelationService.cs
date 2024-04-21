@@ -146,6 +146,7 @@ public class UserRelationService(
                 FromId = actor.Id,
                 To = subject,
                 ToId = subject.Id,
+                
                 RemoteId = follow.Id
             });
         }
@@ -156,10 +157,12 @@ public class UserRelationService(
     /// </summary>
     /// <param name="from"></param>
     /// <param name="to"></param>
+    /// <param name="followId">The remote ID of the follow.</param>
     /// <returns></returns>
     private async Task<FollowerRelation> CreateFollow(
         User from,
-        User to)
+        User to,
+        string? followId = null)
     {
         // Check if we already aren't in a follow relation.
         var relations = await followRepo.GetFollowRelationsFor(from, to);
@@ -173,6 +176,8 @@ public class UserRelationService(
         var fr = new FollowerRelation()
         {
             Id = Ulid.NewUlid(),
+            
+            RemoteId = followId,
 
             Follower = from,
             FollowerId = from.Id,
@@ -197,7 +202,7 @@ public class UserRelationService(
         if (await followRepo.FindFollowRequestById(fr.Id) is not null)
             await followRepo.TransformIntoFollow(fr);
         else
-            await CreateFollow(fr.From, fr.To);
+            await CreateFollow(fr.From, fr.To, fr.RemoteId);
             
         await notificationService.DispatchFollow(
             fr.To,
@@ -233,7 +238,6 @@ public class UserRelationService(
         
         var actorPath = pathRenderer.GetPathToActor(fr.To);
         
-        // TODO: Is this proper?
         var reject = new ASReject
         {
             Id = $"{actorPath}#rejects/follows/{fr.Id}",

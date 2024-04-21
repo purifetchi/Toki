@@ -132,6 +132,21 @@ public class FollowRepository(
         
         await db.SaveChangesAsync();
     }
+    
+    /// <summary>
+    /// Removes a follow relation.
+    /// </summary>
+    /// <param name="fr">The follower relation.</param>
+    public async Task RemoveFollow(FollowerRelation fr)
+    {
+        fr.Followee.FollowerCount--;
+        fr.Follower.FollowingCount--;
+        db.Users.Update(fr.Followee);
+        db.Users.Update(fr.Follower);
+        
+        db.FollowerRelations.Remove(fr);
+        await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Adds a follow request.
@@ -180,6 +195,20 @@ public class FollowRepository(
             .Include(fr => fr.To)
             .FirstOrDefaultAsync();
     }
+    
+    /// <summary>
+    /// Finds a follower relation by a remote id.
+    /// </summary>
+    /// <param name="remoteId">The remote id of the request.</param>
+    /// <returns>The follower relation.</returns>
+    public async Task<FollowerRelation?> FindFollowByRemoteId(string remoteId)
+    {
+        return await db.FollowerRelations
+            .Where(fr => fr.RemoteId == remoteId)
+            .Include(fr => fr.Followee)
+            .Include(fr => fr.Follower)
+            .FirstOrDefaultAsync();
+    }
 
     /// <summary>
     /// Finds a follow request originating from some user and directed at another user.
@@ -194,6 +223,22 @@ public class FollowRepository(
         return await db.FollowRequests
             .FirstOrDefaultAsync(fr => fr.ToId == to.Id && fr.FromId == from.Id);
     }
+    
+    /// <summary>
+    /// Finds a follower relation originating from some user and directed at another user.
+    /// </summary>
+    /// <param name="to">The user the request is directed at.</param>
+    /// <param name="from">The user the request is originating from.</param>
+    /// <returns>A <see cref="FollowerRelation"/> if one exists.</returns>
+    public async Task<FollowerRelation?> FindRelationByFromAndTo(
+        User from,
+        User to)
+    {
+        return await db.FollowerRelations
+            .Include(fr => fr.Follower)
+            .Include(fr => fr.Followee)
+            .FirstOrDefaultAsync(fr => fr.FolloweeId == to.Id && fr.FollowerId == from.Id);
+    }
 
     /// <summary>
     /// Transforms a follow request into a follow.
@@ -206,6 +251,8 @@ public class FollowRepository(
         var followRelation = new FollowerRelation()
         {
             Id = Ulid.NewUlid(),
+            
+            RemoteId = fr.RemoteId,
             
             Follower = fr.From,
             FollowerId = fr.FromId,
