@@ -231,6 +231,39 @@ public class AccountsController(
         return Ok(
             renderer.RenderRelationshipFrom(them, relationship));
     }
+    
+    /// <summary>
+    /// Unfollow the given account.
+    /// </summary>
+    /// <param name="id">The id of the account.</param>
+    /// <returns>Either a <see cref="Relationship"/> or an error.</returns>
+    [HttpPost]
+    [Route("{id}/unfollow")]
+    [OAuth("write:follows")]
+    public async Task<ActionResult<Relationship>> UnfollowAccount(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+        
+        var them = await repo.FindById(id);
+        if (them is null)
+            return NotFound(new MastodonApiError("Record not found."));
+
+        if (user.Id == them.Id)
+            return Forbid();
+        
+        await relationService.Unfollow(
+            user,
+            them);
+
+        var relationship = await relationService.GetRelationshipInfoBetween(
+            user,
+            them);
+
+        return Ok(
+            renderer.RenderRelationshipFrom(them, relationship));
+    }
 
     /// <summary>
     /// Quickly lookup a username to see if it is available, skipping WebFinger resolution.
