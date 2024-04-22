@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using Hangfire;
 using Microsoft.Extensions.Logging;
@@ -94,6 +95,15 @@ public class MessageFederationJob(
 
             if (result.IsSuccessStatusCode)
                 continue;
+
+            // If the server returns a 410 Gone, it means that the instance behind it is shut down.
+            // Do not attempt to retransmit the message.
+            // TODO: Should 404 cause the same behavior?
+            if (result.StatusCode == HttpStatusCode.Gone)
+            {
+                logger.LogWarning($"{target} reported itself as being shut down.");
+                continue;
+            }
 
             logger.LogWarning($"Delivering to {target} failed! Status code: {result.StatusCode}, response: {await result.Content.ReadAsStringAsync()}");
             failed.Add(target);
