@@ -50,6 +50,13 @@ public class ActivityPubResolver(
 
         if (!resp.IsSuccessStatusCode)
             return null;
+
+        if (resp.Content.Headers.ContentType?.MediaType != null &&
+            resp.Content.Headers.ContentType.MediaType.Contains("json", StringComparison.InvariantCultureIgnoreCase) == false)
+        {
+            logger.LogWarning($"Object {obj.Id} didn't return a JSON response! [{resp.Content.Headers.ContentType.MediaType}]");
+            return null;
+        }
         
         logger.LogInformation($"{obj.Id} OK");
 
@@ -61,7 +68,6 @@ public class ActivityPubResolver(
     /// Fetches all of the objects from a collection.
     /// </summary>
     /// <param name="obj">The fetched collection.</param>
-    /// <typeparam name="TAsObject">The type of the object.</typeparam>
     /// <returns>A list of the objects.</returns>
     public async Task<IList<ASObject>?> FetchCollection(ASObject obj)
     {
