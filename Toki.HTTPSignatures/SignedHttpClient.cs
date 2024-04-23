@@ -7,12 +7,13 @@ namespace Toki.HTTPSignatures;
 /// A signed HTTP client.
 /// </summary>
 /// <param name="httpClientFactory">The HTTP client factory.</param>
-public class SignedHttpClient(IHttpClientFactory httpClientFactory)
+public class SignedHttpClient(
+    IHttpClientFactory httpClientFactory) : IDisposable
 {
     /// <summary>
     /// The client we're operating on.
     /// </summary>
-    private readonly HttpClient _client = httpClientFactory.CreateClient();
+    private HttpClient? _client;
     
     /// <summary>
     /// The list of headers to sign.
@@ -152,6 +153,8 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
     /// <returns>The response.</returns>
     private async Task<HttpResponseMessage> Send(string url, HttpMethod method)
     {
+        _client ??= httpClientFactory.CreateClient();
+        
         if (_body is not null)
         {
             // If we also want to sign the digest, add it to the headers list.
@@ -216,4 +219,8 @@ public class SignedHttpClient(IHttpClientFactory httpClientFactory)
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(_body!));
         return $"SHA-256={Convert.ToBase64String(hash)}";
     }
+
+    /// <inheritdoc/>
+    public void Dispose() =>
+        _client?.Dispose();
 }
