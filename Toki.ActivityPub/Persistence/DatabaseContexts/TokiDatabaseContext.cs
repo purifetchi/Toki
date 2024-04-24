@@ -83,6 +83,11 @@ public class TokiDatabaseContext : DbContext
     /// </summary>
     public DbSet<Emoji> Emojis { get; private set; } = null!;
 
+    /// <summary>
+    /// The bookmarked posts set.
+    /// </summary>
+    public DbSet<BookmarkedPost> BookmarkedPosts { get; private set; } = null!;
+    
     /// <inheritdoc/>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -266,6 +271,20 @@ public class TokiDatabaseContext : DbContext
             .HasOne<RemoteInstance>(e => e.ParentInstance)
             .WithMany()
             .HasForeignKey(e => e.ParentInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<BookmarkedPost>()
+            .HasOne<Post>(bp => bp.Post)
+            .WithMany()
+            .HasForeignKey(bp => bp.PostId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<BookmarkedPost>()
+            .HasOne<User>(bp => bp.User)
+            .WithMany()
+            .HasForeignKey(bp => bp.UserId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
 
