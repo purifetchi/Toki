@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Persistence.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
 
@@ -40,19 +41,18 @@ public class NotificationRepository(
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The notifications list.</returns>
-    public async Task<IList<Notification>> GetForUser(
+    public PagedView<Notification> GetForUser(
         User user)
     {
-        var list = await db.Notifications
+        var list = db.Notifications
             .Include(n => n.Actor)
             .Include(n => n.Target)
             .Include(n => n.RelevantPost)
             .Include(n => n.RelevantPost!.Attachments)
             .Where(n => n.TargetId == user.Id)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync();
+            .OrderByDescending(m => m.Id);
 
-        return list;
+        return new PagedView<Notification>(list);
     }
 
     /// <summary>
