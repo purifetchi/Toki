@@ -164,6 +164,7 @@ public class PostRenderer(
             
             Content = post.Content,
             Sensitive = post.Sensitive,
+            Summary = post.ContentWarning,
             
             To = to,
             Cc = cc,

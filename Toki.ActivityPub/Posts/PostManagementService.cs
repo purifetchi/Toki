@@ -610,6 +610,7 @@ public class PostManagementService(
             Content = htmlSanitizer.Sanitize(note.Content!),
             
             Sensitive = note.Sensitive ?? false,
+            ContentWarning = note.Summary,
             
             CreatedAt = note.PublishedAt?
                 .ToUniversalTime() ?? DateTimeOffset.UtcNow,
@@ -671,6 +672,7 @@ public class PostManagementService(
         
         post.Content = htmlSanitizer.Sanitize(note.Content!);
         post.Sensitive = note.Sensitive ?? false;
+        post.ContentWarning = note.Summary;
 
         post.CreatedAt = note.PublishedAt?
             .ToUniversalTime() ?? DateTimeOffset.UtcNow;

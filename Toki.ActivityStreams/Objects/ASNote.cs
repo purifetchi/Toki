@@ -65,6 +65,12 @@ public class ASNote : ASObject
     public IReadOnlyList<string>? Cc { get; set; }
     
     /// <summary>
+    /// The summary of the post. (Commonly used as a content warning.)
+    /// </summary>
+    [JsonPropertyName("summary")]
+    public string? Summary { get; set; }
+    
+    /// <summary>
     /// Is this post sensitive?
     /// </summary>
     [JsonPropertyName("sensitive")]
