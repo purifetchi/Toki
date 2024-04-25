@@ -1,10 +1,12 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Toki.ActivityPub;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.Binding.Extensions;
 using Toki.Configuration;
 using Toki.HTTPSignatures;
@@ -99,5 +101,20 @@ app.UseHangfireDashboard();
 
 app.MapControllers();
 app.MapRazorPages();
+
+// Perform migrations.
+if (args.Any(a => a == "--auto-migrate"))
+{
+    var logger = app.Services
+        .GetRequiredService<ILogger<TokiDatabaseContext>>();
+    
+    logger.LogInformation("Performing auto migrations...");
+
+    var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider
+        .GetRequiredService<TokiDatabaseContext>();
+
+    db.Database.Migrate();
+}
 
 app.Run();
