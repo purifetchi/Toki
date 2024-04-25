@@ -37,15 +37,8 @@ public class NotificationsController(
         
         // TODO: Query parameters as described by: https://docs.joinmastodon.org/methods/notifications/
         var notifsView = repo.GetForUser(user);
-
-        if (paginationParams.MaxId is not null)
-            notifsView = notifsView.Before(paginationParams.MaxId.Value);
-
-        if (paginationParams.SinceId is not null)
-            notifsView = notifsView.After(paginationParams.SinceId.Value);
-
         var notifs = await notifsView
-            .Limit(paginationParams.Limit)
+            .WithMastodonParams(paginationParams)
             .GetWithMastodonPagination(HttpContext);
         
         return notifs.Select(n => new Notification
