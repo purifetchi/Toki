@@ -142,6 +142,20 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Finds a bookmark given the user and the post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>The resulting bookmark, if any.</returns>
+    public async Task<BookmarkedPost?> FindBookmarkByUserAndPost(
+        User user,
+        Post post)
+    {
+        return await db.BookmarkedPosts
+            .FirstOrDefaultAsync(b => b.PostId == post.Id && b.UserId == user.Id);
+    }
+
+    /// <summary>
     /// Adds a post to the database.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -163,6 +177,16 @@ public class PostRepository(
     public async Task AddPinnedPost(PinnedPost post)
     {
         db.PinnedPosts.Add(post);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
+    /// Adds a bookmarked post to the database.
+    /// </summary>
+    /// <param name="post">The bookmarked post.</param>
+    public async Task AddBookmark(BookmarkedPost post)
+    {
+        db.BookmarkedPosts.Add(post);
         await db.SaveChangesAsync();
     }
     
@@ -253,6 +277,17 @@ public class PostRepository(
     }
     
     /// <summary>
+    /// Removes a bookmark.
+    /// </summary>
+    /// <param name="bookmark">The bookmark.</param>
+    public async Task RemoveBookmark(
+        BookmarkedPost bookmark)
+    {
+        db.BookmarkedPosts.Remove(bookmark);
+        await db.SaveChangesAsync();
+    }
+    
+    /// <summary>
     /// Adds a boost to the post.
     /// </summary>
     /// <param name="boost">The boost.</param>
@@ -282,6 +317,13 @@ public class PostRepository(
     /// <returns>The post likes query.</returns>
     public IQueryable<PostLike> CreateCustomLikeQuery() =>
         db.PostLikes;
+
+    /// <summary>
+    /// Creates a custom query for bookmarked posts.
+    /// </summary>
+    /// <returns>The bookmarked posts query.</returns>
+    public IQueryable<BookmarkedPost> CreateCustomBookmarkedPostQuery() =>
+        db.BookmarkedPosts;
     
     /// <summary>
     /// Creates a detached attachment (one without a parent <see cref="Post"/>).

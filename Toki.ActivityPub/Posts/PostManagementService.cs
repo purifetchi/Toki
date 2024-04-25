@@ -302,6 +302,48 @@ public class PostManagementService(
     }
 
     /// <summary>
+    /// Adds a bookmark for a post.
+    /// </summary>
+    /// <param name="user">The user who's bookmarking.</param>
+    /// <param name="post">The bookmarked post.</param>
+    public async Task Bookmark(
+        User user,
+        Post post)
+    {
+        var bookmark = new BookmarkedPost()
+        {
+            Id = Ulid.NewUlid(),
+
+            PostId = post.Id,
+            Post = post,
+
+            UserId = user.Id,
+            User = user
+        };
+
+        await repo.AddBookmark(bookmark);
+    }
+    
+    /// <summary>
+    /// Undoes a bookmark for a post.
+    /// </summary>
+    /// <param name="user">The user who's undoing bookmarking.</param>
+    /// <param name="post">The bookmarked post.</param>
+    public async Task UndoBookmark(
+        User user,
+        Post post)
+    {
+        var bookmark = await repo.FindBookmarkByUserAndPost(
+            user,
+            post);
+
+        if (bookmark is null)
+            return;
+
+        await repo.RemoveBookmark(bookmark);
+    }
+
+    /// <summary>
     /// Undoes a like on a post done by an actor.
     /// </summary>
     /// <param name="actor">The actor which did the like.</param>
@@ -390,6 +432,24 @@ public class PostManagementService(
     }
     
     /// <summary>
+    /// Checks whether a user has already bookmarked a post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="post">The post.</param>
+    /// <returns>Whether they have bookmarked it.</returns>
+    public async Task<bool> HasBookmarked(
+        User user,
+        Post post)
+    {
+        var hasBookmarked = await repo.CreateCustomBookmarkedPostQuery()
+            .Where(p => p.UserId == user.Id)
+            .Where(p => p.PostId == post.Id)
+            .AnyAsync();
+
+        return hasBookmarked;
+    }
+    
+    /// <summary>
     /// Checks a list for which posts the user has boosted the post.
     /// </summary>
     /// <param name="user">The user.</param>
@@ -425,6 +485,25 @@ public class PostManagementService(
             .ToListAsync();
 
         return likedPosts ?? [];
+    }
+    
+    /// <summary>
+    /// Checks a list for which posts the user has bookmarked the post.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="ids">The list of ids to look through.</param>
+    /// <returns>The bookmarked posts.</returns>
+    public async Task<IReadOnlyList<Ulid>> FindManyBookmarkedPosts(
+        User user,
+        IReadOnlyList<Ulid> ids)
+    {
+        var bookmarkedPosts = await repo.CreateCustomBookmarkedPostQuery()
+            .Where(p => p.UserId == user.Id)
+            .Where(p => ids.Contains(p.PostId))
+            .Select(p => p.PostId!)
+            .ToListAsync();
+
+        return bookmarkedPosts ?? [];
     }
     
     /// <summary>
