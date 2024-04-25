@@ -1,5 +1,6 @@
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Objects;
+using Toki.MastodonApi.Schemas.Params;
 
 namespace Toki.Extensions;
 
@@ -9,12 +10,33 @@ namespace Toki.Extensions;
 public static class PagedViewExtensions
 {
     /// <summary>
+    /// Adds the Mastodon pagination parameters onto a paged view.
+    /// </summary>
+    /// <param name="view">The view.</param>
+    /// <param name="paginationParams">The pagination parameters.</param>
+    /// <typeparam name="TModel">The type of the model.</typeparam>
+    /// <returns>The updated paged view.</returns>
+    public static PagedView<TModel> WithMastodonParams<TModel>(
+        this PagedView<TModel> view,
+        PaginationParams paginationParams)
+    where TModel : AbstractModel
+    {
+        if (paginationParams.MaxId is not null)
+            view = view.Before(paginationParams.MaxId.Value);
+
+        if (paginationParams.SinceId is not null)
+            view = view.After(paginationParams.SinceId.Value);
+
+        return view.Limit(paginationParams.Limit);
+    }
+    
+    /// <summary>
     /// Gets the list of items and sets the mastodon link-based pagination parameters.
     /// </summary>
-    /// <param name="view"></param>
-    /// <param name="ctx"></param>
-    /// <typeparam name="TModel"></typeparam>
-    /// <returns></returns>
+    /// <param name="view">The view.</param>
+    /// <param name="ctx">The HTTP context.</param>
+    /// <typeparam name="TModel">The type of the model.</typeparam>
+    /// <returns>The list of <see cref="TModel"/></returns>
     public static async Task<List<TModel>> GetWithMastodonPagination<TModel>(
         this PagedView<TModel> view, HttpContext ctx)
     where TModel : AbstractModel

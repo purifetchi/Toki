@@ -37,15 +37,8 @@ public class BookmarksController(
 
         // TODO: We really need to unify adding post rendering data.
         var bookmarksView = postRepo.GetBookmarksForUser(user);
-        
-        if (paginationParams.MaxId is not null)
-            bookmarksView = bookmarksView.Before(paginationParams.MaxId.Value);
-
-        if (paginationParams.SinceId is not null)
-            bookmarksView = bookmarksView.After(paginationParams.SinceId.Value);
-
         var bookmarks = await bookmarksView
-            .Limit(paginationParams.Limit)
+            .WithMastodonParams(paginationParams)
             .Project<Post>(b => b.Post)
             .GetWithMastodonPagination(HttpContext);
 

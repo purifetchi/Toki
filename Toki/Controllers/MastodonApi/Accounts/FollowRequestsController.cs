@@ -39,15 +39,8 @@ public class FollowRequestsController(
             .User;
         
         var usersView = followRepo.GetFollowRequestsFor(user);
-        
-        if (paginationParams.MaxId is not null)
-            usersView = usersView.Before(paginationParams.MaxId.Value);
-
-        if (paginationParams.SinceId is not null)
-            usersView = usersView.After(paginationParams.SinceId.Value);
-
         var users = await usersView
-            .Limit(paginationParams.Limit)
+            .WithMastodonParams(paginationParams)
             .Project<User>(fr => fr.From)
             .GetWithMastodonPagination(HttpContext);
                 
