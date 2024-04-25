@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Persistence.Objects;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
@@ -139,6 +140,25 @@ public class PostRepository(
             .Select(f => f.ParentInstance != null && f.ParentInstance.SharedInbox != null ? f.ParentInstance.SharedInbox! : f.Inbox! )
             .Distinct()
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// Gets the bookmarks for a user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The paged view into bookmarks.</returns>
+    public PagedView<BookmarkedPost> GetBookmarksForUser(
+        User user)
+    {
+        var query = db.BookmarkedPosts.Where(b => b.UserId == user.Id)
+            .Include(b => b.Post)
+            .Include(b => b.Post.Author)
+            .Include(b => b.Post.Attachments)
+            .Include(b => b.Post.Parent)
+            .Include(b => b.Post.Parent!.Author)
+            .OrderByDescending(b => b.Id);
+
+        return new PagedView<BookmarkedPost>(query);
     }
 
     /// <summary>

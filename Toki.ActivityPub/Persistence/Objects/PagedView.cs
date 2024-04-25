@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
 
@@ -44,6 +45,20 @@ public class PagedView<TModel>(IQueryable<TModel> query)
     {
         query = query.Take(count);
         return this;
+    }
+
+    /// <summary>
+    /// Projects this paged view into another type.
+    /// </summary>
+    /// <param name="func">The projection function.</param>
+    /// <typeparam name="TOther">The other type.</typeparam>
+    /// <returns>A paged view into <see cref="TOther"/></returns>
+    public PagedView<TOther> Project<TOther>(
+        Expression<Func<TModel, TOther>> func)
+        where TOther : AbstractModel
+    {
+        return new PagedView<TOther>(
+            query.Select(func));
     }
     
     /// <summary>
