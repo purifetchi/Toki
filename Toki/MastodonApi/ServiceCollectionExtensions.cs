@@ -14,8 +14,8 @@ public static class ServiceCollectionExtensions
     /// <returns>The same services collection.</returns>
     public static IServiceCollection AddMastodonApiHelpers(this IServiceCollection services)
     {
-        services.AddTransient<AccountRenderer>()
-            .AddTransient<StatusRenderer>();
+        services.AddScoped<AccountRenderer>()
+            .AddScoped<StatusRenderer>();
 
         return services;
     }

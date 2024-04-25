@@ -132,7 +132,6 @@ public class StatusRenderer(
             CreatedAt = post.CreatedAt,
             Content = post.Content,
 
-            // TODO: Caching in the account renderer path.
             Account = accountRenderer.RenderAccountFrom(post.Author),
 
             BoostCount = post.BoostCount,

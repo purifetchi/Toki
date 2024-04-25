@@ -12,6 +12,11 @@ public class AccountRenderer(
     InstancePathRenderer pathRenderer)
 {
     /// <summary>
+    /// A cache for already rendered users.
+    /// </summary>
+    private readonly Dictionary<Ulid, Account> _cache = new();
+    
+    /// <summary>
     /// Renders an account from a user.
     /// </summary>
     /// <param name="user">The user.</param>
@@ -21,7 +26,10 @@ public class AccountRenderer(
         User user,
         bool renderCredentialAccount = false)
     {
-        return new Account
+        if (_cache.TryGetValue(user.Id, out var cachedAccount))
+            return cachedAccount;
+        
+        var acc = new Account
         {
             Id = $"{user.Id}",
            
@@ -68,6 +76,9 @@ public class AccountRenderer(
                     VerifiedAt = f.VerifiedAt
                 }).ToList() ?? []
         };
+
+        _cache[user.Id] = acc;
+        return acc;
     }
 
     /// <summary>
