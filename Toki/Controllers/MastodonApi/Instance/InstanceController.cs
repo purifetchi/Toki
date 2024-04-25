@@ -57,7 +57,12 @@ public class InstanceController(
                 {
                     SupportedMimeTypes = DriveService.AcceptedMIMEs,
                     ImageSizeLimit = uploadConfig.MaxFileSize,
-                    VideoSizeLimit = uploadConfig.MaxFileSize
+                    VideoSizeLimit = uploadConfig.MaxFileSize,
+                    
+                    // NOTE: All of these are the 8K resolution, this is a test value for any soft that expect
+                    //       these values to be present.
+                    ImageMatrixLimit = 33177600,
+                    VideoMatrixLimit = 33177600 
                 },
                 Polls = new InstanceInformationPolls()
             },
