@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Models.DTO;
 using Toki.ActivityPub.Models.Users;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
 using Toki.Binding;
+using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
@@ -124,19 +126,25 @@ public class AccountsController(
     /// Accounts which follow the given account, if network is not hidden by the account owner.
     /// </summary>
     /// <param name="id">The ID of the Account in the database.</param>
+    /// <param name="paginationParams">The pagination params.</param>
     /// <returns>The list of <see cref="Account"/></returns>
     [HttpGet]
     [Route("{id}/followers")]
     [Produces("application/json")]
     public async Task<IActionResult> GetAccountFollowers(
-        [FromRoute] Ulid id)
+        [FromRoute] Ulid id,
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = await repo.FindById(id);
         if (user is null)
             return NotFound(new MastodonApiError("Record not found."));
         
-        // TODO: Implement pagination and limits.
-        var followers = await followRepo.GetFollowersFor(user);
+        var followersView = followRepo.GetFollowersFor(user);
+        var followers = await followersView
+            .WithMastodonParams(paginationParams)
+            .Project<User>(f => f.Follower)
+            .GetWithMastodonPagination(HttpContext);
+        
         return Ok(followers
             .Select(u => renderer.RenderAccountFrom(u)));
     }
@@ -145,19 +153,25 @@ public class AccountsController(
     /// Accounts which the given account is following, if network is not hidden by the account owner.
     /// </summary>
     /// <param name="id">The ID of the Account in the database.</param>
+    /// <param name="paginationParams">The pagination params.</param>
     /// <returns>The list of <see cref="Account"/></returns>
     [HttpGet]
     [Route("{id}/following")]
     [Produces("application/json")]
     public async Task<IActionResult> GetAccountFollowing(
-        [FromRoute] Ulid id)
+        [FromRoute] Ulid id,
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = await repo.FindById(id);
         if (user is null)
             return NotFound(new MastodonApiError("Record not found."));
         
-        // TODO: Implement pagination and limits.
-        var followers = await followRepo.GetFollowingFor(user);
+        var followersView = followRepo.GetFollowingFor(user);
+        var followers = await followersView
+            .WithMastodonParams(paginationParams)
+            .Project<User>(f => f.Followee)
+            .GetWithMastodonPagination(HttpContext);
+        
         return Ok(followers
             .Select(u => renderer.RenderAccountFrom(u)));
     }

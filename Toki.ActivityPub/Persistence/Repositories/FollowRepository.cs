@@ -30,13 +30,12 @@ public class FollowRepository(
     /// Gets followers for a given user.
     /// </summary>
     /// <param name="user">The user.</param>
-    /// <returns>The users that follow them.</returns>
-    public async Task<IEnumerable<User>> GetFollowersFor(User user)
+    /// <returns>The paged view into the followers table.</returns>
+    public PagedView<FollowerRelation> GetFollowersFor(User user)
     {
-        return await db.FollowerRelations
-            .Where(fr => fr.Followee == user)
-            .Select(fr => fr.Follower)
-            .ToListAsync();
+        return new PagedView<FollowerRelation>(
+            db.FollowerRelations
+            .Where(fr => fr.Followee == user));
     }
 
     /// <summary>
@@ -75,12 +74,11 @@ public class FollowRepository(
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The users that they follow.</returns>
-    public async Task<IEnumerable<User>> GetFollowingFor(User user)
+    public PagedView<FollowerRelation> GetFollowingFor(User user)
     {
-        return await db.FollowerRelations
-            .Where(fr => fr.Follower == user)
-            .Select(fr => fr.Followee)
-            .ToListAsync();
+        return new PagedView<FollowerRelation>(
+            db.FollowerRelations
+            .Where(fr => fr.Follower == user));
     }
 
     /// <summary>
