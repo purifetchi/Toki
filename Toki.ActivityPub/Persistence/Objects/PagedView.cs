@@ -11,14 +11,26 @@ public class PagedView<TModel>(IQueryable<TModel> query)
     where TModel : AbstractModel
 {
     /// <summary>
-    /// Paginates the view.
+    /// Paginates the view showing items that happened before some ID.
     /// </summary>
-    /// <param name="since">Since what id should we paginate.</param>
+    /// <param name="id">Before what id should we paginate.</param>
     /// <returns>This.</returns>
-    public PagedView<TModel> Paginate(
-        Ulid since)
+    public PagedView<TModel> Before(
+        Ulid id)
     {
-        query = query.Where(m => m.Id.CompareTo(since) == -1);
+        query = query.Where(m => m.Id.CompareTo(id) == -1);
+        return this;
+    }
+
+    /// <summary>
+    /// Paginates the view showing items that happened after some ID.
+    /// </summary>
+    /// <param name="id">After what id should we paginate.</param>
+    /// <returns>This.</returns>
+    public PagedView<TModel> After(
+        Ulid id)
+    {
+        query = query.Where(m => m.Id.CompareTo(id) == 1);
         return this;
     }
 
@@ -33,13 +45,14 @@ public class PagedView<TModel>(IQueryable<TModel> query)
         query = query.Take(count);
         return this;
     }
-
+    
     /// <summary>
     /// Gets the view as a list.
     /// </summary>
     /// <returns>The list.</returns>
     public async Task<List<TModel>> ToList()
     {
-        return await query.ToListAsync();
+        return await query
+            .ToListAsync();
     }
 }

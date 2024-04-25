@@ -5,6 +5,7 @@ using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
+using Toki.MastodonApi.Schemas.Params;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
 
@@ -28,13 +29,25 @@ public class NotificationsController(
     [HttpGet]
     [OAuth("read:notifications")]
     [Produces("application/json")]
-    public async Task<IEnumerable<Notification>> GetNotifications()
+    public async Task<IEnumerable<Notification>> GetNotifications(
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;
         
         // TODO: Query parameters as described by: https://docs.joinmastodon.org/methods/notifications/
-        var notifs = await repo.GetForUser(user);
+        var notifsView = repo.GetForUser(user);
+
+        if (paginationParams.MaxId is not null)
+            notifsView = notifsView.Before(paginationParams.MaxId.Value);
+
+        if (paginationParams.SinceId is not null)
+            notifsView = notifsView.After(paginationParams.SinceId.Value);
+
+        var notifs = await notifsView
+            .Limit(paginationParams.Limit)
+            .GetWithMastodonPagination(HttpContext);
+        
         return notifs.Select(n => new Notification
         {
             Id = n.Id.ToString(),
