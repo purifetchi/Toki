@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Users;
+using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
+using Toki.MastodonApi.Schemas.Params;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
 
@@ -29,13 +32,25 @@ public class FollowRequestsController(
     [HttpGet]
     [OAuth("read:follows")]
     [Produces("application/json")]
-    public async Task<IEnumerable<Account>> GetFollowRequests()
+    public async Task<IEnumerable<Account>> GetFollowRequests(
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = HttpContext.GetOAuthToken()!
             .User;
         
-        // TODO: Pagination.
-        var users = await followRepo.GetFollowRequestsFor(user);
+        var usersView = followRepo.GetFollowRequestsFor(user);
+        
+        if (paginationParams.MaxId is not null)
+            usersView = usersView.Before(paginationParams.MaxId.Value);
+
+        if (paginationParams.SinceId is not null)
+            usersView = usersView.After(paginationParams.SinceId.Value);
+
+        var users = await usersView
+            .Limit(paginationParams.Limit)
+            .Project<User>(fr => fr.From)
+            .GetWithMastodonPagination(HttpContext);
+                
         return users.Select(
             u => accountRenderer.RenderAccountFrom(u));
     }
