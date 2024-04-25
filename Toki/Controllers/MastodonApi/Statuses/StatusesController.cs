@@ -363,7 +363,7 @@ public class StatusesController(
     /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
     [HttpPost]
     [Produces("application/json")]
-    [OAuth("write:favourites")]
+    [OAuth("write:bookmarks")]
     [Route("{id}/bookmark")]
     public async Task<IActionResult> Bookmark(
         [FromRoute] Ulid id)
@@ -392,7 +392,7 @@ public class StatusesController(
     /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
     [HttpPost]
     [Produces("application/json")]
-    [OAuth("write:favourites")]
+    [OAuth("write:bookmarks")]
     [Route("{id}/unbookmark")]
     public async Task<IActionResult> Unbookmark(
         [FromRoute] Ulid id)
