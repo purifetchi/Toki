@@ -61,7 +61,11 @@ public class UsersController(
         if (user is null)
             return NotFound();
 
-        var followersEnumerable = await followRepo.GetFollowersFor(user);
+        var followersEnumerable = await followRepo
+            .GetFollowingFor(user)
+            .Project<ActivityPub.Models.User>(f => f.Follower)
+            .ToList();
+        
         var followers = followersEnumerable.Select(follower =>
                 ASObject.Link(follower.RemoteId ?? pathRenderer.GetPathToActor(follower)))
             .ToList();
@@ -91,7 +95,11 @@ public class UsersController(
         if (user is null)
             return NotFound();
 
-        var followingEnumerable = await followRepo.GetFollowingFor(user);
+        var followingEnumerable = await followRepo
+            .GetFollowingFor(user)
+            .Project<ActivityPub.Models.User>(f => f.Followee)
+            .ToList();
+        
         var following = followingEnumerable.Select(follower =>
                 ASObject.Link(follower.RemoteId ?? pathRenderer.GetPathToActor(follower)))
             .ToList();
