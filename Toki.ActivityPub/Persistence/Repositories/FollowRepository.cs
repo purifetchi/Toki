@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.DatabaseContexts;
+using Toki.ActivityPub.Persistence.Objects;
 
 namespace Toki.ActivityPub.Persistence.Repositories;
 
@@ -43,14 +44,12 @@ public class FollowRepository(
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>Their pending follow requests.</returns>
-    public async Task<IEnumerable<User>> GetFollowRequestsFor(User user)
+    public PagedView<FollowRequest> GetFollowRequestsFor(User user)
     {
-        return await db.FollowRequests
+        return new PagedView<FollowRequest>(db.FollowRequests
             .Where(fr => fr.To == user)
             .Include(fr => fr.From)
-            .OrderByDescending(fr => fr.Id)
-            .Select(fr => fr.From)
-            .ToListAsync();
+            .OrderByDescending(fr => fr.Id));
     }
 
     /// <summary>
