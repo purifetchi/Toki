@@ -355,6 +355,64 @@ public class StatusesController(
         
         return Ok(status);
     }
+    
+    /// <summary>
+    /// Privately bookmark a status.
+    /// </summary>
+    /// <param name="id">The id of the post.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id}/bookmark")]
+    public async Task<IActionResult> Bookmark(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !await PostVisibleByUser(post, user))
+            return NotFound(new MastodonApiError("Record not found."));
+
+        await postManagementService.Bookmark(
+            user,
+            post);
+
+        var status = statusRenderer.RenderForPost(post);
+        status.Bookmarked = true;
+        
+        return Ok(status);
+    }
+    
+    /// <summary>
+    /// Remove a status from your private bookmarks.
+    /// </summary>
+    /// <param name="id">The id of the post.</param>
+    /// <returns>A <see cref="Toki.MastodonApi.Schemas.Objects.Status"/> on success.</returns>
+    [HttpPost]
+    [Produces("application/json")]
+    [OAuth("write:favourites")]
+    [Route("{id}/unbookmark")]
+    public async Task<IActionResult> Unbookmark(
+        [FromRoute] Ulid id)
+    {
+        var user = HttpContext.GetOAuthToken()!
+            .User;
+
+        var post = await repo.FindById(id);
+        if (post is null || !await PostVisibleByUser(post, user))
+            return NotFound(new MastodonApiError("Record not found."));
+        
+        await postManagementService.UndoBookmark(
+            user,
+            post);
+
+        var status = statusRenderer.RenderForPost(post);
+        status.Bookmarked = false;
+        
+        return Ok(status);
+    }
 
     /// <summary>
     /// View who favourited a given status.

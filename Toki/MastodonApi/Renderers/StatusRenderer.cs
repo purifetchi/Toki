@@ -173,9 +173,11 @@ public class StatusRenderer(
         var status = RenderForPost(post);
         var liked = await postManagementService.HasLiked(user, post);
         var boosted = await postManagementService.HasBoosted(user, post);
+        var bookmarked = await postManagementService.HasBookmarked(user, post);
         
         status.Liked = liked;
         status.Boosted = boosted;
+        status.Bookmarked = bookmarked;
         status.Emojis = await GetEmojiFor(post);
         
         return status;
@@ -206,6 +208,7 @@ public class StatusRenderer(
         // Fetch both of these at once so we only do 2 DB hits while rendering many.
         var likes = await postManagementService.FindManyLikedPosts(user, ids);
         var boosts = await postManagementService.FindManyBoostedPosts(user, ids);
+        var bookmarks = await postManagementService.FindManyBookmarkedPosts(user, ids);
         
         var results = new List<Status>();
         foreach (var post in posts)
@@ -217,12 +220,14 @@ public class StatusRenderer(
             {
                 status.Boost.Liked = likes.Contains(post.Boosting!.Id);
                 status.Boost.Boosted = boosts.Contains(post.Boosting!.Id);
+                status.Boost.Bookmarked = bookmarks.Contains(post.Boosting!.Id);
                 status.Boost.Emojis = await GetEmojiFor(post.Boosting!);
             }
             else
             {
                 status.Liked = likes.Contains(post.Id);
                 status.Boosted = boosts.Contains(post.Id);
+                status.Bookmarked = bookmarks.Contains(post.Id);
                 status.Emojis = await GetEmojiFor(post);
             }
             

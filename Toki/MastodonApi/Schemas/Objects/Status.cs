@@ -146,6 +146,12 @@ public record Status
     public bool? Pinned { get; set; }
     
     /// <summary>
+    /// Have you bookmarked this status?
+    /// </summary>
+    [JsonPropertyName("bookmarked")]
+    public bool? Bookmarked { get; set; }
+    
+    /// <summary>
     /// The ID of the conversation. (Used in akkoma-fe, PROBABLY not a Mastodon thing).
     /// </summary>
     [JsonPropertyName("conversation_id")]
