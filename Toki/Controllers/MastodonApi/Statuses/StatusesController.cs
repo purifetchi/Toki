@@ -13,6 +13,7 @@ using Toki.Extensions;
 using Toki.MastodonApi.Renderers;
 using Toki.MastodonApi.Schemas.Errors;
 using Toki.MastodonApi.Schemas.Objects;
+using Toki.MastodonApi.Schemas.Params;
 using Toki.MastodonApi.Schemas.Requests.Statuses;
 using Toki.Middleware.OAuth2;
 using Toki.Middleware.OAuth2.Extensions;
@@ -418,13 +419,15 @@ public class StatusesController(
     /// View who favourited a given status.
     /// </summary>
     /// <param name="id">The ID of the Status in the database.</param>
+    /// <param name="paginationParams">The pagination parameters.</param>
     /// <returns>An array of <see cref="Account"/> on success.</returns>
     [HttpGet]
     [Route("{id}/favourited_by")]
     [OAuth(manualScopeValidation: true)]
     [Produces("application/json")]
     public async Task<ActionResult<IEnumerable<Account>>> GetLikes(
-        [FromRoute] Ulid id)
+        [FromRoute] Ulid id,
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = HttpContext.GetOAuthToken()?
             .User;
@@ -434,13 +437,11 @@ public class StatusesController(
         if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
         
-        // TODO: Link based pagination.
-        var users = await repo.CreateCustomLikeQuery()
-            .OrderByDescending(like => like.Id)
-            .Where(like => like.PostId == id)
-            .Include(like => like.LikingUser)
-            .Select(like => like.LikingUser)
-            .ToListAsync();
+        var likesView = repo.GetLikesForPost(post);
+        var users = await likesView
+            .WithMastodonParams(paginationParams)
+            .Project<User>(l => l.LikingUser)
+            .GetWithMastodonPagination(HttpContext);
 
         return Ok(users.Select(
             u => accountRenderer.RenderAccountFrom(u)));
@@ -450,13 +451,15 @@ public class StatusesController(
     /// View who boosted a given status.
     /// </summary>
     /// <param name="id">The ID of the Status in the database.</param>
+    /// <param name="paginationParams">The pagination parameters.</param>
     /// <returns>An array of <see cref="Account"/> on success.</returns>
     [HttpGet]
     [Route("{id}/reblogged_by")]
     [OAuth(manualScopeValidation: true)]
     [Produces("application/json")]
     public async Task<ActionResult<IEnumerable<Account>>> GetBoosts(
-        [FromRoute] Ulid id)
+        [FromRoute] Ulid id,
+        [FromQuery] PaginationParams paginationParams)
     {
         var user = HttpContext.GetOAuthToken()?
             .User;
@@ -466,13 +469,11 @@ public class StatusesController(
         if (post is null || !await PostVisibleByUser(post, user))
             return NotFound(new MastodonApiError("Record not found."));
         
-        // TODO: Link based pagination.
-        var users = await repo.CreateCustomQuery()
-            .AddMastodonRenderNecessities()
-            .Where(p => p.BoostingId == id)
-            .OrderByDescending(p => p.Id)
-            .Select(p => p.Author)
-            .ToListAsync();
+        var boostsView = repo.GetBoostsForPost(post);
+        var users = await boostsView
+            .WithMastodonParams(paginationParams)
+            .Project<User>(b => b.Author)
+            .GetWithMastodonPagination(HttpContext);
 
         return Ok(users.Select(
             u => accountRenderer.RenderAccountFrom(u)));
