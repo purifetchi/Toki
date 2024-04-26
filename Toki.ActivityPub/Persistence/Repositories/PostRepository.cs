@@ -176,6 +176,34 @@ public class PostRepository(
     }
 
     /// <summary>
+    /// Gets all the likes for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The paginated view into the likes list.</returns>
+    public PagedView<PostLike> GetLikesForPost(Post post)
+    {
+        return new PagedView<PostLike>(
+            db.PostLikes
+                .Include(like => like.LikingUser)
+                .Where(like => like.PostId == post.Id)
+                .OrderByDescending(like => like.Id));
+    }
+    
+    /// <summary>
+    /// Gets all the boosts for a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <returns>The paginated view into the boosts list.</returns>
+    public PagedView<Post> GetBoostsForPost(Post post)
+    {
+        return new PagedView<Post>(
+            db.Posts
+                .Include(p => p.Author)
+                .Where(p => p.BoostingId == post.Id)
+                .OrderByDescending(p => p.Id));
+    }
+
+    /// <summary>
     /// Adds a post to the database.
     /// </summary>
     /// <param name="post">The post.</param>
