@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
@@ -24,6 +25,9 @@ builder.Services.Configure<InstanceConfiguration>(
 
 builder.Services.Configure<UploadConfiguration>(
     builder.Configuration.GetSection("Upload"));
+
+builder.Services.Configure<FrontendConfiguration>(
+    builder.Configuration.GetSection("Frontend"));
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -100,7 +104,24 @@ app.UseMiddleware<OAuthMiddleware>();
 app.UseHangfireDashboard();
 
 app.MapControllers();
+
+var frontend = app.Services
+    .GetRequiredService<IOptions<FrontendConfiguration>>()
+    .Value;
+
 app.MapRazorPages();
+
+if (frontend.Enabled)
+{
+    app.MapFallbackToFile(frontend.SpaFilename!);
+}
+else
+{
+    app.MapGet("/", async ctx =>
+    {
+        ctx.Response.Redirect("/Landing", true);
+    });
+}
 
 // Perform migrations.
 if (args.Any(a => a == "--auto-migrate"))
