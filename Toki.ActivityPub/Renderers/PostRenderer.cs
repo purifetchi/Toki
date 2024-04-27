@@ -45,6 +45,40 @@ public class PostRenderer(
     }
 
     /// <summary>
+    /// Gets the To/CC tuple for an action that an actor has performed on a post.
+    /// </summary>
+    /// <param name="post">The post.</param>
+    /// <param name="actor">The actor.</param>
+    /// <returns>The tuple.</returns>
+    private (IReadOnlyList<string>, IReadOnlyList<string>) GetToAndCcForAction(
+        Post post,
+        User actor)
+    {
+        const string asPublic = "https://www.w3.org/ns/activitystreams#Public";
+        
+        var to = post.Visibility switch
+        {
+            PostVisibility.Public or PostVisibility.Unlisted => [
+                post.Author.RemoteId,
+                $"{pathRenderer.GetPathToActor(actor)}/followers"
+            ],
+            PostVisibility.Followers or PostVisibility.Direct => [
+                post.Author.RemoteId
+                // TODO: We should also have the mentioned people here.
+            ],
+            _ => new List<string>()
+        };
+
+        var cc = post.Visibility switch
+        {
+            PostVisibility.Public => [asPublic],
+            _ => new List<string>()
+        };
+
+        return (to, cc);
+    }
+
+    /// <summary>
     /// Renders the attachments for a post.
     /// </summary>
     /// <param name="post">The post.</param>
@@ -242,7 +276,9 @@ public class PostRenderer(
         User booster,
         Post post)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            booster);
         
         var announce = new ASAnnounce()
         {
@@ -253,8 +289,8 @@ public class PostRenderer(
             
             PublishedAt = DateTimeOffset.UtcNow,
             
-            To = to.Concat(cc)
-                .ToList()
+            To = to,
+            Cc = cc
         };
 
         return announce;
@@ -270,7 +306,9 @@ public class PostRenderer(
         User likingUser,
         Post post)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            likingUser);
         
         var like = new ASLike()
         {
@@ -281,8 +319,8 @@ public class PostRenderer(
             
             PublishedAt = DateTimeOffset.UtcNow,
             
-            To = to.Concat(cc)
-                .ToList()
+            To = to,
+            Cc = cc
         };
 
         return like;
@@ -298,7 +336,9 @@ public class PostRenderer(
         User likingUser,
         Post post)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            likingUser);
         var actorPath = pathRenderer.GetPathToActor(likingUser);
         var actorLink = userRenderer.RenderLinkedActorFrom(likingUser);
         
@@ -317,8 +357,8 @@ public class PostRenderer(
             
                 PublishedAt = DateTimeOffset.UtcNow,
             
-                To = to.Concat(cc)
-                    .ToList()
+                To = to,
+                Cc = cc
             }
         };
 
@@ -335,7 +375,9 @@ public class PostRenderer(
         User boostingUser,
         Post post)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            boostingUser);
         var actorPath = pathRenderer.GetPathToActor(boostingUser);
         var actorLink = userRenderer.RenderLinkedActorFrom(boostingUser);
         
@@ -354,8 +396,8 @@ public class PostRenderer(
             
                 PublishedAt = DateTimeOffset.UtcNow,
             
-                To = to.Concat(cc)
-                    .ToList()
+                To = to,
+                Cc = cc
             }
         };
 
@@ -374,7 +416,9 @@ public class PostRenderer(
         Post post,
         string? target = null)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            actor);
         var actorPath = pathRenderer.GetPathToActor(actor);
         var actorLink = userRenderer.RenderLinkedActorFrom(actor);
 
@@ -386,8 +430,8 @@ public class PostRenderer(
             
             Target = ASObject.Link(target ?? $"{actorPath}/collections/featured"),
 
-            To = to.Concat(cc)
-                .ToList()
+            To = to,
+            Cc = cc
         };
 
         return add;
@@ -405,7 +449,9 @@ public class PostRenderer(
         Post post,
         string? target = null)
     {
-        var (to, cc) = GetToAndCcFor(post);
+        var (to, cc) = GetToAndCcForAction(
+            post,
+            actor);
         var actorPath = pathRenderer.GetPathToActor(actor);
         var actorLink = userRenderer.RenderLinkedActorFrom(actor);
 
@@ -417,8 +463,8 @@ public class PostRenderer(
             
             Target = ASObject.Link(target ?? $"{actorPath}/collections/featured"),
 
-            To = to.Concat(cc)
-                .ToList()
+            To = to,
+            Cc = cc
         };
 
         return add;
