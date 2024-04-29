@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Toki.ActivityPub.Configuration;
 
 /// <summary>
@@ -43,7 +45,7 @@ public class InstanceConfiguration
     /// <summary>
     /// Is signed fetching enabled?
     /// </summary>
-    public bool SignedFetch { get; set; } = false;
+    public bool SignedFetch { get; set; } = true;
 
     /// <summary>
     /// Does this instance support OAuth2 password login?
@@ -58,6 +60,7 @@ public class InstanceConfiguration
     /// <summary>
     /// The UserAgent string of Toki.
     /// </summary>
+    [JsonIgnore]
     public string UserAgent =>
         $"{Software.SoftwareName}/{Software.SoftwareVersion} ({Domain}; <{ContactEmail}>)";
 }
