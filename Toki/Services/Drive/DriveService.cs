@@ -86,4 +86,31 @@ public class DriveService(
         
         return $"https://{instanceOpts.Value.Domain}/media/{hash}/{file.FileName}";
     }
+
+    /// <summary>
+    /// Stores a file from binary data.
+    /// </summary>
+    /// <param name="filename">The filename.</param>
+    /// <param name="data">The data.</param>
+    /// <returns>The resulting URL.</returns>
+    public string? StoreFromBytes(
+        string filename,
+        ReadOnlySpan<byte> data)
+    {
+        var hash = Convert.ToHexString(
+                MD5.HashData(data))
+            .ToLowerInvariant();
+
+        Directory.CreateDirectory(
+            opts.Value.UploadFolderPath + $"/{hash}");
+
+        using var fs = new FileStream($"{opts.Value.UploadFolderPath}/{hash}/{filename}", 
+            FileMode.Create,
+            FileAccess.Write, 
+            FileShare.None);
+
+        fs.Write(data);
+        
+        return $"https://{instanceOpts.Value.Domain}/media/{hash}/{filename}";
+    }
 }
