@@ -1,8 +1,8 @@
 version: "3"
 services:
   redis:
-    image: eqalpha/keydb:latest
-    container_name: toki_keydb
+    image: valkey/valkey:7.2-alpine
+    container_name: toki_valkey
     restart: always
     ports: 
       - 6379:6379
