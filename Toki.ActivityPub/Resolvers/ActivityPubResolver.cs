@@ -42,6 +42,11 @@ public class ActivityPubResolver(
                 await FetchWithSigning(obj.Id) : 
                 await FetchWithoutSigning(obj.Id);
         }
+        catch (TaskCanceledException e)
+        {
+            logger.LogWarning($"Cancelled task while waiting on {obj.Id}, possibly timed out.");
+            return null;
+        }
         catch (HttpRequestException e)
         {
             logger.LogWarning($"Request exception while fetching object {obj.Id}! {e.Message}");
