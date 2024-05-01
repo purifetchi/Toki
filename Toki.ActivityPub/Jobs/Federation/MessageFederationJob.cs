@@ -76,7 +76,7 @@ public class MessageFederationJob(
                 result = await httpClient
                     .NewRequest()
                     .WithKey(
-                        keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key", 
+                        keypair!.RemoteId ?? $"{pathRenderer.GetPathToActor(actor!)}#key",
                         keypair.PrivateKey!)
                     .WithBody(message)
                     .WithHeader("User-Agent", opts.Value.UserAgent)
@@ -84,6 +84,13 @@ public class MessageFederationJob(
                     .AddHeaderToSign("Digest")
                     .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
                     .Post(target);
+            }
+            catch (HttpRequestException e)
+            {
+                logger.LogWarning($"Delivering to {target} failed! Request exception: {e}.");
+                failed.Add(target);
+
+                continue;
             }
             catch (SocketException e)
             {
