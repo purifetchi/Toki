@@ -166,10 +166,12 @@ public class StatusRenderer(
         User? user,
         Post post)
     {
-        if (user is null)
-            return RenderForPost(post);
-        
         var status = RenderForPost(post);
+        status.Emojis = await GetEmojiFor(post);
+
+        if (user is null)
+            return status;
+        
         var liked = await postManagementService.HasLiked(user, post);
         var boosted = await postManagementService.HasBoosted(user, post);
         var bookmarked = await postManagementService.HasBookmarked(user, post);
@@ -177,8 +179,7 @@ public class StatusRenderer(
         status.Liked = liked;
         status.Boosted = boosted;
         status.Bookmarked = bookmarked;
-        status.Emojis = await GetEmojiFor(post);
-        
+
         return status;
     }
 
