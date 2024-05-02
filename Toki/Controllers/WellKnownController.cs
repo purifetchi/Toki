@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.NodeInfo;
+using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.WebFinger;
 
 namespace Toki.Controllers;
@@ -27,6 +28,29 @@ public class WellKnownController(
     [EnableCors("MastodonAPI")]
     public async Task<ActionResult<WebFingerResponse?>> WebFinger([FromQuery] string resource)
     {
+        // We're dealing with resolution on the AP actor id.
+        if (resource.StartsWith($"https://{opts.Value.Domain}"))
+        {
+            // TODO: This should be optimized but w/e.
+            
+            // We're dealing with the instance actor.
+            if (resource == $"https://{opts.Value.Domain}/actor")
+                return await renderer.FindUser($"acct:{InstanceActorResolver.INSTANCE_ACTOR_NAME}@{opts.Value.Domain}");
+
+            var parts = resource.Split('/');
+
+            // Ensure we're fingering users.
+            if (parts[^2] != "users")
+                return BadRequest();
+            
+            var handle = parts.Last();
+            var apUser = await renderer.FindUser($"acct:{handle}@{opts.Value.Domain}");
+            if (apUser is null)
+                return NotFound();
+                
+            return apUser;
+        }
+
         var resp = await renderer.FindUser(resource);
         if (resp is null)
             return NotFound();
