@@ -132,6 +132,11 @@ public class TokiDatabaseContext : DbContext
             .IsDescending();
 
         modelBuilder.Entity<Post>()
+            .HasIndex(p => p.RemoteId)
+            .HasDatabaseName("IX_Post_RemoteId_Unique")
+            .IsUnique();
+
+        modelBuilder.Entity<Post>()
             .Property(p => p.UserMentions)
             .HasColumnType("jsonb")
             .HasConversion(a => JsonConvert.SerializeObject(a),
