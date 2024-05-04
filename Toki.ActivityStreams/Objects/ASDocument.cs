@@ -20,6 +20,12 @@ public class ASDocument : ASLink
     public string? Name { get; set; }
     
     /// <summary>
+    /// The hyperlink.
+    /// </summary>
+    [JsonPropertyName("href")]
+    public string? Href { get; set; }
+    
+    /// <summary>
     /// The media type of the document.
     /// </summary>
     [JsonPropertyName("mediaType")]

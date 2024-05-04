@@ -47,6 +47,7 @@ public class ASObjectConverter : JsonConverter<ASObject>
                 "Bite" => obj.Deserialize<ASBite>(),
                 
                 "Note" => obj.Deserialize<ASNote>(),
+                "Video" => obj.Deserialize<ASVideo>(),
                 
                 "Person" or "Service" or "Organization" or "Group" or "Application" => obj.Deserialize<ASActor>(),
                 
