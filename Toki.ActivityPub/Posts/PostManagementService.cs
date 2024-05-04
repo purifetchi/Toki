@@ -717,8 +717,15 @@ public class PostManagementService(
         if (threadDepth > maxThreadRecursionDepth)
             return null;
 
-        var note = await resolver.Fetch<ASNote>(
+        var asObject = await resolver.Fetch<ASObject>(
             ASObject.Link(remoteId));
+        
+        var note = asObject switch
+        {
+            ASNote n => n,
+            ASVideo v => v.MockASNote(),
+            _ => null
+        };
 
         if (note?.AttributedTo is null)
             return null;

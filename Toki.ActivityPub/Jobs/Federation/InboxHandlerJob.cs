@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Bites;
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -273,9 +274,21 @@ public class InboxHandlerJob(
             return;
 
         var obj = await resolver.Fetch<ASObject>(create.Object);
+        
         if (obj is ASNote note)
         {
             var post = await postManagementService.ImportFromActivityStreams(note, actor);
+            if (post is null)
+                return;
+            
+            await notificationService.DispatchAllNotificationsForPost(post);
+        }
+        else if (obj is ASVideo video)
+        {
+            var post = await postManagementService.ImportFromActivityStreams(
+                video.MockASNote(), 
+                actor);
+            
             if (post is null)
                 return;
             

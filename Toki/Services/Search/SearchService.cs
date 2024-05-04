@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
@@ -32,6 +33,26 @@ public class SearchService(
     /// The result limit.
     /// </summary>
     private const int LIMIT = 20;
+
+    /// <summary>
+    /// Handles maybe importing a remote note while searching.
+    /// </summary>
+    /// <param name="note">The note</param>
+    /// <returns>The resulting post.</returns>
+    private async Task<Post?> HandleRemoteImportForNote(ASNote note)
+    {
+        var maybePost = await postRepo.FindByRemoteId(note.Id);
+        if (maybePost is not null)
+            return maybePost;
+
+        var author = await userManagementService.FetchFromRemoteId(note.AttributedTo!.Id);
+        if (author is null)
+            return null;
+                    
+        return await postManagementService.ImportFromActivityStreams(
+            note,
+            author);
+    }
     
     /// <summary>
     /// Searches through the accounts.
@@ -183,28 +204,29 @@ public class SearchService(
                     
                     users.Add(resolvedUser);
                     break;
-                
-                case ASNote note:
-                    var maybePost = await postRepo.FindByRemoteId(note.Id);
-                    if (maybePost is not null)
-                    {
-                        posts.Add(maybePost);
-                        continue;
-                    }
 
-                    var author = await userManagementService.FetchFromRemoteId(note.AttributedTo!.Id);
-                    if (author is null)
-                        continue;
-                    
-                    var post = maybePost ?? await postManagementService.ImportFromActivityStreams(
-                        note,
-                        author);
+                case ASNote note:
+                {
+                    var post = await HandleRemoteImportForNote(note);
 
                     if (post is null)
                         continue;
                     
                     posts.Add(post);
                     break;
+                }
+
+                case ASVideo video:
+                {
+                    var post = await HandleRemoteImportForNote(
+                        video.MockASNote());
+
+                    if (post is null)
+                        continue;
+                    
+                    posts.Add(post);
+                    break;
+                }
                 
                 default:
                     continue;
