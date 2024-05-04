@@ -17,6 +17,15 @@ public class NodeInfoController(
     IOptions<InstanceConfiguration> opts) : ControllerBase
 {
     /// <summary>
+    /// The list of supported operations by this server.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> _supportedOperations = new Dictionary<string, IReadOnlyList<string>>()
+    {
+        { "com.shinolabs.api.bite", ["1.0.0"] },
+        { "jetzt.mia.ns.activitypub.accept.bite", ["1.0.0"]}
+    };
+    
+    /// <summary>
     /// Creates a node info response for a given version.
     /// </summary>
     /// <param name="version">The version.</param>
@@ -64,7 +73,9 @@ public class NodeInfoController(
             Protocols =
             [
                 "activitypub"
-            ]
+            ],
+            
+            Operations = _supportedOperations
         };
     }
     

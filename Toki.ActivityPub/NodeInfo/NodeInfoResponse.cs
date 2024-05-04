@@ -44,4 +44,11 @@ public class NodeInfoResponse
     /// </summary>
     [JsonPropertyName("metadata")]
     public NodeInfoMetadata? Metadata { get; init; }
+    
+    /// <summary>
+    /// The supported set of operations. (As per FEP-9FDE)
+    /// </summary>
+    [JsonPropertyName("operations")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, IReadOnlyList<string>>? Operations { get; init; }
 }
