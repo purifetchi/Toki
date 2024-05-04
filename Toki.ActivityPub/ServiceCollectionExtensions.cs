@@ -1,5 +1,6 @@
 using Ganss.Xss;
 using Microsoft.Extensions.DependencyInjection;
+using Toki.ActivityPub.Bites;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Emojis;
 using Toki.ActivityPub.Federation;
@@ -59,6 +60,7 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<ContentFormatter>();
 
         collection.AddScoped<InstanceRepository>();
+        collection.AddScoped<BiteService>();
 
         collection.AddScoped<OAuthRepository>()
             .AddScoped<OAuthManagementService>();

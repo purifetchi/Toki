@@ -11,7 +11,7 @@ public class ASBite : ASActivity
     /// <summary>
     /// Creates a new ASBite activity.
     /// </summary>
-    protected ASBite()
+    public ASBite()
         : base("Bite")
     {
         

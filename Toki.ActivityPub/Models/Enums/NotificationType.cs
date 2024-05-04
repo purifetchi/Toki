@@ -34,4 +34,9 @@ public enum NotificationType
     /// Someone liked one of your statuses
     /// </summary>
     Like,
+    
+    /// <summary>
+    /// Someone has bit you.
+    /// </summary>
+    Bite
 }

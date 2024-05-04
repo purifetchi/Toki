@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Toki.ActivityPub.Bites;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Notifications;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -7,6 +8,7 @@ using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Resolvers;
 using Toki.ActivityPub.Users;
 using Toki.ActivityStreams.Activities;
+using Toki.ActivityStreams.Activities.Extensions;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityPub.Jobs.Federation;
@@ -24,7 +26,8 @@ public class InboxHandlerJob(
     PostManagementService postManagementService,
     UserManagementService userManagementService,
     ILogger<InboxHandlerJob> logger,
-    NotificationService notificationService)
+    NotificationService notificationService,
+    BiteService biteService)
 {
     /// <summary>
     /// Handles an activity.
@@ -57,6 +60,7 @@ public class InboxHandlerJob(
             ASReject reject => HandleReject(reject),
             ASAdd add => HandleAdd(add, actor),
             ASRemove remove => HandleRemove(remove, actor),
+            ASBite bite => HandleBite(bite, actor),
             
             _ => Task.Run(() =>
             {
@@ -348,5 +352,42 @@ public class InboxHandlerJob(
         await postManagementService.Like(
             actor,
             post);
+    }
+
+    /// <summary>
+    /// Handles the Bite activity.
+    /// </summary>
+    private async Task HandleBite(ASBite bite, User actor)
+    {
+        if (bite.Target is null)
+            return;
+        
+        // Check if the object is biteable (is a user for now).
+        var maybeUser = await repo.FindByRemoteId(bite.Target.Id);
+        if (maybeUser is not null)
+        {
+            await biteService.Bite(
+                actor,
+                maybeUser);
+
+            return;
+        }
+        
+        // When receiving a Bite targetting an object whose type isn't explicitly implemented to be bitten,
+        // implementations should fall back to biting the Actor in the to field
+        if (bite.To?.Count > 0)
+        {
+            var maybeToUser = await repo.FindByRemoteId(bite.To[0]);
+            if (maybeToUser is not null)
+            {
+                await biteService.Bite(
+                    actor,
+                    maybeToUser);
+
+                return;
+            }
+        }
+        
+        // TODO: then the actor field in the target object, and then the attributedTo field in the target object.
     }
 }

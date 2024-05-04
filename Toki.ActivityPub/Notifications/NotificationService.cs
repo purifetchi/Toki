@@ -203,4 +203,29 @@ public class NotificationService(
         
         return await MaybeAddNotification(notif);
     }
+    
+    /// <summary>
+    /// Dispatches a bite notification.
+    /// </summary>
+    /// <param name="target">The target user.</param>
+    /// <param name="biter">The biter.</param>
+    /// <returns>The dispatched notification.</returns>
+    public async Task<Notification?> DispatchBite(
+        User target,
+        User biter)
+    {
+        var notif = new Notification
+        {
+            Id = Ulid.NewUlid(),
+            Type = NotificationType.Bite,
+            
+            Target = target,
+            TargetId = target.Id,
+
+            Actor = biter,
+            ActorId = biter.Id
+        };
+        
+        return await MaybeAddNotification(notif);
+    }
 }
