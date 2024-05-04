@@ -62,7 +62,7 @@ public class UsersController(
             return NotFound();
 
         var followersEnumerable = await followRepo
-            .GetFollowingFor(user)
+            .GetFollowersFor(user)
             .Project<ActivityPub.Models.User>(f => f.Follower)
             .ToList();
         
