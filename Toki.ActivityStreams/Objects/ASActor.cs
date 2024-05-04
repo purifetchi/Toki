@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityStreams.Objects;
 
@@ -50,12 +51,14 @@ public class ASActor : ASObject
     /// The icon.
     /// </summary>
     [JsonPropertyName("icon")]
+    [JsonConverter(typeof(ForceSingleObjectConverter<ASImage>))]
     public ASImage? Icon { get; set; }
     
     /// <summary>
     /// The banner.
     /// </summary>
     [JsonPropertyName("image")]
+    [JsonConverter(typeof(ForceSingleObjectConverter<ASImage>))]
     public ASImage? Banner { get; set; }
     
     /// <summary>
