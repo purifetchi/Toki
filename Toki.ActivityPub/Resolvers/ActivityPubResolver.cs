@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
@@ -17,6 +18,14 @@ public class ActivityPubResolver(
     IOptions<InstanceConfiguration> opts,
     ILogger<ActivityPubResolver> logger)
 {
+    /// <summary>
+    /// The serializer options for reading fetched objects.
+    /// </summary>
+    private static JsonSerializerOptions SerializerOptions { get; } = new()
+    {
+        NumberHandling = JsonNumberHandling.AllowReadingFromString
+    };
+    
     /// <summary>
     /// Fetches the proper ASObject from a given unresolved ASObject. 
     /// </summary>
@@ -66,7 +75,8 @@ public class ActivityPubResolver(
         logger.LogInformation($"{obj.Id} OK");
 
         return await JsonSerializer.DeserializeAsync<TAsObject>(
-            await resp.Content.ReadAsStreamAsync());
+            await resp.Content.ReadAsStreamAsync(),
+            options: SerializerOptions);
     }
 
     /// <summary>
