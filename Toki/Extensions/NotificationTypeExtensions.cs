@@ -20,6 +20,7 @@ public static class NotificationTypeExtensions
         NotificationType.Follow => "follow",
         NotificationType.FollowRequest => "follow_request",
         NotificationType.Like => "favourite",
+        NotificationType.Bite => "bite",
         _ => "" // TODO: Implement the rest of the Mastodon notification types.
     };
 }
