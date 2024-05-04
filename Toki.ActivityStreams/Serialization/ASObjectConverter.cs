@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Toki.ActivityStreams.Activities;
+using Toki.ActivityStreams.Activities.Extensions;
 using Toki.ActivityStreams.Objects;
 
 namespace Toki.ActivityStreams.Serialization;
@@ -43,6 +44,7 @@ public class ASObjectConverter : JsonConverter<ASObject>
                 "Reject" => obj.Deserialize<ASReject>(),
                 "Add" => obj.Deserialize<ASAdd>(),
                 "Remove" => obj.Deserialize<ASRemove>(),
+                "Bite" => obj.Deserialize<ASBite>(),
                 
                 "Note" => obj.Deserialize<ASNote>(),
                 
