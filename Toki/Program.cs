@@ -14,6 +14,7 @@ using Toki.HTTPSignatures;
 using Toki.MastodonApi;
 using Toki.Middleware.OAuth2;
 using Toki.Services.Drive;
+using Toki.Services.Search;
 using Toki.Services.Timelines;
 using Toki.Services.Usage;
 
@@ -41,6 +42,7 @@ builder.Services.AddTransient<OAuthMiddleware>();
 builder.Services.AddTransient<TimelineBuilder>();
 builder.Services.AddTransient<DriveService>();
 builder.Services.AddTransient<UsageService>();
+builder.Services.AddTransient<SearchService>();
 
 builder.Services.AddMastodonApiHelpers();
 

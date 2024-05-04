@@ -22,6 +22,13 @@ public class UserRepository(
     IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
+    /// Creates a custom user query.
+    /// </summary>
+    /// <returns>The custom user query.</returns>
+    public IQueryable<User> CreateCustomQuery() =>
+        db.Users;
+    
+    /// <summary>
     /// Finds a user by their id.
     /// </summary>
     /// <param name="id">The id.</param>

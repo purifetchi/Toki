@@ -24,6 +24,7 @@ public class PostRepository(
     public async Task<Post?> FindByRemoteId(string remoteId)
     {
         var post = await db.Posts
+            .Include(post => post.Attachments)
             .Include(post => post.Author)
             .Include(post => post.Boosting)
             .FirstOrDefaultAsync(post => post.RemoteId == remoteId);
