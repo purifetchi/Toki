@@ -33,29 +33,29 @@ public class ASObjectConverter : JsonConverter<ASObject>
 
             return typeProp.GetString()! switch
             {
-                "Create" => obj.Deserialize<ASCreate>(),
-                "Follow" => obj.Deserialize<ASFollow>(),
-                "Accept" => obj.Deserialize<ASAccept>(),
-                "Like" => obj.Deserialize<ASLike>(),
-                "Announce" => obj.Deserialize<ASAnnounce>(),
-                "Undo" => obj.Deserialize<ASUndo>(),
-                "Update" => obj.Deserialize<ASUpdate>(),
-                "Delete" => obj.Deserialize<ASDelete>(),
-                "Reject" => obj.Deserialize<ASReject>(),
-                "Add" => obj.Deserialize<ASAdd>(),
-                "Remove" => obj.Deserialize<ASRemove>(),
-                "Bite" => obj.Deserialize<ASBite>(),
+                "Create" => obj.Deserialize<ASCreate>(options: options),
+                "Follow" => obj.Deserialize<ASFollow>(options: options),
+                "Accept" => obj.Deserialize<ASAccept>(options: options),
+                "Like" => obj.Deserialize<ASLike>(options: options),
+                "Announce" => obj.Deserialize<ASAnnounce>(options: options),
+                "Undo" => obj.Deserialize<ASUndo>(options: options),
+                "Update" => obj.Deserialize<ASUpdate>(options: options),
+                "Delete" => obj.Deserialize<ASDelete>(options: options),
+                "Reject" => obj.Deserialize<ASReject>(options: options),
+                "Add" => obj.Deserialize<ASAdd>(options: options),
+                "Remove" => obj.Deserialize<ASRemove>(options: options),
+                "Bite" => obj.Deserialize<ASBite>(options: options),
                 
-                "Note" => obj.Deserialize<ASNote>(),
-                "Video" => obj.Deserialize<ASVideo>(),
+                "Note" => obj.Deserialize<ASNote>(options: options),
+                "Video" => obj.Deserialize<ASVideo>(options: options),
                 
-                "Person" or "Service" or "Organization" or "Group" or "Application" => obj.Deserialize<ASActor>(),
+                "Person" or "Service" or "Organization" or "Group" or "Application" => obj.Deserialize<ASActor>(options: options),
                 
-                "Collection" => obj.Deserialize<ASCollection<ASObject>>(),
-                "OrderedCollection" => obj.Deserialize<ASOrderedCollection<ASObject>>(),
+                "Collection" => obj.Deserialize<ASCollection<ASObject>>(options: options),
+                "OrderedCollection" => obj.Deserialize<ASOrderedCollection<ASObject>>(options: options),
                 
-                "CollectionPage" => obj.Deserialize<ASCollectionPage<ASObject>>(),
-                "OrderedCollectionPage" => obj.Deserialize<ASOrderedCollectionPage<ASObject>>(),
+                "CollectionPage" => obj.Deserialize<ASCollectionPage<ASObject>>(options: options),
+                "OrderedCollectionPage" => obj.Deserialize<ASOrderedCollectionPage<ASObject>>(options: options),
 
                 // We don't understand this object yet.
                 _ => new ASObject()

@@ -21,12 +21,12 @@ public class ASLinkConverter : JsonConverter<ASLink>
 
         return typeProp.GetString()! switch
         {
-            "Image" => obj.Deserialize<ASImage>(),
-            "Document" or "Link" => obj.Deserialize<ASDocument>(),
-            "Mention" => obj.Deserialize<ASMention>(),
-            "PropertyValue" => obj.Deserialize<ASPropertyValue>(),
-            "Hashtag" => obj.Deserialize<ASHashtag>(),
-            "Emoji" => obj.Deserialize<ASEmoji>(),
+            "Image" => obj.Deserialize<ASImage>(options: options),
+            "Document" or "Link" => obj.Deserialize<ASDocument>(options: options),
+            "Mention" => obj.Deserialize<ASMention>(options: options),
+            "PropertyValue" => obj.Deserialize<ASPropertyValue>(options: options),
+            "Hashtag" => obj.Deserialize<ASHashtag>(options: options),
+            "Emoji" => obj.Deserialize<ASEmoji>(options: options),
             
             _ => new ASLink()
             {
