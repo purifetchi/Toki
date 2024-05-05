@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Toki.ActivityPub;
 using Toki.ActivityPub.Configuration;
 using Toki.Admin.Commands.AddUser;
+using Toki.Admin.Commands.FixKeys;
 using Toki.Admin.Commands.ImportEmojiPack;
 using Toki.Admin.Commands.Setup;
 using Toki.Admin.Configuration;
@@ -47,7 +48,8 @@ builder.Services.AddTransient<DriveService>();
 builder.Services.AddTransient<EmojiPackImportService>();
 builder.Services.AddTransient<AddUserHandler>()
     .AddTransient<SetupHandler>()
-    .AddTransient<ImportEmojiPackHandler>();
+    .AddTransient<ImportEmojiPackHandler>()
+    .AddTransient<FixKeysHandler>();
 
 var host = builder.Build();
 
@@ -60,9 +62,10 @@ if (uploadConf.Value.UploadFolderPath?.StartsWith('.') == true)
         Path.Combine(root, uploadConf.Value.UploadFolderPath));
 }
 
-await Parser.Default.ParseArguments<AddUserOptions, SetupOptions, ImportEmojiPackOptions>(args)
+await Parser.Default.ParseArguments<AddUserOptions, SetupOptions, ImportEmojiPackOptions, FixKeysOptions>(args)
     .MapResult(
         (AddUserOptions opts) => host.Services.GetRequiredService<AddUserHandler>().Handle(opts),
         (SetupOptions opts) => host.Services.GetRequiredService<SetupHandler>().Handle(opts),
         (ImportEmojiPackOptions opts) => host.Services.GetRequiredService<ImportEmojiPackHandler>().Handle(opts),
+        (FixKeysOptions opts) => host.Services.GetRequiredService<FixKeysHandler>().Handle(opts),
         errs => Task.CompletedTask);

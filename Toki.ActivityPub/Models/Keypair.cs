@@ -18,7 +18,7 @@ public class Keypair : RemoteableModel
     /// <summary>
     /// The public key.
     /// </summary>
-    public required string PublicKey { get; init; }
+    public required string PublicKey { get; set; }
     
     /// <summary>
     /// The private key. (Null for remote users)
