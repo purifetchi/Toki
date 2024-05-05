@@ -51,7 +51,7 @@ public static class ASVideoExtensions
             To = video.To,
             Cc = video.Cc,
             
-            Attachments = [attachment],
+            Attachments = attachment is not null ? [attachment] : [],
             PublishedAt = video.PublishedAt
         };
     }
