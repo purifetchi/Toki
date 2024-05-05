@@ -42,10 +42,7 @@ public static class MastodonOAuthHelper
         "write:mutes",
         "write:notifications",
         "write:reports",
-        "write:statuses",
-        
-        // -- TOKI EXTENSIONS --
-        "write:bites"
+        "write:statuses"
     ];
     
     /// <summary>
