@@ -59,11 +59,11 @@ public class PostRenderer(
         var to = post.Visibility switch
         {
             PostVisibility.Public or PostVisibility.Unlisted => [
-                post.Author.RemoteId,
+                post.Author.RemoteId ?? pathRenderer.GetPathToActor(post.Author),
                 $"{pathRenderer.GetPathToActor(actor)}/followers"
             ],
             PostVisibility.Followers or PostVisibility.Direct => [
-                post.Author.RemoteId
+                post.Author.RemoteId ?? pathRenderer.GetPathToActor(post.Author)
                 // TODO: We should also have the mentioned people here.
             ],
             _ => new List<string>()
