@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Hangfire;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Cryptography;
 using Toki.ActivityPub.Jobs.Federation;
@@ -8,6 +7,7 @@ using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
 using Toki.Extensions;
+using Toki.Middleware.Routing;
 using Toki.Services.Timelines;
 
 namespace Toki.Controllers;
@@ -17,6 +17,7 @@ namespace Toki.Controllers;
 /// </summary>
 [ApiController]
 [Route("users/{handle}")]
+[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class UsersController(
     UserRepository repo,
     FollowRepository followRepo,
@@ -35,7 +36,7 @@ public class UsersController(
     /// <returns>The user if they exist, or nothing.</returns>
     [HttpGet]
     [Route("")]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     public async Task<ActionResult<ASActor?>> FetchActor([FromRoute] string handle)
     {
         var user = await repo.FindByHandle(handle);
@@ -52,7 +53,7 @@ public class UsersController(
     /// <returns>The collection.</returns>
     [HttpGet]
     [Route("followers")]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     public async Task<ActionResult<ASOrderedCollection<ASObject>>> Followers([FromRoute] string handle)
     {
         // TODO: Implement pagination.
@@ -86,7 +87,7 @@ public class UsersController(
     /// <returns>The collection.</returns>
     [HttpGet]
     [Route("following")]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     public async Task<ActionResult<ASOrderedCollection<ASObject>>> Following([FromRoute] string handle)
     {
         // TODO: Implement pagination.
@@ -120,8 +121,7 @@ public class UsersController(
     /// <returns>The collection.</returns>
     [HttpGet]
     [Route("collections/featured")]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json",
-        "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     public async Task<ActionResult<ASOrderedCollection<ASObject>>> Featured(
         [FromRoute] string handle)
     {
@@ -155,7 +155,7 @@ public class UsersController(
     /// <param name="asObject">The activity.</param>
     /// <returns>The result.</returns>
     [HttpPost]
-    [Consumes("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
+    [Consumes("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json", "application/json")]
     [Route("inbox")]
     public async Task<IActionResult> Inbox(
         [FromRoute] string handle,
@@ -196,7 +196,7 @@ public class UsersController(
     /// <param name="handle">The user's handle.</param>
     /// <returns>The activities produced by the user.</returns>
     [HttpGet]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     [Route("outbox")]
     public async Task<ActionResult<ASOrderedCollection<ASObject>>> Outbox(
         [FromRoute] string handle)

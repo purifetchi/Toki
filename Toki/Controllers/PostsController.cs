@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Renderers;
 using Toki.ActivityStreams.Objects;
+using Toki.Middleware.Routing;
 
 namespace Toki.Controllers;
 
@@ -11,6 +12,7 @@ namespace Toki.Controllers;
 /// <param name="renderer">The post renderer.</param>
 [ApiController]
 [Route("posts/{id}")]
+[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class PostsController(
     PostRepository postRepo,
     PostRenderer renderer) : ControllerBase
@@ -22,7 +24,7 @@ public class PostsController(
     /// <returns>The post if it exists, or nothing.</returns>
     [HttpGet]
     [Route("")]
-    [Produces("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"", "application/json", "application/activity+json")]
+    [ConditionalAccept("application/ld+json", "application/activity+json", "application/json")]
     public async Task<ActionResult<ASNote?>> FetchNote([FromRoute] Ulid id)
     {
         var post = await postRepo.FindById(id);
