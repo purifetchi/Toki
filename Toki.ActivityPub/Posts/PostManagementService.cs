@@ -228,7 +228,7 @@ public class PostManagementService(
                 post);
         }
 
-        if (!post.Author.IsRemote || actor.IsRemote)
+        if (actor.IsRemote)
             return;
 
         var likeActivity = postRenderer.RenderLikeForNote(
