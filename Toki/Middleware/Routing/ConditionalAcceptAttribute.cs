@@ -34,11 +34,7 @@ public class ConditionalAcceptAttribute(params string[] types)
             .Split(',')
             .Select(type => MediaTypeWithQualityHeaderValue.Parse(type)!.MediaType);
         
-        var type = accepts.FirstOrDefault(types.Contains);
-        
-        Console.WriteLine($"Accepted on type {type}");
-
-        return type is not null;
+        return accepts.Any(types.Contains);
     }
 
     /// <inheritdoc />
