@@ -89,6 +89,7 @@ public class ASActor : ASObject
     /// The url of the actor.
     /// </summary>
     [JsonPropertyName("url")]
+    [JsonConverter(typeof(ForceSingleObjectConverter<string>))]
     public string? Url { get; set; }
     
     /// <summary>
