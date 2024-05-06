@@ -193,22 +193,26 @@ public class StatusRenderer(
         User? user,
         IList<Post> posts)
     {
-        if (user is null)
-            return posts.Select(RenderForPost).ToList();
-        
-        // Get all ids we're interested in (this also includes the IDs of boosted posts)
-        var ids = posts
-            .Concat(posts
-                .Where(p => p.Boosting is not null)
-                .Select(p => p.Boosting!))
-            .Select(p => p.Id)
-            .Distinct()
-            .ToList();
+        IReadOnlyList<Ulid>? likes = [];
+        IReadOnlyList<Ulid>? boosts = [];
+        IReadOnlyList<Ulid>? bookmarks = [];
 
-        // Fetch both of these at once so we only do 2 DB hits while rendering many.
-        var likes = await postManagementService.FindManyLikedPosts(user, ids);
-        var boosts = await postManagementService.FindManyBoostedPosts(user, ids);
-        var bookmarks = await postManagementService.FindManyBookmarkedPosts(user, ids);
+        if (user is not null)
+        {
+            // Get all ids we're interested in (this also includes the IDs of boosted posts)
+            var ids = posts
+                .Concat(posts
+                    .Where(p => p.Boosting is not null)
+                    .Select(p => p.Boosting!))
+                .Select(p => p.Id)
+                .Distinct()
+                .ToList();
+            
+            // Fetch both of these at once so we only do 2 DB hits while rendering many.
+            likes = await postManagementService.FindManyLikedPosts(user, ids);
+            boosts = await postManagementService.FindManyBoostedPosts(user, ids);
+            bookmarks = await postManagementService.FindManyBookmarkedPosts(user, ids);
+        }
         
         var results = new List<Status>();
         foreach (var post in posts)
