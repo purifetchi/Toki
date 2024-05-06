@@ -14,4 +14,9 @@ public class FrontendConfiguration
     /// The single-page app filename.
     /// </summary>
     public string? SpaFilename { get; init; }
+    
+    /// <summary>
+    /// The path to this instance's thumbnail.
+    /// </summary>
+    public string? ThumbnailPath { get; init; }
 }

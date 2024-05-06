@@ -20,7 +20,8 @@ public class InstanceController(
     InstanceRepository repo,
     UsageService usageService,
     IOptions<InstanceConfiguration> opts,
-    IOptions<UploadConfiguration> uploadOpts) : ControllerBase
+    IOptions<UploadConfiguration> uploadOpts,
+    IOptions<FrontendConfiguration> frontendOpts) : ControllerBase
 {
     /// <summary>
     /// Fetches the v1 version of the information.
@@ -45,6 +46,7 @@ public class InstanceController(
             Version = $"4.0.0 (compatible; {version})",
             ShortDescription = config.Info,
             Description = config.Info,
+            Thumbnail = frontendOpts.Value.ThumbnailPath ?? $"https://{config.Domain}/favicon.png",
             
             Configuration = new InstanceInformationV1Configuration()
             {
