@@ -45,6 +45,12 @@ public record InstanceInformationV1Response
     public string? Email { get; init; }
 
     /// <summary>
+    /// The version of the software.
+    /// </summary>
+    [JsonPropertyName("thumbnail")]
+    public string? Thumbnail { get; init; } = null;
+
+    /// <summary>
     /// The languages supported by this server.
     /// </summary>
     [JsonPropertyName("languages")]
@@ -92,5 +98,5 @@ public record InstanceInformationV1Response
     [JsonPropertyName("invites_enabled")]
     public bool InvitesEnabled { get; init; } = false;
     
-    // TODO: Rules, contact account. thumbnail, stats
+    // TODO: Rules, contact account. stats
 }
