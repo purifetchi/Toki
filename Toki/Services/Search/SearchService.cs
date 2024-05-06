@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Toki.ActivityPub.Configuration;
 using Toki.ActivityPub.Extensions;
 using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
@@ -27,6 +29,7 @@ public class SearchService(
     WebFingerResolver webFingerResolver,
     ActivityPubResolver activityPubResolver,
     StatusRenderer statusRenderer,
+    IOptions<InstanceConfiguration> opts,
     ILogger<SearchService> logger)
 {
     /// <summary>
@@ -78,7 +81,8 @@ public class SearchService(
             if (part[0] != '@')
                 continue;
 
-            var handle = part[1..];
+            var handle = part[1..]
+                .Replace($"@{opts.Value.Domain}", ""); // Replace our domain with nothing.
             handles.Add(handle);
         }
         
