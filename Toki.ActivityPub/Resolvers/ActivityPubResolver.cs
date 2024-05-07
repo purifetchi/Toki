@@ -86,7 +86,11 @@ public class ActivityPubResolver(
     /// <returns>A list of the objects.</returns>
     public async Task<IList<ASObject>?> FetchCollection(ASObject obj)
     {
+        // NOTE: This was chosen pretty much arbitrarily
+        const int maxFetchedPages = 50;
+        
         var maybeCollection = await Fetch<ASObject>(obj);
+        var fetchedPages = 0;
         
         switch (maybeCollection)
         {
@@ -98,10 +102,15 @@ public class ActivityPubResolver(
             {
                 var page = await Fetch<ASOrderedCollectionPage<ASObject>>(first);
                 var items = new List<ASObject>();
-                while (page is not null)
+                while (page is not null &&
+                       fetchedPages < maxFetchedPages)
                 {
+                    fetchedPages++;
                     items.AddRange(page.OrderedItems);
                     if (page.Next is null)
+                        break;
+                    
+                    if (page.Next == page.Id)
                         break;
                     
                     page = await Fetch<ASOrderedCollectionPage<ASObject>>(
@@ -114,10 +123,15 @@ public class ActivityPubResolver(
             {
                 var page = await Fetch<ASCollectionPage<ASObject>>(first);
                 var items = new List<ASObject>();
-                while (page is not null)
+                while (page is not null &&
+                       fetchedPages < maxFetchedPages)
                 {
+                    fetchedPages++;
                     items.AddRange(page.Items);
                     if (page.Next is null)
+                        break;
+
+                    if (page.Next == page.Id)
                         break;
                     
                     page = await Fetch<ASCollectionPage<ASObject>>(
