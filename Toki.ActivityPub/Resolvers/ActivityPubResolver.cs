@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
+using Toki.ActivityStreams.Activities;
 using Toki.ActivityStreams.Objects;
 using Toki.HTTPSignatures;
 
@@ -74,9 +75,36 @@ public class ActivityPubResolver(
         
         logger.LogInformation($"{obj.Id} OK");
 
-        return await JsonSerializer.DeserializeAsync<TAsObject>(
+        var deserialized = await JsonSerializer.DeserializeAsync<TAsObject>(
             await resp.Content.ReadAsStreamAsync(),
             options: SerializerOptions);
+
+        if (deserialized is null)
+            return null;
+
+        if (deserialized.Id != obj.Id)
+        {
+            logger.LogWarning($"Someone tried to impersonate another id! Requested '{obj.Id}' and got '{deserialized.Id}'.");
+            return null;
+        }
+
+        if (deserialized is ASActivity activity)
+        {
+            var reqHost = new Uri(obj.Id)
+                .Host;
+
+            var actorHost = new Uri(activity.Actor.Id)
+                .Host;
+
+            if (reqHost != actorHost)
+            {
+                logger.LogWarning($"Someone tried to impersonate an actor? Activity was on host '{reqHost}', while actor was on host '{actorHost}'.");
+                
+                // TODO: I want to return null here but I worry about split domains...
+            }
+        }
+
+        return deserialized;
     }
 
     /// <summary>
