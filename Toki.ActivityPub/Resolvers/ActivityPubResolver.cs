@@ -110,7 +110,7 @@ public class ActivityPubResolver(
                     if (page.Next is null)
                         break;
                     
-                    if (page.Next == page.Id)
+                    if (page.Next.StartsWith(page.Id, StringComparison.InvariantCultureIgnoreCase))
                         break;
                     
                     page = await Fetch<ASOrderedCollectionPage<ASObject>>(
@@ -131,7 +131,7 @@ public class ActivityPubResolver(
                     if (page.Next is null)
                         break;
 
-                    if (page.Next == page.Id)
+                    if (page.Next.StartsWith(page.Id, StringComparison.InvariantCultureIgnoreCase))
                         break;
                     
                     page = await Fetch<ASCollectionPage<ASObject>>(
