@@ -90,7 +90,7 @@ public class ActivityPubResolver(
 
         if (deserialized is ASActivity activity)
         {
-            var reqHost = new Uri(obj.Id)
+            var reqHost = new Uri(deserialized.Id)
                 .Host;
 
             var actorHost = new Uri(activity.Actor.Id)
@@ -99,8 +99,7 @@ public class ActivityPubResolver(
             if (reqHost != actorHost)
             {
                 logger.LogWarning($"Someone tried to impersonate an actor? Activity was on host '{reqHost}', while actor was on host '{actorHost}'.");
-                
-                // TODO: I want to return null here but I worry about split domains...
+                return null;
             }
         }
 
