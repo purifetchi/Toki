@@ -128,30 +128,30 @@ public class SignedHttpClient(
     /// <summary>
     /// POSTs an url.
     /// </summary>
-    /// <param name="url">The url.</param>
+    /// <param name="uri">The url.</param>
     /// <returns>The response.</returns>
-    public Task<HttpResponseMessage> Post(string url)
+    public Task<HttpResponseMessage> Post(Uri uri)
     {
-        return Send(url, HttpMethod.Post);
+        return Send(uri, HttpMethod.Post);
     }
     
     /// <summary>
     /// GETs an url.
     /// </summary>
-    /// <param name="url">The url.</param>
+    /// <param name="uri">The url.</param>
     /// <returns>The response.</returns>
-    public Task<HttpResponseMessage> Get(string url)
+    public Task<HttpResponseMessage> Get(Uri uri)
     {
-        return Send(url, HttpMethod.Get);
+        return Send(uri, HttpMethod.Get);
     }
 
     /// <summary>
     /// Sends the message.
     /// </summary>
-    /// <param name="url">The url.</param>
+    /// <param name="uri">The url.</param>
     /// <param name="method">The method.</param>
     /// <returns>The response.</returns>
-    private async Task<HttpResponseMessage> Send(string url, HttpMethod method)
+    private async Task<HttpResponseMessage> Send(Uri uri, HttpMethod method)
     {
         _client ??= httpClientFactory.CreateClient();
         
@@ -172,7 +172,7 @@ public class SignedHttpClient(
                 "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
         
-        _requestMessage.RequestUri = new(url);
+        _requestMessage.RequestUri = uri;
         _requestMessage.Method = method;
         
         // Set up some already known headers.

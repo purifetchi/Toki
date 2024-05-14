@@ -73,6 +73,8 @@ public class MessageFederationJob(
             HttpResponseMessage result;
             try
             {
+                var uri = new Uri(target);
+                
                 result = await httpClient
                     .NewRequest()
                     .WithKey(
@@ -83,7 +85,7 @@ public class MessageFederationJob(
                     .AddHeaderToSign("Host")
                     .AddHeaderToSign("Digest")
                     .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
-                    .Post(target);
+                    .Post(uri);
             }
             catch (HttpRequestException e)
             {

@@ -20,12 +20,104 @@ public class ActivityPubResolver(
     ILogger<ActivityPubResolver> logger)
 {
     /// <summary>
+    /// The types we accept when fetching.
+    /// </summary>
+    private const string ACCEPT_TYPES 
+        = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\", application/activity+json";
+    
+    /// <summary>
     /// The serializer options for reading fetched objects.
     /// </summary>
     private static JsonSerializerOptions SerializerOptions { get; } = new()
     {
         NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
+
+    /// <summary>
+    /// Checks if the given type is a valid ActivityPub Content-Type.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>Whether it is an ActivityPub content type.</returns>
+    private static bool IsActivityPubContentType(string type) => type switch
+    {
+        "application/activity+json" => true,
+        "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" => true,
+        _ => false
+    };
+
+    /// <summary>
+    /// Fetches an object without ActivityStreams object validation.
+    /// </summary>
+    /// <param name="uri">The uri of the object to fetch.</param>
+    /// <typeparam name="TAsObject">The type to fetch.</typeparam>
+    /// <returns>The fetched object on success, null otherwise.</returns>
+    private async Task<TAsObject?> FetchWithoutActivityStreamsValidation<TAsObject>(Uri uri)
+        where TAsObject : ASObject
+    {
+        // The max response size, in bytes. (10MB by default)
+        const int maxResponseSize = 5 * 1024 * 1024;
+        
+        // If we're fetching an object from our own domain, we're doing something very wrong.
+        // That, or someone is trying to spoof an object.
+        if (uri.Host == opts.Value.Domain)
+        {
+            logger.LogWarning($"Prevented fetching local domain object {uri}.");
+            return null;
+        }
+        
+        logger.LogInformation($"Fetching object {uri}");
+        
+        HttpResponseMessage resp;
+        try
+        {
+            resp = opts.Value.SignedFetch ? 
+                await FetchWithSigning(uri) : 
+                await FetchWithoutSigning(uri);
+        }
+        catch (TaskCanceledException e)
+        {
+            logger.LogWarning($"Cancelled task while waiting on {uri}, possibly timed out.");
+            return null;
+        }
+        catch (HttpRequestException e)
+        {
+            logger.LogWarning($"Request exception while fetching object {uri}! {e.Message}");
+            return null;
+        }
+
+        if (!resp.IsSuccessStatusCode)
+            return null;
+
+        var headers = resp.Content.Headers;
+
+        // Check that the content type is something we actually care about.
+        if (headers.ContentType?.MediaType != null)
+        {
+            var types = headers
+                .ContentType
+                .ToString()
+                .Split(',');
+
+            if (!types.Any(IsActivityPubContentType))
+            {
+                logger.LogWarning($"Object {uri} didn't return a JSON response! [{headers.ContentType.MediaType}]");
+                return null;
+            }
+        }
+
+        // Check that the content length is sane.
+        if (headers.ContentLength > maxResponseSize)
+        {
+            logger.LogWarning($"Object {uri} had a length that's too big! [{headers.ContentLength}]");
+            return null;
+        }
+        
+        logger.LogInformation($"{uri} OK");
+    
+        return await JsonSerializer.DeserializeAsync<TAsObject>(
+            await resp.Content.ReadAsStreamAsync(),
+            options: SerializerOptions);
+    }
     
     /// <summary>
     /// Fetches the proper ASObject from a given unresolved ASObject. 
@@ -43,49 +135,26 @@ public class ActivityPubResolver(
         if (string.IsNullOrEmpty(obj.Id))
             return null;
 
-        logger.LogInformation($"Fetching object {obj.Id}");
-
-        HttpResponseMessage resp;
-        try
-        {
-            resp = opts.Value.SignedFetch ? 
-                await FetchWithSigning(obj.Id) : 
-                await FetchWithoutSigning(obj.Id);
-        }
-        catch (TaskCanceledException e)
-        {
-            logger.LogWarning($"Cancelled task while waiting on {obj.Id}, possibly timed out.");
-            return null;
-        }
-        catch (HttpRequestException e)
-        {
-            logger.LogWarning($"Request exception while fetching object {obj.Id}! {e.Message}");
-            return null;
-        }
-
-        if (!resp.IsSuccessStatusCode)
-            return null;
-
-        if (resp.Content.Headers.ContentType?.MediaType != null &&
-            resp.Content.Headers.ContentType.MediaType.Contains("json", StringComparison.InvariantCultureIgnoreCase) == false)
-        {
-            logger.LogWarning($"Object {obj.Id} didn't return a JSON response! [{resp.Content.Headers.ContentType.MediaType}]");
-            return null;
-        }
+        var uri = new Uri(obj.Id);
         
-        logger.LogInformation($"{obj.Id} OK");
-
-        var deserialized = await JsonSerializer.DeserializeAsync<TAsObject>(
-            await resp.Content.ReadAsStreamAsync(),
-            options: SerializerOptions);
-
+        // Fetch the object without ASObject validation.
+        var deserialized = await FetchWithoutActivityStreamsValidation<TAsObject>(uri);
         if (deserialized is null)
             return null;
 
+        // Check if the deserialized ID and the object ID are the same.
         if (deserialized.Id != obj.Id)
         {
-            logger.LogWarning($"Someone tried to impersonate another id! Requested '{obj.Id}' and got '{deserialized.Id}'.");
-            return null;
+            // If they aren't try to fetch from deserialized.id again, to ensure obj.id wasn't an alias...
+            // This is used by Mastodon and seems to work.
+            var objectFromId = await FetchWithoutActivityStreamsValidation<TAsObject>(
+                new Uri(deserialized.Id));
+
+            if (objectFromId?.Id != deserialized.Id)
+            {
+                logger.LogWarning($"Someone tried to impersonate another id! Requested '{obj.Id}' and got '{deserialized.Id}'.");
+                return null;
+            }
         }
 
         if (deserialized is ASActivity activity)
@@ -175,17 +244,17 @@ public class ActivityPubResolver(
     /// <summary>
     /// Fetches an URL without signing the request.
     /// </summary>
-    /// <param name="url">The url.</param>
+    /// <param name="uri">The url.</param>
     /// <returns>The response message.</returns>
-    private async Task<HttpResponseMessage> FetchWithoutSigning(string url)
+    private async Task<HttpResponseMessage> FetchWithoutSigning(Uri uri)
     {
         var request = new HttpRequestMessage()
         {
-            RequestUri = new(url),
+            RequestUri = uri,
             Method = HttpMethod.Get,
             Headers =
             {
-                { "Accept", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" },
+                { "Accept", ACCEPT_TYPES },
                 { "User-Agent", opts.Value.UserAgent }
             }
         };
@@ -197,9 +266,9 @@ public class ActivityPubResolver(
     /// <summary>
     /// Fetches an URL with signing the request.
     /// </summary>
-    /// <param name="url">The url.</param>
+    /// <param name="uri">The url.</param>
     /// <returns>The response message.</returns>
-    private async Task<HttpResponseMessage> FetchWithSigning(string url)
+    private async Task<HttpResponseMessage> FetchWithSigning(Uri uri)
     {
         var keypair = await instanceActorResolver.GetInstanceActorKeypair();
         return await signedHttpClient
@@ -208,8 +277,7 @@ public class ActivityPubResolver(
             .WithHeader("User-Agent", opts.Value.UserAgent)
             .AddHeaderToSign("Host")
             .SetDate(DateTimeOffset.UtcNow.AddSeconds(5))
-            .WithHeader("Accept",
-                "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-            .Get(url);
+            .WithHeader("Accept", ACCEPT_TYPES)
+            .Get(uri);
     }
 }
