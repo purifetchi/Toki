@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,7 @@ public class ActivityPubResolver(
     private static bool IsActivityPubContentType(string type) => type switch
     {
         "application/activity+json" => true,
-        "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"" => true,
+        "application/ld+json" => true,
         _ => false
     };
 
@@ -96,7 +97,9 @@ public class ActivityPubResolver(
             var types = headers
                 .ContentType
                 .ToString()
-                .Split(',');
+                .Split(',')
+                .Select(MediaTypeWithQualityHeaderValue.Parse)
+                .Select(t => t.MediaType!);
 
             if (!types.Any(IsActivityPubContentType))
             {
