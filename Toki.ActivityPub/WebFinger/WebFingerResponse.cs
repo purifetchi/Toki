@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.ActivityStreams.Serialization;
 
 namespace Toki.ActivityPub.WebFinger;
 
@@ -23,5 +24,6 @@ public record WebFingerResponse
     /// The links to this user.
     /// </summary>
     [JsonPropertyName("links")]
+    [JsonConverter(typeof(ListOrObjectConverter<WebFingerLink>))]
     public IReadOnlyList<WebFingerLink> Links { get; init; } = null!;
 }
