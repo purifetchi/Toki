@@ -21,6 +21,11 @@ public class ActivityPubResolver(
     ILogger<ActivityPubResolver> logger)
 {
     /// <summary>
+    /// The max request size in bytes. (5MiB by default)
+    /// </summary>
+    private const int MAX_REQUEST_SIZE = 5 * 1024 * 1024;
+    
+    /// <summary>
     /// The types we accept when fetching.
     /// </summary>
     private const string ACCEPT_TYPES 
@@ -37,14 +42,25 @@ public class ActivityPubResolver(
     /// <summary>
     /// Checks if the given type is a valid ActivityPub Content-Type.
     /// </summary>
-    /// <param name="type">The type to check.</param>
+    /// <param name="mediaType">The type to check.</param>
     /// <returns>Whether it is an ActivityPub content type.</returns>
-    private static bool IsActivityPubContentType(string type) => type switch
+    private static bool IsActivityPubContentType(MediaTypeWithQualityHeaderValue mediaType)
     {
-        "application/activity+json" => true,
-        "application/ld+json" => true,
-        _ => false
-    };
+        if (mediaType.MediaType == "application/activity+json")
+            return true;
+        
+        if (mediaType.MediaType == "application/ld+json")
+        {
+            var profile = mediaType
+                .Parameters
+                .FirstOrDefault(kv => kv.Name == "profile");
+
+            return profile?.Value is not null && 
+                   profile.Value.Contains("https://www.w3.org/ns/activitystreams");
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Fetches an object without ActivityStreams object validation.
@@ -55,9 +71,6 @@ public class ActivityPubResolver(
     private async Task<TAsObject?> FetchWithoutActivityStreamsValidation<TAsObject>(Uri uri)
         where TAsObject : ASObject
     {
-        // The max response size, in bytes. (10MB by default)
-        const int maxResponseSize = 5 * 1024 * 1024;
-        
         // If we're fetching an object from our own domain, we're doing something very wrong.
         // That, or someone is trying to spoof an object.
         if (uri.Host == opts.Value.Domain)
@@ -92,24 +105,26 @@ public class ActivityPubResolver(
         var headers = resp.Content.Headers;
 
         // Check that the content type is something we actually care about.
-        if (headers.ContentType?.MediaType != null)
+        if (headers.ContentType?.MediaType is null)
         {
-            var types = headers
-                .ContentType
-                .ToString()
-                .Split(',')
-                .Select(MediaTypeWithQualityHeaderValue.Parse)
-                .Select(t => t.MediaType!);
+            logger.LogWarning($"Object {uri} didn't contain a Content-Type header!");
+            return null;
+        }
+        
+        var types = headers
+            .ContentType
+            .ToString()
+            .Split(',')
+            .Select(MediaTypeWithQualityHeaderValue.Parse);
 
-            if (!types.Any(IsActivityPubContentType))
-            {
-                logger.LogWarning($"Object {uri} didn't return a JSON response! [{headers.ContentType.MediaType}]");
-                return null;
-            }
+        if (!types.Any(IsActivityPubContentType))
+        {
+            logger.LogWarning($"Object {uri} didn't return a valid ActivityPub response! [{headers.ContentType.MediaType}]");
+            return null;
         }
 
         // Check that the content length is sane.
-        if (headers.ContentLength > maxResponseSize)
+        if (headers.ContentLength > MAX_REQUEST_SIZE)
         {
             logger.LogWarning($"Object {uri} had a length that's too big! [{headers.ContentLength}]");
             return null;
@@ -158,6 +173,10 @@ public class ActivityPubResolver(
                 logger.LogWarning($"Someone tried to impersonate another id! Requested '{obj.Id}' and got '{deserialized.Id}'.");
                 return null;
             }
+
+            // Use the re-fetched object as the source of truth to prevent someone spoofing a valid object
+            // but supplying malicious data.
+            deserialized = objectFromId;
         }
 
         if (deserialized is ASActivity activity)
