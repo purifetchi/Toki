@@ -157,7 +157,7 @@ public class ActivityPubResolver(
         
         // Fetch the object without ASObject validation.
         var deserialized = await FetchWithoutActivityStreamsValidation<TAsObject>(uri);
-        if (deserialized is null)
+        if (deserialized is null || string.IsNullOrEmpty(deserialized.Id))
             return null;
 
         // Check if the deserialized ID and the object ID are the same.
