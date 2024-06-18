@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
-using Toki.ActivityPub.Models;
 using Toki.ActivityPub.Persistence.Repositories;
 using Toki.ActivityPub.Posts;
 using Toki.ActivityPub.Resolvers;

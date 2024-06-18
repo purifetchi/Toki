@@ -1,4 +1,5 @@
 using Hangfire;
+using Microsoft.Extensions.Logging;
 using Toki.ActivityPub.Federation;
 using Toki.ActivityPub.Formatters;
 using Toki.ActivityPub.Jobs.Fetching;
@@ -20,7 +21,8 @@ public class UserManagementService(
     UserRenderer renderer,
     ActivityPubResolver resolver,
     MessageFederationService federationService,
-    ContentFormatter contentFormatter)
+    ContentFormatter contentFormatter,
+    ILogger<UserManagementService> logger)
 {
     /// <summary>
     /// Updates a user.
@@ -91,6 +93,26 @@ public class UserManagementService(
 
         await federationService.SendToFollowers(user, msg);
     }
+    
+    /// <summary>
+    /// Schedules an actor update if one is required.
+    /// </summary>
+    /// <param name="user">The actor to update.</param>
+    private void ScheduleActorUpdateIfNecessary(User user)
+    {
+        const int maxRetentionInDays = 5;
+
+        if (!user.IsRemote || user.RemoteId is null)
+            return;
+        
+        var timeDiff = DateTimeOffset.UtcNow - user.LastUpdateTime;
+        if (timeDiff.Days < maxRetentionInDays)
+            return;
+
+        logger.LogInformation($"Scheduling an actor update for {user.RemoteId}");
+        BackgroundJob.Enqueue<UpdateActorDataJob>(
+            job => job.UpdateActor(user.RemoteId!));
+    }
 
     /// <summary>
     /// Fetches a user given their remote id.
@@ -102,7 +124,10 @@ public class UserManagementService(
     {
         var maybeUser = await repo.FindByRemoteId(remoteId);
         if (maybeUser is not null)
+        {
+            ScheduleActorUpdateIfNecessary(maybeUser);
             return maybeUser;
+        }
 
         var actor = await resolver.Fetch<ASActor>(
             ASObject.Link(remoteId));

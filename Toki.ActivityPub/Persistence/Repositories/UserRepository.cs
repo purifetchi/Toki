@@ -159,7 +159,8 @@ public class UserRepository(
             
             Handle = $"{actor.PreferredUsername!}@{instance.Domain}",
             
-            Fields = actor.GetUserProfileFields()
+            Fields = actor.GetUserProfileFields(),
+            LastUpdateTime = DateTimeOffset.UtcNow
         };
 
         user.Keypair.Owner = user;
@@ -189,6 +190,7 @@ public class UserRepository(
         actor.RequiresFollowApproval = data.ManuallyApprovesFollowers;
         actor.Bio = data.Bio;
         actor.Fields = data.GetUserProfileFields();
+        actor.LastUpdateTime = DateTimeOffset.UtcNow;
 
         await Update(actor);
     }

@@ -17,6 +17,11 @@ public class User : RemoteableModel
     /// The handle of this user. (For remote users it's of the form @someone@something.tld)
     /// </summary>
     public required string Handle { get; set; }
+
+    /// <summary>
+    /// The last update time of this user.
+    /// </summary>
+    public DateTimeOffset LastUpdateTime { get; set; } = DateTimeOffset.FromUnixTimeSeconds(0);
     
     /// <summary>
     /// The instance this user is a part of.
