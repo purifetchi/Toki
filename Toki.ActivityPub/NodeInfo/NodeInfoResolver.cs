@@ -38,6 +38,10 @@ public class NodeInfoResolver(
         if (!resp.IsSuccessStatusCode)
             return null;
 
+        // Check if we actually got a json response.
+        if (resp.Content.Headers.ContentType?.ToString().Contains("json") != true)
+            return null;
+
         return await resp.Content.ReadFromJsonAsync<T>();
     }
     
