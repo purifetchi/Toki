@@ -17,6 +17,17 @@ public class PostRepository(
     IOptions<InstanceConfiguration> opts)
 {
     /// <summary>
+    /// Checks if a post exists by a remote id.
+    /// </summary>
+    /// <param name="remoteId">Said remote id.</param>
+    /// <returns>Whether that post exists.</returns>
+    public async Task<bool> PostRemoteIdExists(string remoteId)
+    {
+        return await db.Posts
+            .AnyAsync(p => p.RemoteId == remoteId);
+    }
+    
+    /// <summary>
     /// Finds a post by its remote id.
     /// </summary>
     /// <param name="remoteId">The remote id of the post.</param>

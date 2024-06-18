@@ -274,25 +274,28 @@ public class InboxHandlerJob(
             return;
 
         var obj = await resolver.Fetch<ASObject>(create.Object);
-        
-        if (obj is ASNote note)
+
+        var note = obj switch
         {
+            ASNote asNote => asNote,
+            ASVideo asVideo => asVideo.MockASNote(),
+            _ => null
+        };
+        
+        if (note is not null)
+        {
+            if (await postRepo.PostRemoteIdExists(note.Id))
+                return;
+            
             var post = await postManagementService.ImportFromActivityStreams(note, actor);
             if (post is null)
                 return;
             
             await notificationService.DispatchAllNotificationsForPost(post);
         }
-        else if (obj is ASVideo video)
+        else
         {
-            var post = await postManagementService.ImportFromActivityStreams(
-                video.MockASNote(), 
-                actor);
-            
-            if (post is null)
-                return;
-            
-            await notificationService.DispatchAllNotificationsForPost(post);
+            logger.LogWarning($"Tried to Create an object that's not a note! {obj?.Type}");
         }
     }
     
