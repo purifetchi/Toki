@@ -101,8 +101,9 @@ public class PostManagementService(
         var creation = await postRenderer.RenderCreationForNote(post);
         if (creationRequest.InReplyTo is null)
         {
-            await federationService.SendToFollowers(
+            await federationService.SendToRelevantPostUsers(
                 creationRequest.Author,
+                post,
                 creation);
         }
         else
