@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.Serialization;
 
 namespace Toki.MastodonApi.Schemas.Objects;
 
@@ -23,12 +24,14 @@ public record Status
     /// When was this status created?
     /// </summary>
     [JsonPropertyName("created_at")]
+    [JsonConverter(typeof(ZuluTimestampConverter))]
     public DateTimeOffset CreatedAt { get; init; }
 
     /// <summary>
     /// Timestamp of when the status was last edited.
     /// </summary>
     [JsonPropertyName("edited_at")]
+    [JsonConverter(typeof(ZuluTimestampConverter))]
     public DateTimeOffset? EditedAt { get; init; } = null;
     
     /// <summary>

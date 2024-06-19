@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Toki.Serialization;
 
 namespace Toki.MastodonApi.Schemas.Objects;
 
@@ -77,6 +78,7 @@ public record Account
     /// When was this account created at?
     /// </summary>
     [JsonPropertyName("created_at")]
+    [JsonConverter(typeof(ZuluTimestampConverter))]
     public DateTimeOffset CreatedAt { get; init; }
     
     /// <summary>
