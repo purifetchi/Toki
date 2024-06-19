@@ -18,6 +18,6 @@ public class ZuluTimestampConverter : JsonConverter<DateTimeOffset>
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString("s") + "Z");
+        writer.WriteStringValue(value.ToString("s") + ".000Z");
     }
 }
