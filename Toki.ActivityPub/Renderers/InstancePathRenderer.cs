@@ -43,6 +43,13 @@ public class InstancePathRenderer(
         $"https://{opts.Value.Domain}/images/avatar.png";
     
     /// <summary>
+    /// Returns a link to the default banner.
+    /// </summary>
+    /// <returns>The default banner.</returns>
+    public string GetPathToDefaultBanner() =>
+        $"https://{opts.Value.Domain}/images/banner.png";
+    
+    /// <summary>
     /// Gets the path to the hashtag.
     /// </summary>
     /// <param name="hashtag">The hashtag.</param>

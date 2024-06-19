@@ -51,8 +51,10 @@ public class AccountRenderer(
             AvatarStatic = user.AvatarUrl ?? 
                            pathRenderer.GetPathToDefaultAvatar(),
             
-            Header = user.BannerUrl ?? "",
-            HeaderStatic = user.BannerUrl ?? "",
+            Header = user.BannerUrl ?? 
+                     pathRenderer.GetPathToDefaultBanner(),
+            HeaderStatic = user.BannerUrl ?? 
+                           pathRenderer.GetPathToDefaultBanner(),
             
             ManuallyApprovesRequests = user.RequiresFollowApproval,
             
