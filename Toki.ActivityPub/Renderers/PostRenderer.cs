@@ -14,6 +14,7 @@ namespace Toki.ActivityPub.Renderers;
 public class PostRenderer(
     InstancePathRenderer pathRenderer,
     EmojiRepository emojiRepo,
+    UserRepository userRepo,
     UserRenderer userRenderer)
 {
     /// <summary>
@@ -102,15 +103,21 @@ public class PostRenderer(
     /// </summary>
     /// <param name="post">The post.</param>
     /// <returns>The mentions.</returns>
-    private IReadOnlyList<ASLink>? RenderMentionsFrom(
+    private async Task<IReadOnlyList<ASLink>?> RenderMentionsFrom(
         Post post)
     {
-        return post.UserMentions?
-            .Select(mention => new ASMention()
+        if (post.Mentions is null)
+            return null;
+
+        var users = await userRepo.FindManyByIds(
+            post.Mentions.Select(Ulid.Parse).ToList());
+        
+        return users?
+            .Select(user => new ASMention()
             {
                 Type = "Mention",
-                Name = $"@{mention.Handle}",
-                Href = mention.Url
+                Name = $"@{user.Handle}",
+                Href = user.RemoteId
             })
             .ToList();
     }
@@ -177,7 +184,9 @@ public class PostRenderer(
     {
         var (to, cc) = GetToAndCcFor(post);
 
-        var tags = RenderMentionsFrom(post)?
+        var mentions = await RenderMentionsFrom(post);
+        
+        var tags = mentions?
             .Concat(RenderHashtagsFrom(post) ?? [])
             .Concat(await RenderEmojiFrom(post) ?? [])
             .ToList();

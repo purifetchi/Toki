@@ -15,6 +15,7 @@ public class StatusRenderer(
     AccountRenderer accountRenderer,
     InstancePathRenderer pathRenderer,
     EmojiRepository emojiRepo,
+    UserRepository userRepo,
     PostManagementService postManagementService)
 {
     /// <summary>
@@ -30,17 +31,17 @@ public class StatusRenderer(
     }
 
     /// <summary>
-    /// Renders the mentions for a post.
+    /// Renders the mentions from a list of users.
     /// </summary>
-    /// <param name="post">The post.</param>
+    /// <param name="users">The list of users.</param>
     /// <returns>The mentions.</returns>
-    private IReadOnlyList<Mention>? RenderMentionsFor(Post post)
+    private IReadOnlyList<Mention>? RenderMentionsFrom(IEnumerable<User> users)
     {
-        return post.UserMentions?
+        return users
             .Select(m => new Mention
             {
-                Id = m.Id,
-                Url = m.Url,
+                Id = m.Id.ToString(),
+                Url = m.RemoteId,
                 Username = m.Handle,
                 WebFingerResource = m.Handle
             })
@@ -81,6 +82,20 @@ public class StatusRenderer(
         return emojis
             .Select(RenderEmojiFrom)
             .ToList();
+    }
+
+    /// <summary>
+    /// Gets the mentions for a given post.
+    /// </summary>
+    /// <param name="post">Said post.</param>
+    /// <returns>The mentions within it.</returns>
+    private async Task<IReadOnlyList<Mention>> GetMentionsFor(Post post)
+    {
+        var mentionedUsers = post.Mentions is not null
+            ? await userRepo.FindManyByIds(post.Mentions.Select(Ulid.Parse)) ?? []
+            : [];
+
+        return RenderMentionsFrom(mentionedUsers) ?? [];
     }
 
     /// <summary>
@@ -151,7 +166,6 @@ public class StatusRenderer(
             InReplyToAccountId = post.Parent?.AuthorId.ToString(),
 
             Attachments = RenderAttachmentsFor(post) ?? [],
-            Mentions = RenderMentionsFor(post) ?? [],
             Tags = RenderTagsFor(post) ?? []
         };
     }
@@ -179,6 +193,7 @@ public class StatusRenderer(
         status.Liked = liked;
         status.Boosted = boosted;
         status.Bookmarked = bookmarked;
+        status.Mentions = await GetMentionsFor(post);
 
         return status;
     }
@@ -220,12 +235,14 @@ public class StatusRenderer(
             var status = RenderForPost(post);
             
             // TODO: Preload all of the emojis at once.
+            // TODO: Preload all of the mentions too.
             if (status.Boost != null)
             {
                 status.Boost.Liked = likes.Contains(post.Boosting!.Id);
                 status.Boost.Boosted = boosts.Contains(post.Boosting!.Id);
                 status.Boost.Bookmarked = bookmarks.Contains(post.Boosting!.Id);
                 status.Boost.Emojis = await GetEmojiFor(post.Boosting!);
+                status.Boost.Mentions = await GetMentionsFor(post.Boosting!);
             }
             else
             {
@@ -233,6 +250,7 @@ public class StatusRenderer(
                 status.Boosted = boosts.Contains(post.Id);
                 status.Bookmarked = bookmarks.Contains(post.Id);
                 status.Emojis = await GetEmojiFor(post);
+                status.Mentions = await GetMentionsFor(post);
             }
             
             results.Add(status);

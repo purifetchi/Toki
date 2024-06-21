@@ -83,13 +83,8 @@ public class PostManagementService(
             
             Attachments = creationRequest.Media,
             
-            UserMentions = formattingResult.Mentions
-                .Select(u => new PostMention
-                {
-                    Id = u.Id.ToString(),
-                    Handle = u.Handle,
-                    Url = u.RemoteId ?? pathRenderer.GetPathToActor(u)
-                })
+            Mentions = formattingResult.Mentions
+                .Select(u => u.Id.ToString())
                 .ToList(),
             
             Tags = formattingResult.Hashtags,
@@ -512,7 +507,7 @@ public class PostManagementService(
     /// </summary>
     /// <param name="note">The note.</param>
     /// <returns>The mentions, if any exist.</returns>
-    private async Task<List<PostMention>?> CollectMentions(
+    private async Task<List<string>?> CollectMentions(
         ASNote note)
     {
         if (note.Tags is null)
@@ -522,7 +517,7 @@ public class PostManagementService(
             .OfType<ASMention>()
             .ToList();
 
-        var mentions = new List<PostMention>();
+        var mentions = new List<string>();
         foreach (var mention in asMentions)
         {
             if (mention.Href is null)
@@ -532,12 +527,7 @@ public class PostManagementService(
             if (user is null)
                 continue;
             
-            mentions.Add(new PostMention
-            {
-                Id = user.Id.ToString(),
-                Handle = user.Handle,
-                Url = user.RemoteId ?? pathRenderer.GetPathToActor(user)
-            });
+            mentions.Add(user.Id.ToString());
         }
 
         return mentions;
@@ -618,7 +608,7 @@ public class PostManagementService(
             
             Visibility = note.GetPostVisibility(author),
             
-            UserMentions = await CollectMentions(note),
+            Mentions = await CollectMentions(note),
             Tags = CollectHashtags(note),
             
             Emojis = emojis?
@@ -679,7 +669,7 @@ public class PostManagementService(
             .ToUniversalTime() ?? DateTimeOffset.UtcNow;
 
         post.Visibility = note.GetPostVisibility(author);
-        post.UserMentions = await CollectMentions(note);
+        post.Mentions = await CollectMentions(note);
         post.Tags = CollectHashtags(note);
 
         post.Emojis = emojis?

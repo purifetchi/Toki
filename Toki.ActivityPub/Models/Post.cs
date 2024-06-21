@@ -76,7 +76,7 @@ public class Post : RemoteableModel
     /// <summary>
     /// The list of mentioned users (DENORMALIZED).
     /// </summary>
-    public List<PostMention>? UserMentions { get; set; }
+    public List<string>? Mentions { get; set; }
     
     /// <summary>
     /// The tags in this post (DENORMALIZED).

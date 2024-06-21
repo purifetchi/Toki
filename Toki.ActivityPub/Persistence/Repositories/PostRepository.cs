@@ -142,7 +142,7 @@ public class PostRepository(
         List<Ulid> ids =
         [
             post.AuthorId, 
-            ..post.UserMentions?.Select(m => Ulid.Parse(m.Id))
+            ..post.Mentions?.Select(Ulid.Parse)
         ];
         
         return await db.Users

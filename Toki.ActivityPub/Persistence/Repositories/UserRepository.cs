@@ -42,6 +42,22 @@ public class UserRepository(
 
         return result;
     }
+
+    /// <summary>
+    /// Finds a user by their ids.
+    /// </summary>
+    /// <param name="ids">The ids.</param>
+    /// <returns>The matching users.</returns>
+    public async Task<IReadOnlyList<User>?> FindManyByIds(IEnumerable<Ulid> ids)
+    {
+        var result = await db.Users
+            .Where(u => ids.Contains(u.Id))
+            .Include(u => u.Keypair)
+            .Include(u => u.ParentInstance)
+            .ToListAsync();
+
+        return result;
+    }
     
     /// <summary>
     /// Finds a user by their remote id.
