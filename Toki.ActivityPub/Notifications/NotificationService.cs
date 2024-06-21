@@ -154,14 +154,13 @@ public class NotificationService(
         var notifs = new List<Notification?>();
         
         // Send out mentions
-        if (post.UserMentions is not null)
+        if (post.Mentions is not null)
         {
-            foreach (var mention in post.UserMentions.Where(mention => !mention.IsRemoteMention()))
+            foreach (var mention in post.Mentions)
             {
-                var user = await userRepository.FindById(
-                    Ulid.Parse(mention.Id));
+                var user = await userRepository.FindById(Ulid.Parse(mention));
 
-                if (user is null || user == post.Author)
+                if (user is null || user == post.Author || user.IsRemote)
                     continue;
 
                 var notif = await DispatchMention(

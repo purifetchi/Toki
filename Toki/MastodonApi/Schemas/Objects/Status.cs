@@ -116,7 +116,7 @@ public record Status
     /// The emojis in this post.
     /// </summary>
     [JsonPropertyName("mentions")]
-    public IReadOnlyList<Mention> Mentions { get; init; } = [];
+    public IReadOnlyList<Mention> Mentions { get; set; } = [];
 
     /// <summary>
     /// Hashtags used within the status content.

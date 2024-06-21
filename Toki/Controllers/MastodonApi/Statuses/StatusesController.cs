@@ -54,7 +54,7 @@ public class StatusesController(
             PostVisibility.Followers when 
                 user != null => await followRepository.FollowRelationExistsBetween(user, post.Author),
             PostVisibility.Direct when
-                user != null && post.UserMentions?.Any(m => m.Id == user.Id.ToString()) == true => true,
+                user != null && post.Mentions?.Contains(user.Id.ToString()) == true => true,
         
             _ => false
         };

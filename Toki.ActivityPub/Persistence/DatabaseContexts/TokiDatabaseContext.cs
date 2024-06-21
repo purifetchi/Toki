@@ -137,12 +137,6 @@ public class TokiDatabaseContext : DbContext
             .IsUnique();
 
         modelBuilder.Entity<Post>()
-            .Property(p => p.UserMentions)
-            .HasColumnType("jsonb")
-            .HasConversion(a => JsonConvert.SerializeObject(a),
-                a => JsonConvert.DeserializeObject<List<PostMention>?>(a));
-        
-        modelBuilder.Entity<Post>()
             .HasOne(p => p.Author)
             .WithMany()
             .IsRequired()
