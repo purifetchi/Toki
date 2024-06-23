@@ -42,7 +42,7 @@ public class StatusRenderer(
             {
                 Id = m.Id.ToString(),
                 Url = m.RemoteId,
-                Username = m.Handle,
+                Username = m.Handle.Split('@')[0],
                 WebFingerResource = m.Handle
             })
             .ToList();
