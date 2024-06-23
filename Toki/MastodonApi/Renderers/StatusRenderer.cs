@@ -38,12 +38,12 @@ public class StatusRenderer(
     private IReadOnlyList<Mention>? RenderMentionsFrom(IEnumerable<User> users)
     {
         return users
-            .Select(m => new Mention
+            .Select(u => new Mention
             {
-                Id = m.Id.ToString(),
-                Url = m.RemoteId,
-                Username = m.Handle.Split('@')[0],
-                WebFingerResource = m.Handle
+                Id = u.Id.ToString(),
+                Url = u.RemoteId ?? pathRenderer.GetPathToActor(u),
+                Username = u.Handle.Split('@')[0],
+                WebFingerResource = u.Handle
             })
             .ToList();
     }
