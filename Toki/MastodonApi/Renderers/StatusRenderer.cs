@@ -182,6 +182,7 @@ public class StatusRenderer(
     {
         var status = RenderForPost(post);
         status.Emojis = await GetEmojiFor(post);
+        status.Mentions = await GetMentionsFor(post);
 
         if (user is null)
             return status;
@@ -193,7 +194,6 @@ public class StatusRenderer(
         status.Liked = liked;
         status.Boosted = boosted;
         status.Bookmarked = bookmarked;
-        status.Mentions = await GetMentionsFor(post);
 
         return status;
     }
