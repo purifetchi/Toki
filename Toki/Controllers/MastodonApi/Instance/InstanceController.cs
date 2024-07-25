@@ -34,7 +34,7 @@ public class InstanceController(
         var config = opts.Value;
         var uploadConfig = uploadOpts.Value;
 
-        var version = $"{opts.Value.Software.SoftwareName}/{config.Software.SoftwareVersion!}";
+        var version = $"{opts.Value.Software.SoftwareName} {config.Software.SoftwareVersion!}";
 
         var stats = await usageService.GetStatistics();
         
