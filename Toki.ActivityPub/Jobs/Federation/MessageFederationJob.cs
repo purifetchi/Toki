@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Toki.ActivityPub.Configuration;
@@ -15,7 +17,7 @@ namespace Toki.ActivityPub.Jobs.Federation;
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class MessageFederationJob(
-    SignedHttpClient httpClient,
+    IServiceScopeFactory serviceScopeFactory,
     InstancePathRenderer pathRenderer,
     IOptions<InstanceConfiguration> opts,
     UserRepository userRepo,
@@ -59,13 +61,15 @@ public class MessageFederationJob(
         var actor = await userRepo.FindById(actorId);
         var keypair = actor!.Keypair!;
         
-        const int secondsPerRetry = 5;
-        
-        var failed = new List<string>();
-        logger.LogInformation($"httpClient: {httpClient}, keypair: {keypair?.Id}, publickey: {keypair?.PublicKey}, message: {message}");
-        
-        foreach (var target in targets)
+        var failed = new ConcurrentBag<string>();
+        await Parallel.ForEachAsync(
+            targets, 
+            new ParallelOptions { MaxDegreeOfParallelism = 10 },
+            async (target, _) =>
         {
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
+            var httpClient = scope.ServiceProvider.GetRequiredService<SignedHttpClient>();
+            
             logger.LogInformation($"Delivering message to {target}");
             
             // TODO: We should probably precalculate the digest, so we don't have to calculate it
@@ -92,18 +96,18 @@ public class MessageFederationJob(
                 logger.LogWarning($"Delivering to {target} failed! Request exception: {e}.");
                 failed.Add(target);
 
-                continue;
+                return;
             }
             catch (SocketException e)
             {
                 logger.LogWarning($"Delivering to {target} failed! Socket exception: {e}.");
                 failed.Add(target);
 
-                continue;
+                return;
             }
 
             if (result.IsSuccessStatusCode)
-                continue;
+                return;
 
             // If the server returns a 410 Gone, it means that the instance behind it is shut down.
             // Do not attempt to retransmit the message.
@@ -111,13 +115,13 @@ public class MessageFederationJob(
             if (result.StatusCode == HttpStatusCode.Gone)
             {
                 logger.LogWarning($"{target} reported itself as being shut down.");
-                continue;
+                return;
             }
 
             logger.LogWarning($"Delivering to {target} failed! Status code: {result.StatusCode}, response: {await result.Content.ReadAsStringAsync()}");
             failed.Add(target);
-        }
-        
+        });
+
         retries++;
 
         if (retries > MAX_RETRIES_COUNT || failed.Count < 1)
