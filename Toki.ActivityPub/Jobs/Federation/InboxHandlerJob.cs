@@ -344,6 +344,12 @@ public class InboxHandlerJob(
             return;
         }
 
+        if (await postRepo.FindBoostByIdAndAuthor(actor, post.Id) is not null)
+        {
+            logger.LogWarning($"Actor {actor.Handle} tried to double boost a post.");
+            return;
+        }
+
         await postManagementService.Boost(
             actor,
             post,
