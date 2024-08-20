@@ -126,4 +126,26 @@ public class TimelineBuilder(
             .Take(_count)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// Gets the timeline with the pagination links added to the HTTP context.
+    /// </summary>
+    /// <param name="ctx">The HTTP context.</param>
+    /// <returns>The timeline.</returns>
+    public async Task<IList<Post>> GetTimelineWithMastodonPagination(HttpContext ctx)
+    {
+        var timeline = await GetTimeline();
+
+        if (timeline.Count < 1)
+            return timeline;
+            
+        var fst = timeline.First();
+        var lst = timeline.Last();
+
+        var route = $"https://{ctx.Request.Host}{ctx.Request.Path}";
+            
+        ctx.Response.Headers.Link = $"<{route}?max_id={lst.Id}>; rel=\"next\", <{route}?since_id={fst.Id}>; rel=\"prev\"";
+
+        return timeline;
+    }
 }
