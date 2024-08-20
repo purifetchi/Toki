@@ -118,7 +118,7 @@ public class AccountsController(
         if (filters.ExcludeReplies)
             query = query.Filter(post => post.ParentId == null);
 
-        var posts = await query.GetTimeline();
+        var posts = await query.GetTimelineWithMastodonPagination(HttpContext);
         return Ok(await statusRenderer.RenderManyStatusesForUser(us, posts));
     }
 

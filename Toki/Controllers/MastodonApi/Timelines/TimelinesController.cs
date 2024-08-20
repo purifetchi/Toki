@@ -54,7 +54,7 @@ public class TimelinesController(
         
         var list = await query
             .Paginate(paginationParams)
-            .GetTimeline();
+            .GetTimelineWithMastodonPagination(HttpContext);
 
         return await statusRenderer.RenderManyStatusesForUser(user, list);
     }
@@ -80,7 +80,7 @@ public class TimelinesController(
                             post.Author.FollowerRelations!.Any(fr => fr.Follower.Id == user.Id))
             .ViewAs(user)
             .Paginate(paginationParams)
-            .GetTimeline();
+            .GetTimelineWithMastodonPagination(HttpContext);
 
         return await statusRenderer.RenderManyStatusesForUser(user, list);
     }
