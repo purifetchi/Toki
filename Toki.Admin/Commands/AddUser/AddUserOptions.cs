@@ -17,6 +17,6 @@ public class AddUserOptions
     /// <summary>
     /// The password of the user.
     /// </summary>
-    [Option('u', "password", HelpText = "The password of the user.", Required = true)]
+    [Option('p', "password", HelpText = "The password of the user.", Required = true)]
     public required string Password { get; init; }
 }
